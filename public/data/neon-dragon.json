@@ -6,7 +6,7 @@
   "title": "The Neon Dragon of Pixel Harbour",
   "subtitle": "A pocket gamebook adventure across Hong Kong",
   "author": "Original story",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "language": "en",
   "ageRange": "9-11",
   "original": true,
@@ -49,16 +49,17 @@
     "stat": "power",
     "add": -1
    }
-  ]
+  ],
+  "bonusStars": true
  },
  "stats": {
   "energy": {
    "name": "Energy",
    "short": "NRG",
    "description": "If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
-   "initial": 12,
+   "initial": 16,
    "min": 0,
-   "max": 12,
+   "max": 16,
    "color": "#3dff6e",
    "icon": "⚡",
    "display": "bar"
@@ -67,7 +68,7 @@
    "name": "Pixel Power",
    "short": "PWR",
    "description": "Your move timer: every move uses 1. Halving traps drain it, each zodiac friend you meet adds +2. If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
-   "initial": 58,
+   "initial": 96,
    "min": 0,
    "color": "#29e7ff",
    "icon": "★",
@@ -90,7 +91,7 @@
    "name": "Tokens",
    "short": "TOK",
    "description": "Arcade tokens pay for rides, snacks and riddle mistakes. If you run out, you're OUT! Never spend your last one.",
-   "initial": 6,
+   "initial": 12,
    "min": 0,
    "color": "#ffd23f",
    "icon": "🪙",
@@ -1058,12 +1059,12 @@
   "reference": {
    "byStartStat": "luck",
    "values": {
-    "7": 925,
-    "8": 935,
-    "9": 945,
-    "10": 955,
-    "11": 965,
-    "12": 975
+    "7": 1155,
+    "8": 1165,
+    "9": 1175,
+    "10": 1185,
+    "11": 1195,
+    "12": 1205
    }
   },
   "ranks": [
@@ -2829,7 +2830,7 @@
    "title": "Liv the Phoenix",
    "text": [
     "The fiery bird swoops down and lands on a railing with a soft WHUMPH of warm air. Her feathers ripple red, orange and gold, and her crest flickers like a candle.",
-    "\"I'm Liv the Phoenix,\" she says. \"I keep this street's neon glowing while the pearl is missing. I'll help you, but only if you can think on your feet. One riddle! Get it wrong and it'll cost you. Or fly off now and try another path. No shame in that.\""
+    "\"I'm Liv the Phoenix,\" she says. \"I keep this street's neon glowing while the pearl is missing. I'll help you, but only if you can think on your feet. Answer my riddle! Get it wrong and it'll cost you, then I'll ask another, until you get one right. Or fly off now and try another path. No shame in that.\""
    ],
    "illustration": {
     "src": "img/causeway.svg",
@@ -2847,17 +2848,22 @@
    "riddle": {
     "character": "liv",
     "draw": 1,
+    "untilCorrect": true,
     "onCorrect": [
      {
       "stat": "tokens",
       "add": 1
      },
      {
-      "message": "Correct! +1 token"
+      "stat": "energy",
+      "add": 2
+     },
+     {
+      "message": "Correct! +1 token, +2 Energy"
      }
     ],
     "wrong": {
-     "text": "Wrong! Pay up: 2 tokens, or half your Energy.",
+     "text": "Wrong! Pay up: 2 tokens, or half your Energy. Then try another riddle (or head back).",
      "options": [
       {
        "label": "Pay 2 tokens",
@@ -3535,7 +3541,7 @@
   "tram_monkey": {
    "title": "The Monkey at the Tram",
    "text": [
-    "At the Peak Tram station, a cheeky monkey is swinging from the ticket barrier, munching a banana. \"Nobody rides MY tram,\" he chatters, \"unless they can answer my riddle! One riddle! Get it wrong and you pay!\"",
+    "At the Peak Tram station, a cheeky monkey is swinging from the ticket barrier, munching a banana. \"Nobody rides MY tram,\" he chatters, \"unless they can answer my riddle! Get it wrong and you pay, then you get another one!\"",
     "Behind you, the street leads back to Central. You could always find another way up the mountain..."
    ],
    "illustration": {
@@ -3554,17 +3560,22 @@
    "riddle": {
     "character": "monkey",
     "draw": 1,
+    "untilCorrect": true,
     "onCorrect": [
      {
       "stat": "tokens",
       "add": 1
      },
      {
-      "message": "Correct! +1 token"
+      "stat": "energy",
+      "add": 2
+     },
+     {
+      "message": "Correct! +1 token, +2 Energy"
      }
     ],
     "wrong": {
-     "text": "Wrong! Pay up: 2 tokens, or half your Energy.",
+     "text": "Wrong! Pay up: 2 tokens, or half your Energy. Then try another riddle (or head back).",
      "options": [
       {
        "label": "Pay 2 tokens",
@@ -3752,17 +3763,22 @@
    "riddle": {
     "character": "snake",
     "draw": 1,
+    "untilCorrect": true,
     "onCorrect": [
      {
       "stat": "tokens",
       "add": 1
      },
      {
-      "message": "Correct! +1 token"
+      "stat": "energy",
+      "add": 2
+     },
+     {
+      "message": "Correct! +1 token, +2 Energy"
      }
     ],
     "wrong": {
-     "text": "Wrong! Pay up: 2 tokens, or half your Energy.",
+     "text": "Wrong! Pay up: 2 tokens, or half your Energy. Then try another riddle (or head back).",
      "options": [
       {
        "label": "Pay 2 tokens",
@@ -3950,7 +3966,7 @@
      "hideIfLocked": true
     },
     {
-     "label": "Challenge Bolt-Bot to a duel!",
+     "label": "Challenge Bolt-Bot to a BOSS duel! (tough!)",
      "target": "bot_battle"
     },
     {
@@ -3968,7 +3984,7 @@
    "title": "Loulou the GOAT",
    "text": [
     "The goat finishes a triple backflip off the railing, lands perfectly and bows. The tourists go wild. \"Loulou the GOAT,\" she says, adjusting her crown. \"Greatest Of All Time. Also, an actual goat. Zodiac goat, if you're counting.\"",
-    "\"Want to know how to get past that robot? I know a secret climbing route. GOATs climb anything. But first: one riddle. Mess it up and it'll cost you. Or wander off and try another path. Your call, champ.\""
+    "\"Want to know how to get past that robot? I know a secret climbing route. GOATs climb anything. But first: a riddle. Mess it up and it'll cost you, then I'll throw you another. Or wander off and try another path. Your call, champ.\""
    ],
    "illustration": {
     "src": "img/peak.svg",
@@ -3986,17 +4002,22 @@
    "riddle": {
     "character": "loulou",
     "draw": 1,
+    "untilCorrect": true,
     "onCorrect": [
      {
       "stat": "tokens",
       "add": 1
      },
      {
-      "message": "Correct! +1 token"
+      "stat": "energy",
+      "add": 2
+     },
+     {
+      "message": "Correct! +1 token, +2 Energy"
      }
     ],
     "wrong": {
-     "text": "Wrong! Pay up: 2 tokens, or half your Energy.",
+     "text": "Wrong! Pay up: 2 tokens, or half your Energy. Then try another riddle (or head back).",
      "options": [
       {
        "label": "Pay 2 tokens",
@@ -4136,18 +4157,19 @@
    ]
   },
   "bot_battle": {
-   "title": "Duel!",
+   "title": "Boss Duel!",
    "text": [
-    "You raise your fists. Bolt-Bot raises its huge rubber-glove fists.",
-    "\"BEEP BOOP. PREPARE. FOR. BOPPING.\""
+    "You raise your fists. Bolt-Bot raises its huge rubber-glove fists. Then its chest panel slides open with a hiss and its eyes flash red: TURBO MODE.",
+    "\"BEEP BOOP. FINAL. BOSS. ACTIVATED. PREPARE. FOR. MEGA. BOPPING.\""
    ],
    "combat": {
-    "intro": "Each round, you and Bolt-Bot both roll two dice and add your attack (your LUCK). Higher total lands a bop (the loser loses 2). Knock Bolt-Bot down to 0 to win! Changed your mind? You can RUN AWAY at any point until the duel is decided. Careful: if your Energy hits 0, you're trapped in the game forever.",
+    "intro": "BOSS FIGHT! Turbo Bolt-Bot has ATTACK 8 and 10 HP, and its mega-bops knock off 3 Energy. Each round you both roll two dice and add your attack (your LUCK plus any boosts). Higher total lands a bop: you knock off 2 HP. Friends and gear help: 4+ zodiac friends +1 attack, 8+ another +1, the Phoenix Feather +1, and the duck Umbrella blocks 1 damage from every bop. Changed your mind? You can RUN AWAY at any point until the duel is decided. Careful: if your Energy hits 0, you're trapped in the game forever.",
     "enemies": [
      {
-      "name": "Bolt-Bot",
-      "attack": 5,
-      "health": 6,
+      "name": "Turbo Bolt-Bot",
+      "attack": 8,
+      "health": 10,
+      "damage": 3,
       "sprite": {
        "palette": {
         "g": "#c0c8d0",
@@ -4174,14 +4196,43 @@
       }
      }
     ],
+    "damage": 2,
     "loseAt": 2,
+    "boosts": [
+     {
+      "label": "Zodiac friends cheer you on",
+      "tracker": "zodiac",
+      "min": 4,
+      "attack": 1
+     },
+     {
+      "label": "The whole zodiac crowd roars",
+      "tracker": "zodiac",
+      "min": 8,
+      "attack": 1
+     },
+     {
+      "label": "Liv's Phoenix Feather glows hot",
+      "conditions": {
+       "hasItem": "feather"
+      },
+      "attack": 1
+     },
+     {
+      "label": "Duck Umbrella shield",
+      "conditions": {
+       "hasItem": "umbrella"
+      },
+      "armor": 1
+     }
+    ],
     "win": {
      "target": "bot_beaten",
-     "text": "Bolt-Bot topples over!"
+     "text": "Turbo Bolt-Bot sparks, wobbles and topples over!"
     },
     "lose": {
      "target": "zapped",
-     "text": "Bolt-Bot bops you!"
+     "text": "Turbo Bolt-Bot mega-bops you!"
     },
     "flee": {
      "label": "RUN AWAY! (back to the tram, -1 Energy)",
@@ -4198,13 +4249,16 @@
   "bot_beaten": {
    "title": "Clang!",
    "text": [
-    "With one last bop, Bolt-Bot topples over with a mighty CLANG, its saucepan head spinning like a top. A few tokens roll out of its pocket.",
+    "With one last bop, Turbo Bolt-Bot topples over with a mighty CLANG, its saucepan head spinning like a top. A few tokens roll out of its pocket.",
     "\"OKAY. OKAY. YOU. WIN,\" it says, and sits down for a little rest. The tower door swings open."
    ],
    "onEnter": [
     {
      "stat": "tokens",
-     "add": 2
+     "add": 3
+    },
+    {
+     "message": "Boss beaten! +3 tokens"
     }
    ],
    "choices": [

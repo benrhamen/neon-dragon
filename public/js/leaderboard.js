@@ -74,8 +74,17 @@ async function call(path, opts = {}) {
     return res.status === 204 ? null : res.json().catch(() => null);
   } finally { clearTimeout(timer); }
 }
+// Cosmetic bonus stars live in an optional bonus_stars column (added by supabase/schema.sql).
+// A table made before that column existed answers 400: then we read and post without it.
+let starsColumn = true;
 export async function fetchGlobal(limit = GLOBAL_MAX) {
-  const rows = await call(`scores?select=nickname,avatar,score_pct,rank,zodiac_count,created_at&order=score_pct.desc,created_at.asc&limit=${limit}`);
+  const q = (cols) => call(`scores?select=${cols}&order=score_pct.desc,created_at.asc&limit=${limit}`);
+  const base = 'nickname,avatar,score_pct,rank,zodiac_count,created_at';
+  let rows;
+  if (starsColumn) {
+    try { rows = await q(`${base},bonus_stars`); } catch (e) { if (e.status !== 400) throw e; starsColumn = false; }
+  }
+  if (!starsColumn) rows = await q(base);
   if (!Array.isArray(rows)) throw new Error('bad response');
   return rows;
 }
@@ -89,12 +98,20 @@ export async function submitGlobal(entry) {
     rank: String(entry.rank || '').slice(0, 24),
     zodiac_count: Math.max(0, Math.min(12, entry.zodiac_count | 0)),
   };
+  if (starsColumn) body.bonus_stars = Math.max(0, Math.min(999, entry.bonus_stars | 0));
+  const post = (b) => call('scores', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(b) });
   try {
-    await call('scores', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+    await post(body);
   } catch (e) {
-    // a table created before the Dragon became the 12th animal only allows 0-11: post 11 rather than fail
-    if (e.status !== 400 || body.zodiac_count !== 12) throw e;
-    await call('scores', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ ...body, zodiac_count: 11 }) });
+    if (e.status !== 400) throw e;
+    // Older tables: no bonus_stars column yet, and/or zodiac_count only allows 0-11 (made before the
+    // Dragon became the 12th animal). Retry with what such a table accepts rather than fail.
+    const { bonus_stars: _s, ...plain } = body;
+    if ('bonus_stars' in body) starsColumn = false;
+    try { await post(plain); } catch (e2) {
+      if (e2.status !== 400 || plain.zodiac_count !== 12) throw e2;
+      await post({ ...plain, zodiac_count: 11 });
+    }
   }
   return true;
 }

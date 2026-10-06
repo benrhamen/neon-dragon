@@ -34,6 +34,7 @@ const watch = (page, tag) => {
   page.on('console', (m) => {
     if (m.type() !== 'error') return;
     if (net.mode === 'missing' && /status of 404/.test(m.text())) return; // the mocked "table missing" response
+    if (net.mode === 'nostars' && /status of 400/.test(m.text())) return; // the mocked "no bonus_stars column yet" response
     errors.push(`[${tag}] console: ${m.text()}`);
   });
 };
@@ -45,7 +46,7 @@ const choose = async (page, label) => { await page.locator('.choice:not(.locked)
 
 // --- mocked Supabase REST: records requests, serves a fake World Top 50 or a missing table ---
 const globalRows = [
-  { nickname: 'PIXELPRO', avatar: { skin: 2, hairStyle: 'bun', hairColor: 3, outfit: 2, accessory: 'crown' }, score_pct: 97, rank: 'NEON HERO', zodiac_count: 11, created_at: '2026-10-01T10:00:00Z' },
+  { nickname: 'PIXELPRO', avatar: { skin: 2, hairStyle: 'bun', hairColor: 3, outfit: 2, accessory: 'crown' }, score_pct: 97, rank: 'NEON HERO', zodiac_count: 11, bonus_stars: 9, created_at: '2026-10-01T10:00:00Z' },
   { nickname: 'ZOE', avatar: { skin: 4, hairStyle: 'long', hairColor: 4, outfit: 0, accessory: 'none' }, score_pct: 64, rank: 'DING-DING DASHER', zodiac_count: 7, created_at: '2026-10-02T10:00:00Z' },
 ];
 async function mockSupabase(ctx) {
@@ -53,6 +54,10 @@ async function mockSupabase(ctx) {
     const req = route.request();
     net.requests.push({ method: req.method(), url: req.url(), headers: req.headers(), body: req.postData() });
     if (net.mode === 'missing') return route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ code: 'PGRST205', message: "Could not find the table 'public.scores' in the schema cache" }) });
+    // a table made before the bonus_stars column: PostgREST answers 400 for the unknown column
+    const usesStars = req.method() === 'POST' ? /bonus_stars/.test(req.postData() || '') : /bonus_stars/.test(req.url());
+    if (net.mode === 'nostars' && usesStars) return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ code: '42703', message: 'column scores.bonus_stars does not exist' }) });
+    if (net.mode === 'nostars' && req.method() === 'GET') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(globalRows.map(({ bonus_stars: _b, ...r }) => r)) });
     if (req.method() === 'POST') return route.fulfill({ status: 201, body: '' });
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(globalRows) });
   });
@@ -141,13 +146,14 @@ try {
   console.log('first moves');
   check((await text(page, 'hero-name')) === 'MAX', 'hero panel shows the nickname');
   check((await text(page, 'section-title')) === 'Insert Coin', 'adventure starts at the first section');
-  check(await stat(page, 'power') === 58 && await stat(page, 'energy') === 12 && await stat(page, 'tokens') === 6, 'starts with 58 Pixel Power, 12 Energy, 6 tokens');
+  check(await stat(page, 'power') === 96 && await stat(page, 'energy') === 16 && await stat(page, 'tokens') === 12, 'starts with 96 Pixel Power, 16 Energy, 12 tokens');
+  check(await T(page, 'stars-panel').isVisible() && (await text(page, 'stars')) === '0' && (await text(page, 'stars-panel')).includes('NOT IN YOUR SCORE'), 'stats panel shows a BONUS STARS counter at 0 (marked: not in your score)');
   check((await text(page, 'tracker-count')) === '0/12', 'Zodiac Collection panel shows 0/12');
   check(await page.locator('.stat.timer .timer-bar').count() === 1, 'Pixel Power is shown as a countdown bar');
   const keys = await page.evaluate(() => Object.keys(localStorage));
   check(keys.includes(RUN_KEY) && !keys.some((k) => k.startsWith('gb.profiles')), 'only the current run is autosaved (no player profiles)');
   await choose(page, 'Ask Auntie Lam');
-  check(await stat(page, 'power') === 57, 'each move uses 1 Pixel Power');
+  check(await stat(page, 'power') === 95, 'each move uses 1 Pixel Power');
   check((await text(page, 'move-count')) === 'MOVE 1', 'move counter shows MOVE 1');
   const where = await text(page, 'section-title');
   await page.reload();
@@ -178,7 +184,7 @@ try {
     await shot(page, file);
   }
   // every encounter asks ONE riddle drawn from the pool
-  check((await text(page, 'riddle-question')).length > 5 && (await page.locator('.riddle-count').textContent()).includes('ONE RIDDLE'), 'one riddle per character, from the pool');
+  check((await text(page, 'riddle-question')).length > 5 && (await text(page, 'riddle-count')).startsWith('RIDDLE 1'), 'riddle counter starts at RIDDLE 1 (a pool riddle)');
   // a second game gets a different riddle; reloading keeps the same one
   await inject(page, 'st.riddleSeed = 1;' + go('liv'));
   const q1 = await text(page, 'riddle-question');
@@ -197,11 +203,11 @@ try {
   check((await text(page, 'riddle-question')) === rq.question, 'the saved riddle is the one on screen');
   await T(page, `riddle-option-${rq.answer}`).click();
   check((await T(page, 'riddle-result').getAttribute('data-correct')) === 'true', 'Loulou: correct answer passes');
-  check(await stat(page, 'tokens') === 7, 'correct answer: +1 token');
+  check(await stat(page, 'tokens') === 7 && await stat(page, 'energy') === 14, 'correct answer: +1 token, +2 Energy');
   await T(page, 'continue').click();
   await page.waitForTimeout(200);
   check((await text(page, 'section-title')) === 'The Peak' && (await text(page, 'tracker-count')) === '1/12', 'Loulou finished after one riddle: back at the Peak, Goat added to the Zodiac Collection');
-  // wrong + pay (Monkey)
+  // wrong + pay (Monkey) → ANOTHER riddle → correct → pass
   await inject(page, go('tram_monkey') + 'st.stats.tokens = 6;');
   rq = await riddleNow(page);
   await T(page, `riddle-option-${(rq.answer + 1) % rq.n}`).click();
@@ -211,15 +217,37 @@ try {
   await shot(page, '11-riddle-penalty.png');
   await T(page, 'penalty-0').click();
   check(await stat(page, 'tokens') === 4, 'wrong + pay: costs 2 tokens');
+  check((await text(page, 'riddle')).includes('ANOTHER RIDDLE') && (await text(page, 'continue')).includes('NEXT RIDDLE'), 'after paying: "another riddle" message and a NEXT RIDDLE button');
   await T(page, 'continue').click();
   await page.waitForTimeout(200);
-  check((await text(page, 'section-title')) === 'The Peak Tram', 'after paying, the monkey still lets you through');
-  // wrong + halve (Snake)
+  const rq2 = await riddleNow(page);
+  check((await text(page, 'section-title')) === 'The Monkey' || (await T(page, 'riddle').isVisible()), 'still with the Monkey: no pass after a wrong answer');
+  check(rq2.id !== rq.id && (await text(page, 'riddle-question')) === rq2.question, 'the Monkey asks a DIFFERENT random riddle from the pool');
+  check((await text(page, 'riddle-count')).startsWith('RIDDLE 2') && (await text(page, 'riddle-count')).includes('TRY AGAIN'), `counter shows RIDDLE 2 (${await text(page, 'riddle-count')})`);
+  check(await T(page, 'riddle-retreat').isVisible(), 'the free "head back" option is offered again before riddle 2');
+  await showRiddle(page);
+  await shot(page, '25-riddle-second-after-wrong.png');
+  await page.reload(); await T(page, 'riddle').waitFor();
+  check((await text(page, 'riddle-question')) === rq2.question && (await text(page, 'riddle-count')).startsWith('RIDDLE 2'), 'reload keeps riddle 2 (no reroll)');
+  await T(page, `riddle-option-${rq2.answer}`).click();
+  check((await T(page, 'riddle-result').getAttribute('data-correct')) === 'true' && await stat(page, 'tokens') === 5, 'riddle 2 answered right: +1 token');
+  await T(page, 'continue').click();
+  await page.waitForTimeout(200);
+  check((await text(page, 'section-title')) === 'The Peak Tram', 'a correct answer finally gets you past the Monkey');
+  // wrong + halve (Snake) → head back before riddle 2
   await inject(page, go('vault_snake') + 'st.stats.energy = 12;');
   rq = await riddleNow(page);
   await T(page, `riddle-option-${(rq.answer + 1) % rq.n}`).click();
   await T(page, 'penalty-1').click();
   check(await stat(page, 'energy') === 6, 'wrong + halve: Energy 12 → 6');
+  await T(page, 'continue').click();
+  await page.waitForTimeout(200);
+  check((await text(page, 'riddle-count')).startsWith('RIDDLE 2'), 'the Snake has riddle 2 ready');
+  const snakeBack = await page.evaluate(async () => (await (await fetch('data/neon-dragon.json')).json()).sections.vault_snake.riddle.retreat.target);
+  const snakeBackTitle = await page.evaluate(async (id) => (await (await fetch('data/neon-dragon.json')).json()).sections[id].title, snakeBack);
+  await T(page, 'riddle-retreat').click();
+  await page.waitForTimeout(200);
+  check((await text(page, 'section-title')) === snakeBackTitle && await stat(page, 'energy') === 6, `wrong + halve, then head back for free (${snakeBackTitle}, Energy still 6)`);
   // retreat
   await inject(page, go('liv') + 'st.stats.power = 30;');
   const tBefore = await stat(page, 'tokens');
@@ -265,19 +293,21 @@ try {
   await T(page, 'name-input').fill('kai');
   await T(page, 'press-start').click();
   await T(page, 'avatar-modal').waitFor({ state: 'detached' });
-  check((await text(page, 'hero-name')) === 'KAI' && await stat(page, 'power') === 58 && (await text(page, 'section-title')) === 'Insert Coin', 'START begins a fresh game with the new hero');
+  check((await text(page, 'hero-name')) === 'KAI' && await stat(page, 'power') === 96 && (await text(page, 'section-title')) === 'Insert Coin', 'START begins a fresh game with the new hero');
 
   console.log('win + score');
   net.mode = 'ok';
-  await inject(page, go('dragon_summit') + "st.inventory.pearl = 1; st.found.pearl = true; st.found.lantern = true; st.used.lantern = true; for (const z of ['rat','rabbit','ox','monkey']) st.flags['zodiac_' + z] = true; st.stats.power = 14; st.stats.energy = 9;");
+  await inject(page, go('dragon_summit') + "st.inventory.pearl = 1; st.found.pearl = true; st.found.lantern = true; st.used.lantern = true; for (const z of ['rat','rabbit','ox','monkey']) st.flags['zodiac_' + z] = true; st.stats.power = 14; st.stats.energy = 9; st.bonusStars = 5;");
   await choose(page, 'Hold up the Pearl of Light');
   await T(page, 'score-screen').waitFor();
   const pct = +(await text(page, 'score-pct')).replace('%', '');
   check(pct > 0 && pct < 100, `win shows a SCORE percentage (${pct}%)`);
   check((await text(page, 'score-rank')).length > 0 && await page.locator('.score-row').count() === 7, 'score breakdown: 6 components + total, and a rank title');
   check((await text(page, 'end-zodiac')) === '4/12', 'end scorecard shows ZODIAC 4/12');
+  check((await text(page, 'end-stars')).includes('5'), 'ending shows the total BONUS STARS (5)');
+  check(!(await text(page, 'score-screen')).includes('STAR'), 'stars are not part of the score breakdown');
   const best = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)), BEST_KEY);
-  check(best?.[0]?.nickname === 'MAX' && best[0].score_pct === pct, 'score saved to this device\'s Best Scores');
+  check(best?.[0]?.nickname === 'MAX' && best[0].score_pct === pct && best[0].bonus_stars === 5, 'score saved to this device\'s Best Scores (with 5 bonus stars)');
   check((await text(page, 'hero-best')) === `${pct}%`, 'hero panel shows the best score');
   await page.waitForTimeout(500);
   await page.waitForTimeout(700);
@@ -288,17 +318,18 @@ try {
   const post = net.requests.find((r) => r.method === 'POST');
   check((await text(page, 'post-result')).includes('SENT'), 'POST TO WORLD TOP 50 sends the score (mocked)');
   check(post && post.headers.apikey?.startsWith('sb_publishable_') && !post.headers.authorization, 'REST call uses the apikey header only (publishable key, no Bearer)');
-  check(post && JSON.parse(post.body).nickname === 'MAX' && JSON.parse(post.body).score_pct === pct, 'posted row has nickname + score');
+  check(post && JSON.parse(post.body).nickname === 'MAX' && JSON.parse(post.body).score_pct === pct && JSON.parse(post.body).bonus_stars === 5, 'posted row has nickname + score (+ cosmetic bonus_stars)');
 
   console.log('best scores');
   await T(page, 'end-scores').click();
   await T(page, 'scores-modal').waitFor();
   await page.locator('[data-testid=scores-body] [data-testid=score-row]').first().waitFor();
   check(await page.locator('[data-testid=score-row]').count() === 2 && (await page.locator('[data-testid=score-row] .nm').first().textContent()) === 'PIXELPRO', 'World Top 50 tab shows the shared board');
+  check((await page.locator('.scores-table th.st').textContent()).includes('STARS') && (await page.locator('[data-testid=score-stars]').first().textContent()).includes('9'), 'Best Scores table has a cosmetic ✦ STARS column');
   await page.waitForTimeout(700);
   await shot(page, '15-best-scores-world.png');
   await T(page, 'tab-local').click();
-  check((await page.locator('[data-testid=score-row] .nm').first().textContent()) === 'MAX', 'My Device tab shows this device\'s top 10');
+  check((await page.locator('[data-testid=score-row] .nm').first().textContent()) === 'MAX' && (await page.locator('[data-testid=score-stars]').first().textContent()).includes('5'), 'My Device tab shows this device\'s top 10 (with stars)');
   await page.waitForTimeout(300);
   await shot(page, '16-best-scores-device.png');
   await T(page, 'scores-back').click();
@@ -307,7 +338,35 @@ try {
   await T(page, 'global-offline').waitFor();
   check(await T(page, 'global-offline').isVisible() && await page.locator('[data-testid=score-row]').count() >= 1, 'missing table / offline: falls back to this device\'s scores');
   await T(page, 'scores-back').click();
+  // an online table made before the bonus_stars column: reading and posting still work (without stars)
+  net.mode = 'nostars';
+  await T(page, 'end-scores').click();
+  await page.locator('[data-testid=scores-body] [data-testid=score-row] .nm', { hasText: 'PIXELPRO' }).first().waitFor();
+  check((await page.locator('[data-testid=score-stars]').first().textContent()).trim() === '-', 'old online table (no bonus_stars column): board still loads, stars shown as -');
+  await T(page, 'scores-back').click();
   net.mode = 'ok';
+
+  console.log('bonus stars');
+  await inject(page, go('tiger_taichi') + 'st.stats.luck = 12; st.statMax.luck = 12; st.bonusStars = 2;');
+  check((await text(page, 'stars')) === '2', 'a saved run keeps its bonus stars (2)');
+  await T(page, 'roll').click();
+  await T(page, 'test-result').waitFor();
+  await page.waitForTimeout(150);
+  check((await text(page, 'stars')) === '3' && await page.locator('[data-testid=stars-panel].burst').count() === 1, 'winning a luck roll: +1 bonus star with a star-burst');
+  const starToast = await page.locator('.toast.star').first().waitFor({ timeout: 2000 }).then(() => true, () => false);
+  check(starToast && (await page.locator('.toast.star').first().textContent()).includes('BONUS STAR'), 'a sparkly BONUS STAR toast pops up');
+  await page.waitForTimeout(250);
+  await T(page, 'stars-panel').scrollIntoViewIfNeeded();
+  await shot(page, '26-bonus-star-burst.png');
+  await inject(page, go('tiger_taichi') + 'st.stats.luck = 2; st.bonusStars = 3;');
+  await T(page, 'roll').click();
+  await T(page, 'test-result').waitFor();
+  const lr = await text(page, 'test-result');
+  check((await text(page, 'stars')) === (lr.includes('SUCCESS') ? '4' : '3'), 'a lost luck roll earns no star');
+  await inject(page, go('mtr_platform') + 'st.stats.energy = 1; st.bonusStars = 4;');
+  await choose(page, 'Squeeze into the packed train');
+  await T(page, 'ending').waitFor();
+  check((await text(page, 'end-stars')).includes('4'), 'the trapped GAME OVER screen shows the bonus stars too');
 
   console.log('shopping forever');
   await inject(page, go('sale_trap') + 'st.stats.power = 25;');
@@ -357,7 +416,7 @@ try {
   await flee.click();
   await page.waitForTimeout(300);
   check((await text(page, 'section-title')) === 'Central' && await stat(page, 'energy') === 8, 'RUN AWAY on round 0: back to Central, -1 Energy');
-  // after 1 and 2 attack rounds (Bolt-Bot needs 3 bops and you can take 5, so it's never decided yet)
+  // after 1 and 2 attack rounds (Turbo Bolt-Bot needs 5 bops; from 12 Energy you survive 3 of its 3-damage bops, so it's never decided yet)
   for (const rounds of [1, 2]) {
     await inject(page, go('bot_battle') + 'st.stats.energy = 12;');
     for (let i = 0; i < rounds; i++) {
@@ -373,6 +432,15 @@ try {
   }
   await inject(page, go('bot_battle') + 'st.stats.energy = 1;');
   check((await T(page, 'flee').textContent()).includes('⚠') && await T(page, 'warning').first().isVisible(), 'RUN AWAY at Energy 1 shows the ⚠ trapped warning');
+  // the boss: tougher numbers on screen, and boosts for a well-prepared hero
+  await inject(page, go('bot_battle') + 'st.stats.luck = 8;');
+  check((await text(page, 'enemy-hp')) === 'HP 10/10' && (await text(page, 'combat')).includes('BOP -3') && (await text(page, 'your-attack')) === 'ATTACK 8', 'boss: Turbo Bolt-Bot HP 10, bops for 3; no boosts = your plain Luck');
+  check(await page.locator('[data-testid=boost].on').count() === 0 && await page.locator('[data-testid=boost]').count() === 4, 'boss: 4 possible boosts listed, none active yet');
+  await inject(page, go('bot_battle') + "st.stats.luck = 8; st.inventory.feather = 1; st.inventory.umbrella = 1; for (const e of book.trackers[0].entries.slice(0, 8)) st.flags[e.flag] = true;");
+  check(await page.locator('[data-testid=boost].on').count() === 4 && (await text(page, 'your-attack')).startsWith('ATTACK 11') && (await text(page, 'combat')).includes('BOP -2'), 'well-prepared: all 4 boosts light up (+3 attack, umbrella softens bops to 2)');
+  await page.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
+  await T(page, 'boosts').scrollIntoViewIfNeeded();
+  await shot(page, '27-boss-boosts.png');
 
   console.log('zodiac master');
   await inject(page, go('dragon_summit') + "st.inventory.pearl = 1; for (const e of book.trackers[0].entries.slice(0, 11)) st.flags[e.flag] = true; st.stats.power = 20;");
@@ -407,7 +475,7 @@ try {
   await T(page, 'name-input').fill('ZED');
   await T(page, 'press-start').click();
   await T(page, 'avatar-modal').waitFor({ state: 'detached' });
-  check(await stat(page, 'tokens') === 8, 'redeemed voucher: the new game starts with 8 tokens');
+  check(await stat(page, 'tokens') === 14, 'redeemed voucher: the new game starts with 14 tokens');
   await page.locator('#restartBtn').click();
   await T(page, 'confirm-yes').click();
   await T(page, 'avatar-modal').waitFor();
@@ -417,7 +485,7 @@ try {
   await T(page, 'name-input').fill('ZED');
   await T(page, 'press-start').click();
   await T(page, 'avatar-modal').waitFor({ state: 'detached' });
-  check(await stat(page, 'tokens') === 6, 'used voucher: no bonus (6 tokens)');
+  check(await stat(page, 'tokens') === 12, 'used voucher: no bonus (12 tokens)');
   await page.locator('#restartBtn').click();
   await T(page, 'confirm-yes').click();
   await T(page, 'avatar-modal').waitFor();

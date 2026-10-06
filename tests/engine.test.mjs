@@ -34,13 +34,15 @@ test('book is valid and lint-clean, with 92 sections and 11 endings', () => {
   assert.equal(lint.endings.length, 11);
 });
 
-test('new game: Energy 12, Pixel Power 58 (no cap), Luck 1d6+6, 6 tokens', () => {
+test('new game: Energy 16, Pixel Power 96 (no cap), Luck 1d6+6, 12 tokens, 0 bonus stars', () => {
   const s = fresh(3);
   assert.equal(s.current, 'intro');
-  assert.equal(s.stats.energy, 12);
-  assert.equal(s.stats.power, 58);
+  assert.equal(s.stats.energy, 16);
+  assert.equal(E.statBounds(book, s, 'energy').max, 16);
+  assert.equal(s.stats.power, 96);
   assert.ok(s.stats.luck >= 7 && s.stats.luck <= 12);
-  assert.equal(s.stats.tokens, 6);
+  assert.equal(s.stats.tokens, 12);
+  assert.equal(s.bonusStars, 0);
   assert.equal(E.statBounds(book, s, 'power').max, Infinity);
   assert.equal(s.moves, 0);
 });
@@ -65,11 +67,11 @@ test('every move costs 1 Pixel Power, and food does not restore it', () => {
   const s = fresh();
   go(s, 'Ask Auntie Lam');
   assert.equal(s.moves, 1);
-  assert.equal(s.stats.power, 57);
+  assert.equal(s.stats.power, 95);
   s.stats.energy = 5;
   E.useItem(book, s, 'egg_tart');
   assert.equal(s.stats.energy, 8, 'egg tart = +3 Energy');
-  assert.equal(s.stats.power, 57);
+  assert.equal(s.stats.power, 95);
 });
 
 test('Pixel Power running out on a move = TRAPPED IN THE GAME FOREVER', () => {
@@ -219,8 +221,8 @@ test('PLAY AGAIN vouchers: self-checking codes, typo-tolerant input, +2 tokens f
   assert.equal(V.normalizeVoucher(swapped), null, 'a changed character is rejected');
   for (const bad of ['', 'HELLO', 'ND-0000-0000', 'ND-ABCD-EFG']) assert.equal(V.normalizeVoucher(bad), null, bad);
   const s = E.newGame(book, { rng: E.makeRng(3), playerName: 'MAX', bonusEffects: V.VOUCHER_BONUS, bonusLabel: 'voucher ' + c }).state;
-  assert.equal(s.stats.tokens, 8, 'a redeemed voucher starts the game with 8 tokens');
-  assert.equal(fresh(3).stats.tokens, 6, 'without one: 6');
+  assert.equal(s.stats.tokens, 14, 'a redeemed voucher starts the game with 14 tokens');
+  assert.equal(fresh(3).stats.tokens, 12, 'without one: 12');
 });
 
 test('Luck can be won back a little (temple incense), never above the starting value', () => {
@@ -242,9 +244,10 @@ test('choices that would end the game are flagged with a warning (including what
   assert.equal(choice(s, 'Ride the tram back down').warning, null);
 });
 
-test('riddle: all correct passes, meets the animal (+2 Pixel Power) and earns tokens', () => {
+test('riddle: a correct answer passes, meets the animal (+2 Pixel Power) and earns +1 token, +2 Energy', () => {
   const s = at(fresh(), 'tram_monkey');
   s.stats.power = 20;
+  s.stats.energy = 9;
   const tokens = s.stats.tokens;
   const r = E.currentRiddle(book, s);
   assert.equal(r.total, 1, 'one riddle per character');
@@ -253,23 +256,74 @@ test('riddle: all correct passes, meets the animal (+2 Pixel Power) and earns to
   assert.equal(s.current, 'tram');
   assert.ok(s.flags.zodiac_monkey);
   assert.equal(s.stats.power, 20 + 2 - 1, '+2 for meeting the Monkey, -1 for the move');
-  assert.ok(s.stats.tokens >= tokens);
+  assert.equal(s.stats.tokens, tokens + 1);
+  assert.equal(s.stats.energy, 11);
 });
 
-test('riddle: wrong answer, pay 2 tokens', () => {
+const wrongOf = (r) => (r.question.answer + 1) % r.question.options.length;
+
+test('riddle loop: wrong, pay 2 tokens, ANOTHER random riddle from the same character, then a correct answer passes', () => {
   const s = at(fresh(), 'liv');
   const t = s.stats.tokens;
-  const r = E.currentRiddle(book, s);
-  const wrong = (r.question.answer + 1) % r.question.options.length;
-  assert.equal(E.answerRiddle(book, s, wrong).correct, false);
+  const r1 = E.currentRiddle(book, s);
+  assert.equal(r1.untilCorrect, true);
+  assert.equal(r1.index, 0);
+  assert.equal(E.answerRiddle(book, s, wrongOf(r1)).correct, false);
   const pens = E.riddlePenalties(book, s);
   assert.equal(pens.length, 2);
   assert.ok(pens[0].available);
   E.payRiddlePenalty(book, s, 0);
   assert.equal(s.stats.tokens, t - 2);
   E.continueRiddle(book, s);
-  assert.equal(s.current, 'causeway_bay', 'Liv asks just one riddle; after paying you still get past');
+  assert.equal(s.current, 'liv', 'no pass after a wrong answer: Liv asks again');
+  assert.ok(!s.flags.liv_passed);
+  const r2 = E.currentRiddle(book, s);
+  assert.equal(r2.index, 1, 'riddle 2');
+  assert.notEqual(r2.question.id, r1.question.id, 'a different riddle');
+  assert.deepEqual(s.riddlesUsed.slice(-2), [r1.question.id, r2.question.id], 'both are used up (no repeats this game)');
+  // a reload mid-loop shows the very same second riddle
+  assert.equal(E.currentRiddle(book, JSON.parse(JSON.stringify(s))).question.id, r2.question.id);
+  // wrong again: pay again, riddle 3
+  E.answerRiddle(book, s, wrongOf(r2));
+  E.payRiddlePenalty(book, s, 0);
+  E.continueRiddle(book, s);
+  const r3 = E.currentRiddle(book, s);
+  assert.equal(r3.index, 2);
+  assert.ok(![r1.question.id, r2.question.id].includes(r3.question.id));
+  assert.equal(s.stats.tokens, t - 4);
+  assert.equal(E.answerRiddle(book, s, r3.question.answer).correct, true);
+  E.continueRiddle(book, s);
+  assert.equal(s.current, 'causeway_bay');
   assert.ok(s.flags.liv_passed);
+  assert.equal(s.stats.tokens, t - 4 + 1, 'the correct answer earns +1 token');
+});
+
+test('riddle loop: wrong, halve Energy, then head back for free before the next riddle', () => {
+  const s = at(fresh(), 'vault_snake');
+  s.stats.energy = 13;
+  const r1 = E.currentRiddle(book, s);
+  E.answerRiddle(book, s, wrongOf(r1));
+  assert.throws(() => E.retreatRiddle(book, s), /answer|retreat|pay/i, 'pay first');
+  E.payRiddlePenalty(book, s, 1);
+  assert.equal(s.stats.energy, 6, '13 halved, rounded down');
+  E.continueRiddle(book, s);
+  assert.equal(E.currentRiddle(book, s).index, 1, 'a second riddle is waiting');
+  const before = { ...s.stats };
+  E.retreatRiddle(book, s);
+  assert.equal(s.current, book.sections.vault_snake.riddle.retreat.target);
+  assert.equal(s.stats.energy, before.energy, 'heading back is free');
+  assert.equal(s.stats.tokens, before.tokens);
+});
+
+test('riddle loop: death checks still apply between riddles (halving Energy 1 = trapped)', () => {
+  const s = at(fresh(), 'loulou');
+  s.stats.energy = 1; s.stats.tokens = 1;
+  const r = E.currentRiddle(book, s);
+  E.answerRiddle(book, s, wrongOf(r));
+  assert.equal(E.riddlePenalties(book, s)[0].available, false, 'under 2 tokens: halving only');
+  E.payRiddlePenalty(book, s, 1);
+  assert.equal(s.current, 'trapped');
+  assert.equal(s.ended.cause.stat, 'energy');
 });
 
 test('riddle pool: 200 original riddles, 3-4 options each, valid answers, 5 categories', () => {
@@ -284,7 +338,7 @@ test('riddle pool: 200 original riddles, 3-4 options each, valid answers, 5 cate
   assert.deepEqual([...new Set(pool.map((r) => r.category))].sort(), ['culture', 'logic', 'maths', 'nature', 'wordplay']);
 });
 
-test('every riddle character (Liv, Loulou and the zodiac animals) asks exactly ONE riddle from the pool', () => {
+test('every riddle character (Liv, Loulou and the zodiac animals) asks ONE pool riddle at a time, until one is answered right', () => {
   const riddleSecs = Object.entries(book.sections).filter(([, sec]) => sec.riddle);
   assert.deepEqual(riddleSecs.map(([id]) => id).sort(), ['liv', 'loulou', 'tram_monkey', 'vault_snake']);
   for (const [id, sec] of riddleSecs) {
@@ -293,6 +347,7 @@ test('every riddle character (Liv, Loulou and the zodiac animals) asks exactly O
     const s = at(fresh(), id);
     const r = E.currentRiddle(book, s);
     assert.equal(r.total, 1);
+    assert.equal(sec.riddle.untilCorrect, true, `${id} keeps asking until a correct answer`);
     assert.ok(pool.some((p) => p.id === r.question.id));
     assert.ok(sec.riddle.retreat && sec.riddle.wrong.options.length === 2, 'retreat + pay-or-halve kept');
   }
@@ -384,7 +439,7 @@ test('the zodiac: 12 animals; the Dragon joins only at the winning finale after 
 test('each zodiac animal gives +2 Pixel Power once', () => {
   const s = at(fresh(), 'happy_valley');
   const p = s.stats.power;
-  assert.equal(p, 60);
+  assert.equal(p, 98);
   go(s, 'Cheer');
   at(s, 'happy_valley');
   assert.equal(s.stats.power, p - 1 + 0, 'second visit: no extra bonus');
@@ -446,5 +501,100 @@ test('balance: random play wins 15-25% of the time; wanderers run out of Pixel P
   const rep = balanceReport(book, 4000);
   assert.ok(rep.winRate >= 0.15 && rep.winRate <= 0.25, `win rate ${rep.winRate}`);
   assert.ok(rep.causes.power > 0);
-  assert.ok(rep.winMoves.avg >= 20 && rep.winMoves.avg <= 40, `avg winning moves ${rep.winMoves.avg}`);
+  assert.ok(rep.winMoves.avg >= 20 && rep.winMoves.avg <= 50, `avg winning moves ${rep.winMoves.avg}`);
+});
+
+test('bonus stars: +1 for each won luck roll (luck tests and dice gambles), nothing for a loss', () => {
+  let s = at(fresh(), 'tiger_taichi'); s.stats.luck = 9;
+  let r = E.rollTest(book, s, low);
+  assert.equal(r.success, true);
+  assert.equal(s.bonusStars, 1);
+  assert.ok(r.messages.some((m) => m.type === 'star' && m.stars === 1));
+  s = at(fresh(), 'tiger_taichi'); s.stats.luck = 9;
+  r = E.rollTest(book, s, high);
+  assert.equal(r.success, false);
+  assert.equal(s.bonusStars, 0);
+  assert.ok(!r.messages.some((m) => m.type === 'star'));
+  for (const [dice, outcome, stars] of [[[4, 4], 'win', 1], [[6, 6], 'win', 1], [[3, 4], 'half', 0], [[1, 2], 'lose', 0]]) {
+    s = at(fresh(), 'horse_race'); s.stats.luck = 9;
+    r = E.rollTest(book, s, faces(...dice));
+    assert.equal(r.outcome, outcome);
+    assert.equal(s.bonusStars, stars, `gamble ${dice}`);
+  }
+  // they add up over a game and survive a reload
+  s = fresh();
+  for (const id of ['tiger_taichi', 'claw', 'grab']) { at(s, id); s.stats.luck = 11; E.rollTest(book, s, id === 'claw' ? faces(5, 3) : low); }
+  assert.equal(s.bonusStars, 3);
+  assert.equal(JSON.parse(JSON.stringify(s)).bonusStars, 3);
+});
+
+test('bonus stars are purely cosmetic: not a stat, not in the score, cannot be spent', () => {
+  assert.equal(book.rules.bonusStars, true);
+  assert.equal(book.stats.stars, undefined);
+  assert.equal(book.stats.bonusStars, undefined);
+  assert.ok(!JSON.stringify(book.scoring.components).match(/star/i), 'no score component uses stars');
+  assert.ok(!JSON.stringify(book.sections).includes('bonusStars'), 'no choice or effect reads or spends them');
+  const s = at(fresh(), 'dragon_summit'); s.inventory.pearl = 1; go(s, 'Hold up the Pearl');
+  const a = E.computeScore(book, s);
+  s.bonusStars = 42;
+  const b = E.computeScore(book, s);
+  assert.deepEqual(a, b, 'score identical with 0 or 42 stars');
+  const before = JSON.stringify(s.stats);
+  const t = at(fresh(), 'tiger_taichi'); t.stats.luck = 9; const st = JSON.stringify({ ...t.stats, luck: 8 });
+  E.rollTest(book, t, low);
+  assert.equal(JSON.stringify(t.stats), st, 'winning a star changes no stat (only the usual -1 Luck for the test)');
+  assert.ok(before);
+});
+
+test('final boss: Turbo Bolt-Bot is much tougher (ATK 8, 10 HP, 3-damage bops; was ATK 5, 6 HP, 2)', () => {
+  const c = book.sections.bot_battle.combat;
+  assert.equal(c.enemies.length, 1);
+  const e = c.enemies[0];
+  assert.deepEqual([e.attack, e.health, e.damage], [8, 10, 3]);
+  assert.equal(c.damage, 2, 'you still bop for 2');
+  assert.ok(c.flee, 'RUN AWAY is still offered');
+  assert.equal(Object.values(book.sections).filter((x) => x.combat).length, 1, 'the only (and so final) fight before the King');
+  const s = at(fresh(), 'bot_battle');
+  let d = E.combatDamage(book, s);
+  assert.deepEqual([d.attack, d.armor, d.enemy, d.player], [0, 0, 3, 2], 'unprepared: no boosts');
+  // a well-prepared hero: 8 zodiac friends, Phoenix Feather, Umbrella
+  for (const z of book.trackers[0].entries.slice(0, 8)) s.flags[z.flag] = true;
+  s.inventory.feather = 1; s.inventory.umbrella = 1;
+  d = E.combatDamage(book, s);
+  assert.deepEqual([d.attack, d.armor, d.enemy], [3, 1, 2], '+3 attack and the umbrella softens bops to 2');
+  assert.equal(d.boosts.length, 4);
+  // 4 friends only: +1
+  const s2 = at(fresh(), 'bot_battle');
+  for (const z of book.trackers[0].entries.slice(0, 4)) s2.flags[z.flag] = true;
+  assert.equal(E.combatDamage(book, s2).attack, 1);
+  // the boost is part of the roll total
+  const s3 = at(fresh(), 'bot_battle'); s3.stats.luck = 7; s3.inventory.feather = 1;
+  const r = E.combatRound(book, s3, faces(3, 3, 3, 3));
+  assert.equal(r.round.playerTotal, 6 + 7 + 1);
+  assert.equal(r.round.enemyTotal, 6 + 8);
+  assert.equal(r.round.winner, 'tie');
+  // an enemy bop costs 3 Energy (2 behind the umbrella)
+  const s4 = at(fresh(), 'bot_battle'); s4.stats.luck = 7; s4.stats.energy = 16;
+  E.combatRound(book, s4, faces(1, 1, 6, 6));
+  assert.equal(s4.stats.energy, 13);
+  s4.inventory.umbrella = 1;
+  E.combatRound(book, s4, faces(1, 1, 6, 6));
+  assert.equal(s4.stats.energy, 11);
+});
+
+test('final boss: a real test unprepared, but winnable for a well-prepared hero (boosts give a big edge)', () => {
+  const duel = (prep, seed) => {
+    const s = at(fresh(), 'bot_battle');
+    s.stats.luck = 8; s.stats.energy = 16;
+    if (prep) { for (const z of book.trackers[0].entries.slice(0, 8)) s.flags[z.flag] = true; s.inventory.feather = 1; s.inventory.umbrella = 1; }
+    const rng = E.makeRng(seed);
+    while (!s.ended && !s.pending.result) E.combatRound(book, s, rng);
+    return s.pending?.result === 'win';
+  };
+  const rate = (prep) => { let w = 0; for (let i = 1; i <= 2000; i++) if (duel(prep, i)) w++; return w / 2000; };
+  const bare = rate(false), ready = rate(true);
+  assert.ok(bare < 0.75, `unprepared Luck 8 wins only ${bare}`);
+  assert.ok(ready > 0.95, `prepared Luck 8 wins ${ready}`);
+  // the old Bolt-Bot (ATK 5, 6 HP, 2 damage) was a walkover at Luck 8
+  assert.ok(ready - bare > 0.2);
 });

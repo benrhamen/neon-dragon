@@ -93,6 +93,7 @@ export function newGame(book, { rng = Math.random, playerName = '', riddleSeed =
     // riddle and the dice stay independent of it.
     riddleSeed: (riddleSeed ?? Math.floor(Math.random() * 4294967296)) >>> 0,
     riddlesUsed: [], // pool riddle ids already asked this game (no repeats)
+    bonusStars: 0, // cosmetic: +1 per won luck roll (rules.bonusStars); never part of the score
   };
   for (const [id, def] of Object.entries(book.stats || {})) {
     let v;
@@ -335,6 +336,7 @@ export function rollTest(book, state, rng = Math.random) {
     state.pending.roll = roll;
     state.pending.success = outcome === 'win';
     state.pending.outcome = outcome;
+    if (outcome === 'win') awardBonusStar(book, state, messages);
     if (checkDepleted(book, state, messages, rng)) return { roll, success: outcome === 'win', outcome, messages, diverted: true };
     return { roll, success: outcome === 'win', outcome, messages };
   }
@@ -345,8 +347,19 @@ export function rollTest(book, state, rng = Math.random) {
   applyEffects(book, state, t.costEffects, messages);
   state.pending.roll = roll;
   state.pending.success = success;
+  if (success && t.againstStat) awardBonusStar(book, state, messages);
   if (checkDepleted(book, state, messages, rng)) return { roll, success, messages, diverted: true };
   return { roll, success, messages };
+}
+
+// ---------- bonus stars (cosmetic) ----------
+// rules.bonusStars: every WON luck roll (a passed luck test, i.e. a test with againstStat, or a won
+// dice gamble) earns +1 bonus star. Purely cosmetic: not a stat, never in the score, can't be spent.
+export function bonusStarsEnabled(book) { return !!book.rules?.bonusStars; }
+function awardBonusStar(book, state, messages) {
+  if (!bonusStarsEnabled(book)) return;
+  state.bonusStars = (state.bonusStars || 0) + 1;
+  messages.push({ type: 'star', stars: state.bonusStars, text: `BONUS STAR! (${state.bonusStars})` });
 }
 
 // ---------- dice gambles ----------
@@ -415,6 +428,29 @@ export function combatSettings(book, sec) {
   };
 }
 
+// Combat boosts: sec.combat.boosts = [{label, conditions?, tracker?, min?, attack?, armor?}].
+// A boost is active when its conditions hold and (if tracker is set) at least `min` entries of that
+// tracker are met. attack adds to the player's roll total; armor lowers each enemy hit (never below 1).
+export function combatBoosts(book, state, sec = book.sections[state.current]) {
+  const out = { attack: 0, armor: 0, active: [] };
+  for (const b of sec.combat?.boosts || []) {
+    if (!checkCondition(book, state, b.conditions)) continue;
+    if (b.tracker && (trackerProgress(book, state).find((t) => t.id === b.tracker)?.met.length ?? 0) < (b.min ?? 1)) continue;
+    out.attack += b.attack || 0;
+    out.armor += b.armor || 0;
+    out.active.push(b);
+  }
+  return out;
+}
+// Damage each side deals per bop: the player deals cs.damage; an enemy deals its own damage
+// (default cs.damage) minus armor from boosts, minimum 1.
+export function combatDamage(book, state, sec = book.sections[state.current], enemy) {
+  const cs = combatSettings(book, sec);
+  const e = enemy || sec.combat.enemies[state.pending?.enemyIndex || 0];
+  const boost = combatBoosts(book, state, sec);
+  return { player: cs.damage, enemy: Math.max(1, (e.damage ?? cs.damage) - boost.armor), attack: boost.attack, armor: boost.armor, boosts: boost.active };
+}
+
 export function combatRound(book, state, rng = Math.random) {
   const sec = book.sections[state.current];
   const p = state.pending;
@@ -422,20 +458,23 @@ export function combatRound(book, state, rng = Math.random) {
   if (p.result) return { round: p.rounds[p.rounds.length - 1], messages: [] };
   const cs = combatSettings(book, sec);
   const enemy = sec.combat.enemies[p.enemyIndex];
+  const dmg = combatDamage(book, state, sec, enemy);
   const pr = rollDice(cs.dice, rng);
   const er = rollDice(cs.dice, rng);
-  const playerTotal = pr.total + (state.stats[cs.attackStat] ?? 0);
+  const playerTotal = pr.total + (state.stats[cs.attackStat] ?? 0) + dmg.attack;
   const enemyTotal = er.total + enemy.attack;
-  const round = { n: ++p.round, enemy: enemy.name, playerRolls: pr.rolls, enemyRolls: er.rolls, playerTotal, enemyTotal, winner: 'tie' };
+  const round = { n: ++p.round, enemy: enemy.name, playerRolls: pr.rolls, enemyRolls: er.rolls, playerTotal, enemyTotal, boost: dmg.attack, winner: 'tie' };
   const messages = [];
   if (playerTotal > enemyTotal) {
-    p.enemyHealth = Math.max(0, p.enemyHealth - cs.damage);
+    p.enemyHealth = Math.max(0, p.enemyHealth - dmg.player);
     round.winner = 'player';
+    round.damage = dmg.player;
   } else if (enemyTotal > playerTotal) {
     round.winner = 'enemy';
+    round.damage = dmg.enemy;
     const before = state.stats[cs.healthStat];
-    state.stats[cs.healthStat] = clampStat(book, state, cs.healthStat, before - cs.damage);
-    messages.push({ type: 'stat', stat: cs.healthStat, delta: state.stats[cs.healthStat] - before, text: `${book.stats?.[cs.healthStat]?.name || cs.healthStat} -${cs.damage}` });
+    state.stats[cs.healthStat] = clampStat(book, state, cs.healthStat, before - dmg.enemy);
+    messages.push({ type: 'stat', stat: cs.healthStat, delta: state.stats[cs.healthStat] - before, text: `${book.stats?.[cs.healthStat]?.name || cs.healthStat} -${dmg.enemy}` });
   }
   round.enemyHealth = p.enemyHealth;
   round.playerHealth = state.stats[cs.healthStat];
@@ -511,11 +550,15 @@ export function drawRiddles(book, state, n) {
 }
 // Flow per question: answerRiddle(i) -> if wrong, payRiddlePenalty(j) -> continueRiddle().
 // After the last question, continueRiddle() applies riddle.success and moves on.
+// riddle.untilCorrect (pool riddles): a wrong answer (after its penalty) brings ANOTHER random,
+// never-asked riddle from the same character, until `draw` riddles have been answered correctly.
+// The new riddle id is saved in pending.ids, so a reload never rerolls it; retreating stays free
+// before every new riddle.
 export function currentRiddle(book, state) {
   const sec = book.sections[state.current];
   const p = state.pending;
   if (!sec?.riddle || p?.kind !== 'riddle') return null;
-  if (p.ids) return { riddle: sec.riddle, question: book.riddlePoolData?.byId[p.ids[p.q]], index: p.q, total: p.ids.length, pending: p };
+  if (p.ids) return { riddle: sec.riddle, question: book.riddlePoolData?.byId[p.ids[p.q]], index: p.q, total: p.ids.length, untilCorrect: !!sec.riddle.untilCorrect, pending: p };
   return { riddle: sec.riddle, question: sec.riddle.questions[p.q], index: p.q, total: sec.riddle.questions.length, pending: p };
 }
 
@@ -569,6 +612,11 @@ export function continueRiddle(book, state, rng = Math.random) {
   if (p.picked === null) throw new Error('Answer first');
   if (p.penaltyDue) throw new Error('Choose a penalty first');
   const messages = [];
+  if (r.riddle.untilCorrect && p.ids && p.score < (r.riddle.draw || 1)) {
+    if (p.q + 1 >= p.ids.length) p.ids.push(...drawRiddles(book, state, 1));
+    Object.assign(p, { q: p.q + 1, picked: null, correct: null, paid: undefined });
+    return messages;
+  }
   if (p.q + 1 < r.total) {
     Object.assign(p, { q: p.q + 1, picked: null, correct: null, paid: undefined });
     return messages;
@@ -743,6 +791,10 @@ export function lintBook(book) {
       const cs = combatSettings(book, sec);
       if (!stats[cs.attackStat]) errors.push(`${where}: combat needs an attack stat`);
       if (!stats[cs.healthStat]) errors.push(`${where}: combat needs a health stat`);
+      for (const b of sec.combat.boosts || []) {
+        if (b.tracker && !(book.trackers || []).some((t) => t.id === b.tracker)) errors.push(`${where}: combat boost "${b.label}" uses unknown tracker ${b.tracker}`);
+        if (!b.attack && !b.armor) warnings.push(`${where}: combat boost "${b.label}" gives no attack or armor`);
+      }
     }
     if (sec.riddle) {
       const rd = sec.riddle;
@@ -751,6 +803,7 @@ export function lintBook(book) {
       walkEff(where, rd.onCorrect); walkEff(where, rd.success.effects); walkEff(where, rd.retreat.effects);
       (rd.wrong?.options || []).forEach((o, i) => { walkCond(`${where} penalty ${i}`, o.conditions); walkEff(`${where} penalty ${i}`, o.effects); });
       if (!(rd.wrong?.options || []).some((o) => !o.conditions)) warnings.push(`${where}: riddle has no always-available penalty (player could get stuck)`);
+      if (rd.untilCorrect && !rd.draw) errors.push(`${where}: untilCorrect needs a pool riddle (draw)`);
       if (sec.choices?.length || sec.test || sec.combat) warnings.push(`${where}: riddle section also has choices/test/combat`);
     }
     for (const ch of sec.illustration?.characters || []) if (!chars[ch.id]) errors.push(`${where}: illustration uses unknown character ${ch.id}`);

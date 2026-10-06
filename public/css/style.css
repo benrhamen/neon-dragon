@@ -482,3 +482,44 @@ body.halved .crt { background: rgba(255,46,136,.18); }
   .voucher, .voucher * { visibility: visible !important; }
   .voucher { position: absolute; left: 20px; top: 20px; box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---------- bonus stars (cosmetic) ---------- */
+.stars-stat { --c: #ffe45c; position: relative; border-color: #ffd23f !important; background: linear-gradient(135deg, #1a1236, #2a1a4a 60%, #1a1236); overflow: visible; }
+.stars-stat .stat-name { color: #ffe45c; }
+.star-pix { position: relative; display: inline-block; vertical-align: middle; line-height: 0; margin-right: 6px; animation: starPulse 1.6s steps(4) infinite; }
+/* a pixel sparkle drawn with a stepped clip-path (the pixel fonts have no ✦ glyph) */
+.pstar { display: inline-block; width: 14px; height: 14px; vertical-align: middle; background: linear-gradient(135deg, #fff6b0, #ffe45c 45%, #ffb020); clip-path: polygon(42.86% 0, 57.14% 0, 57.14% 28.57%, 71.43% 28.57%, 71.43% 42.86%, 100% 42.86%, 100% 57.14%, 71.43% 57.14%, 71.43% 71.43%, 57.14% 71.43%, 57.14% 100%, 42.86% 100%, 42.86% 71.43%, 28.57% 71.43%, 28.57% 57.14%, 0 57.14%, 0 42.86%, 28.57% 42.86%, 28.57% 28.57%, 42.86% 28.57%); filter: drop-shadow(0 0 3px #ffd23f); }
+.ending-stats .pstar { width: 16px; height: 16px; margin-right: 6px; }
+.scores-table .pstar, .mini-stat .pstar, .toast .pstar { width: 10px; height: 10px; }
+.stars-val { color: #ffe45c; text-shadow: 0 0 8px #ffd23f; }
+.star-twinkles { display: flex; flex-wrap: wrap; gap: 5px; min-height: 10px; margin-top: 6px; }
+.star-twinkles .tw { width: 7px; height: 7px; background: #ffe45c; clip-path: polygon(42.86% 0, 57.14% 0, 57.14% 28.57%, 71.43% 28.57%, 71.43% 42.86%, 100% 42.86%, 100% 57.14%, 71.43% 57.14%, 71.43% 71.43%, 57.14% 71.43%, 57.14% 100%, 42.86% 100%, 42.86% 71.43%, 28.57% 71.43%, 28.57% 57.14%, 0 57.14%, 0 42.86%, 28.57% 42.86%, 28.57% 28.57%, 42.86% 28.57%); animation: twinkle 2s steps(4) infinite; animation-delay: var(--d, 0s); }
+.stars-hint { font-family: var(--pixel); font-size: 7px; color: var(--dim); }
+.stars-note { color: #b9a6ff; }
+.burst-sparks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+.burst-sparks .spark { position: absolute; width: 4px; height: 4px; left: -2px; top: -2px; background: #ffe45c; box-shadow: 0 0 4px #fff; opacity: 0; image-rendering: pixelated; }
+.burst-sparks .spark:nth-child(even) { background: #ff5d8f; }
+.burst-sparks .spark:nth-child(3n) { background: #29e7ff; }
+.stars-stat.burst { animation: starGlow 1.2s ease-out; }
+.stars-stat.burst .stars-val { animation: starPop 0.6s steps(3) 2; display: inline-block; }
+.stars-stat.burst .spark { animation: sparkFly 0.9s steps(6) forwards; }
+.spark.s0 { --dx: 0px; --dy: -26px; } .spark.s1 { --dx: 18px; --dy: -18px; } .spark.s2 { --dx: 26px; --dy: 0px; } .spark.s3 { --dx: 18px; --dy: 18px; }
+.spark.s4 { --dx: 0px; --dy: 26px; } .spark.s5 { --dx: -18px; --dy: 18px; } .spark.s6 { --dx: -26px; --dy: 0px; } .spark.s7 { --dx: -18px; --dy: -18px; }
+@keyframes sparkFly { 0% { opacity: 1; transform: translate(0, 0) scale(1.5); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.5); } }
+@keyframes starPop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.6); } }
+@keyframes starGlow { 0% { box-shadow: 0 0 0 #ffd23f; } 30% { box-shadow: 0 0 18px #ffd23f, 0 0 30px #ff5d8f; } 100% { box-shadow: 0 0 0 transparent; } }
+@keyframes starPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+@keyframes twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.6); } }
+.mini-stat.mini-stars { color: #ffe45c; border-color: #ffd23f; }
+.toast.star { border-color: #ffd23f; color: #ffe45c; background: linear-gradient(90deg, #2a1a4a, #3a2160, #2a1a4a); text-shadow: 0 0 6px #ffd23f; }
+.end-stars { border-color: #ffd23f !important; }
+.ending-stats .end-stars b { color: #ffe45c; text-shadow: 0 0 8px #ffd23f; }
+.scores-table .st { color: #ffe45c; white-space: nowrap; }
+.scores-table .st .star-pix { margin-right: 3px; animation: none; }
+@media (prefers-reduced-motion: reduce) { .star-pix, .star-twinkles .tw, .stars-stat.burst, .stars-stat.burst .stars-val { animation: none; } }
+
+/* ---------- boss duel boosts ---------- */
+.combat.boss .foe .fname { color: var(--pink, #ff5d8f); text-shadow: 0 0 8px #ff3355; }
+.boosts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0; }
+.boost { font-family: var(--pixel); font-size: 8px; padding: 5px 7px; border: 2px solid var(--line); color: var(--dim); background: #0b0820; }
+.boost.on { border-color: var(--green); color: var(--green); box-shadow: 0 0 8px rgba(61, 255, 110, 0.35); }

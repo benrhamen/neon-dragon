@@ -16,6 +16,7 @@ create table if not exists public.scores (
   score_pct    integer     not null,
   rank         text        not null default '',
   zodiac_count integer     not null default 0,
+  bonus_stars  integer     not null default 0,
   created_at   timestamptz not null default now()
 );
 
@@ -39,6 +40,12 @@ alter table public.scores add constraint scores_rank_check
 alter table public.scores drop constraint if exists scores_zodiac_count_check;
 alter table public.scores add constraint scores_zodiac_count_check
   check (zodiac_count between 0 and 12);
+
+-- Cosmetic bonus stars (one per won luck roll). Tables made before this column existed get it here.
+alter table public.scores add column if not exists bonus_stars integer not null default 0;
+alter table public.scores drop constraint if exists scores_bonus_stars_check;
+alter table public.scores add constraint scores_bonus_stars_check
+  check (bonus_stars between 0 and 999);
 
 create index if not exists scores_top_idx on public.scores (score_pct desc, created_at asc);
 create index if not exists scores_recent_idx on public.scores (created_at desc);

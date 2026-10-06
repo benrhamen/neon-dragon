@@ -38,18 +38,25 @@ Gremlin King along the way.
 
 | Stat | Start | How it works |
 |---|---|---|
-| ⚡ **Energy** | 12 (max 12) | Small hits −1/−2, medium −3/−4, big hits **halve** it. Bubble tea and egg tarts give +3. At 0: **TRAPPED IN THE GAME FOREVER**. |
-| ★ **Pixel Power** | 58, no cap | A **move timer**: −1 on every move, shown as a countdown ("N MOVES LEFT"). Food doesn't refill it; zodiac animals (+2 each), Man Mo Temple incense and a few lucky finds do. At 0: trapped. |
+| ⚡ **Energy** | 16 (max 16) | Small hits −1/−2, medium −3/−4, big hits **halve** it. Bubble tea and egg tarts give +3. At 0: **TRAPPED IN THE GAME FOREVER**. |
+| ★ **Pixel Power** | 96, no cap | A **move timer**: −1 on every move, shown as a countdown ("N MOVES LEFT"). Food doesn't refill it; zodiac animals (+2 each), Man Mo Temple incense and a few lucky finds do. At 0: trapped. |
 | ♣ **Luck** | 1d6+6 | Every luck test **uses 1 Luck, pass or fail**, some bad choices cost Luck, and dice gambles risk it. Only two rare regains (Man Mo incense +1, the Rooster +1, both capped at the starting value). At 0: **YOUR LUCK RAN OUT**, trapped (a ⚠ warning shows on any choice or roll that would do it). |
-| 🪙 **Tokens** | 6 | Spent on rides and snacks and on wrong riddle answers. At 0: **OUT OF TOKENS** (game over). |
+| 🪙 **Tokens** | 12 | Spent on rides and snacks and on wrong riddle answers. At 0: **OUT OF TOKENS** (game over). |
 
 - **Halving and doubling** effects (`multiply`) hit hard and come with a glitch animation.
-- **Riddles**: Liv and Loulou (and the Monkey and the Snake) each ask **one** multiple-choice riddle, drawn
-  at random from a pool of **200 original riddles** (`public/data/riddles.json`: wordplay, logic,
-  nature, Hong Kong and Chinese culture, maths; 3-4 options, ages 9-11). A game never repeats a riddle,
-  and the draw is saved with the run, so reloading the page can't re-roll it. Before answering you can
-  always **retreat for free**. A wrong answer costs **2 tokens or half your Energy** (and shows the right
-  answer); with fewer than 2 tokens, halving is the only option.
+- **Riddles**: Liv and Loulou (and the Monkey and the Snake) ask multiple-choice riddles drawn at
+  random from a pool of **200 original riddles** (`public/data/riddles.json`: wordplay, logic,
+  nature, Hong Kong and Chinese culture, maths; 3-4 options, ages 9-11). **You pass when you get one
+  right** (+1 token, +2 Energy). A wrong answer costs **2 tokens or half your Energy** (and shows the
+  right answer; with fewer than 2 tokens, halving is the only option), and then the same character
+  asks **another** random riddle (`RIDDLE 2 · ... · TRY AGAIN!`), again and again until you answer one
+  correctly. Before every riddle you can still **head back for free** and take another path, so you
+  are never stuck; the usual game overs still apply (Energy 0 or Tokens 0). A game never repeats a
+  riddle, and the draws are saved with the run, so reloading the page can't re-roll them.
+- **Bonus stars** ✦: every **won luck roll** (a passed luck test or a won dice gamble) earns a bonus
+  star, with a sparkly pixel star-burst in the stats panel. They are purely for fun: they don't count
+  in the score, can't be spent and change no stat. The total shows on the ending screen and as a ✦
+  STARS column in Best Scores.
 - **Dice gambles**: every bet in the story (the claw machine, the Happy Valley horse race) uses one
   rule, and gambles only ever touch **Luck** (never Energy): roll two dice. **8 or more wins** the prize
   (42%), **exactly 7 loses HALF your Luck**, rounded down (17%), **6 or less loses 2 Luck** plus the
@@ -58,10 +65,16 @@ Gremlin King along the way.
   grabbing) are not gambles: they use 1 Luck and pass on a roll at or under your Luck.
 - **Fail endings** (lost in the alleys, all at sea, shopping forever...) use the same TRAPPED IN THE
   GAME screen as running out of a stat: each one empties the stat it blames (Pixel Power, or Energy
-  for Bolt-Bot), so the stats panel shows 0 and the screen says e.g. **YOUR PIXEL POWER RAN OUT**.
-- **Bolt-Bot duel**: has its own rules (Luck vs Bolt-Bot, 3 bops to win). A bright **RUN AWAY! (back to
-  the tram, -1 Energy)** button is there from round 0 until the duel is decided. At the Peak you can
-  also just **back away and take the Peak Tram down** without fighting.
+  for the boss), so the stats panel shows 0 and the screen says e.g. **YOUR PIXEL POWER RAN OUT**.
+- **Boss duel: Turbo Bolt-Bot** (the only fight, guarding the tower before the Gremlin King) is a
+  real test: **ATTACK 8, 10 HP, and its bops cost 3 Energy** (it used to be ATTACK 5, 6 HP, 2
+  damage). Each round both roll two dice + attack (yours is your Luck); you bop it for 2, so it takes
+  5 bops, and you lose at Energy 2 or less. A well-prepared hero gets **boosts**, shown on the fight
+  screen: 4+ zodiac friends **+1 attack**, 8+ another **+1**, Liv's Phoenix Feather **+1**, and the duck
+  Umbrella blocks **1 damage** from every bop. At full Energy an unprepared hero wins about 1 duel in
+  5 at Luck 7 and 1 in 2 at Luck 8; with all four boosts, almost always. A bright **RUN AWAY! (back to the tram, -1 Energy)**
+  button is there from round 0 until the duel is decided, and there are other ways past (the Silver
+  Whistle, a snack, Loulou's climbing route) or you can **back away and take the Peak Tram down**.
 - **Map**: explore the city first (the ding-ding tram reaches Causeway Bay from Central, Sheung Wan,
   the cafés and the dim sum house), then climb the Peak once for the finale. The Peak Tram is the
   only way to the top (the red minibus stops at the tram station), and the Gremlin Vault door in the
@@ -75,7 +88,7 @@ Gremlin King along the way.
   game gives that game **+2 tokens**, once; used codes are remembered on the device. Codes are
   self-checking (`public/js/voucher.js`), so made-up codes are rejected. This is the only thing that
   carries over from one game to the next.
-- **Balance**: a random-but-careful player wins about 1 game in 5 (see Tests). The traps are fair and
+- **Balance**: a random-but-careful player wins about 1 game in 6 (see Tests). The traps are fair and
   signposted (⚠ warnings, hints in the text).
 
 ### Score
@@ -154,7 +167,7 @@ File: [`schema/gamebook.schema.json`](schema/gamebook.schema.json) (JSON Schema 
 |---|---|
 | `metadata` | `title`, `author`, `version`, `license {name, url, holder, notes}`, plus optional `id` (used as the save key), `original`, `ageRange`, `source` (provenance and permission reference for adaptations) |
 | `stats` | Stat definitions keyed by id: `name`, `description`, `initial` (a number or `{ "dice": "1d6+6" }`), `min`, `max` (a number, `"initial"` = capped at the starting roll, or none = no cap), `color`, `icon`, `display`: `bar`, `number` or `timer` (a countdown bar against the starting value that flashes when low) |
-| `rules` | `healthStat`; `depletion`: a list of `{stat, target, atOrBelow}` checked after **every** change (the first stat at or below its limit sends the player to `target`, usually an ending: this is how Energy, Pixel Power and Tokens each have their own game over); `perMoveEffects`: effects applied on every move (`[{"stat":"power","add":-1}]` makes a move timer); combat defaults (`attackStat`, `dice`, `damage`); the older `onHealthDepleted` still works |
+| `rules` | `healthStat`; `depletion`: a list of `{stat, target, atOrBelow}` checked after **every** change (the first stat at or below its limit sends the player to `target`, usually an ending: this is how Energy, Pixel Power and Tokens each have their own game over); `perMoveEffects`: effects applied on every move (`[{"stat":"power","add":-1}]` makes a move timer); combat defaults (`attackStat`, `dice`, `damage`); the older `onHealthDepleted` still works; `bonusStars: true` turns on cosmetic bonus stars (+1 per passed `againstStat` test or won gamble, kept in `state.bonusStars`, never scored) |
 | `items` | Catalogue: `name`, `description`, `icon` or pixel `sprite`, `stackable`, optional `use` (e.g. eat for +3 Energy) |
 | `startingInventory` | `["map"]` or `[{ "item": "gold", "quantity": 10 }]` |
 | `flags` | Optional declarations or initial values for story flags |
@@ -169,8 +182,8 @@ File: [`schema/gamebook.schema.json`](schema/gamebook.schema.json) (JSON Schema 
 | **condition** | `{hasItem, quantity}`, `{notHasItem}`, `{stat, op: eq/neq/gt/gte/lt/lte, value}`, `{flag, equals}`, `{visited}`, and `all` / `any` / `not` to combine them |
 | **effect** | `{stat, add / set / restore / multiply / halve, round}` (`halve: true` halves rounding down, so 9 → 4 and 1 → 0; `multiply: 2` doubles; `round` for multiply is `down` (default), `up` or `nearest`; the result is clamped to the stat's min/max), `{addItem, quantity}`, `{removeItem, quantity}`, `{setFlag, value}`, `{clearFlag}`, `{message}`, `{if, then, else}` |
 | **test** | Dice test: `dice`. Either `againstStat` (succeed if the roll is ≤ the stat, like Test Your Luck) or `target` (+`addStat`) for roll ≥ target. Also `costEffects` (paid before rolling, pass or fail: the sample book uses `[{"stat":"luck","add":-1}]`), `success` / `failure` → `{target, text, effects}`. A stat at 0 always fails an `againstStat` test. **Dice gamble**: `"type": "gamble"` (no `againstStat`/`target`; `dice` defaults to 2d6): roll ≥ `winAt` (default 8) → `success`; exactly `halfOn` (default 7) → `halfStat` (default `luck`) is halved, rounding down, and the optional `seven {target, text, effects}` outcome is used (missing target/text come from `failure`, its effects don't); lower → `failure`. The reader shows the exact odds on the dice screen |
-| **combat** | `enemies [{name, attack, health, sprite}]`, `win` / `lose` outcomes, optional `flee {label, target, effects}` (offered every round until the duel is decided). Each round both sides roll dice + attack, and the lower total loses `damage` |
-| **riddle** | `character`, either `questions [{question, options (2-5), answer (index), correctText, wrongText}]` or `draw: N` (ask N random riddles from the book's `riddlePool`, never repeating one within a game; seeded by the saved `riddleSeed`), `onCorrect`, `wrong {text, options [{label, effects, conditions, lockedHint}]}` (the player picks a penalty, e.g. pay 2 tokens or halve Energy), `retreat {label, target, effects}` (offered before every answer) and `success {target, text, effects}` |
+| **combat** | `enemies [{name, attack, health, damage, sprite}]`, `win` / `lose` outcomes, optional `flee {label, target, effects}` (offered every round until the duel is decided). Each round both sides roll dice + attack, and the lower total loses health: the player's bop does the combat `damage`, an enemy's bop does its own `damage` (default: the combat `damage`). Optional `boosts [{label, conditions, tracker, min, attack, armor}]`: each active boost (its conditions hold and, with `tracker`, at least `min` entries are met) adds `attack` to the player's roll total and/or `armor` (enemy bops do that much less, minimum 1); the fight screen lists them and lights up the active ones |
+| **riddle** | `character`, either `questions [{question, options (2-5), answer (index), correctText, wrongText}]` or `draw: N` (ask N random riddles from the book's `riddlePool`, never repeating one within a game; seeded by the saved `riddleSeed`), `onCorrect`, `wrong {text, options [{label, effects, conditions, lockedHint}]}` (the player picks a penalty, e.g. pay 2 tokens or halve Energy), `retreat {label, target, effects}` (offered before every answer) and `success {target, text, effects}`. `untilCorrect: true` (with `draw`): after a wrong answer and its penalty the same character asks another random pool riddle, repeating until one is answered right; the retreat stays available before each new riddle and every draw is saved with the run |
 | **ending** | `{type: win, death, fail or neutral, title, stars 0-3, style, cause}`. `style: "trapped"` shows the arcade GAME OVER screen (hero behind bars, CONTINUE? countdown). `cause` (a stat id) empties that stat on arrival so the stats panel matches, and the trapped screen says YOUR <STAT> RAN OUT |
 
 ### Small example
@@ -253,14 +266,16 @@ screen, so nothing is sent unless the player chooses to.
 
 To moderate, use the Supabase dashboard (Table Editor) to delete rows.
 
-`zodiac_count` allows 0-12 (the Dragon is the 12th animal). The script is idempotent: re-run it to
-update a table made with the older 0-11 limit. Until then, a 12/12 post is retried as 11 so it still goes through.
+`zodiac_count` allows 0-12 (the Dragon is the 12th animal), and `bonus_stars` (0-999) stores the
+cosmetic bonus stars. The script is idempotent: re-run it to update an older table (0-11 zodiac
+limit, no `bonus_stars` column). Until then the game still works with the old table: a 12/12 post is
+retried as 11, scores are posted and read without stars, and the STARS column shows `-` for them.
 
 ## Tests
 
 ```bash
 npm run validate      # ajv (draft 2020-12, strict) + integrity lint for every book in public/data
-npm run test:engine   # node:test: rules, deaths, riddles, gambles, zodiac, luck, balance, score (about 1 min)
+npm run test:engine   # node:test: rules, deaths, riddles, gambles, stars, boss, zodiac, luck, balance, score (about 1 min)
 npm run test:e2e      # Playwright + headless Chromium (first time: npx playwright install chromium)
 npm test              # all of the above
 npm run score:ref     # re-run the best-score search after changing the story (~15 min;
@@ -272,15 +287,23 @@ npm run score:ref     # re-run the best-score search after changing the story (~
 dice-gamble rule (odds, 8+ prize / 7 half Luck / 6- minus 2 Luck, never Energy, Luck 0 traps you),
 fail endings emptying the stat they blame (Shopping Forever → Pixel Power 0), the 12th zodiac animal
 (the Dragon joins only at the finale after all 11), PLAY AGAIN voucher codes (valid, unique,
-typo-tolerant, tampering rejected, +2 tokens), the riddle pool (200 valid, unique riddles, one per riddle character, no
-repeats in a game, reload keeps the drawn riddle, different games get different riddles), riddles
-(right, wrong + pay, wrong + halve, the under-2-tokens rule, retreat), zodiac (+2 once each, exactly one route finds
+typo-tolerant, tampering rejected, +2 tokens), the riddle pool (200 valid, unique riddles, one at a
+time per riddle character, no repeats in a game, reload keeps the drawn riddle, different games get
+different riddles), the riddle loop (right = pass with +1 token +2 Energy; wrong, pay 2 tokens, a
+different second and third riddle, then a correct answer passes; wrong, halve Energy, then head back
+for free before the next one; reload mid-loop keeps riddle 2; the under-2-tokens rule; halving at
+Energy 1 = trapped), bonus stars (+1 per passed luck test or won gamble, none for a loss or a 7,
+saved with the run, never in the score or the stats), the boss (Turbo Bolt-Bot's numbers, each boost,
+3-damage bops and the umbrella, and duel odds: unprepared under 75% at Luck 8, fully boosted over
+95%), zodiac (+2 once each, exactly one route finds
 all 12), every ending being reachable, and the **balance**: thousands of random playthroughs must win
 15–25% of the time. The random player picks uniformly among the choices but avoids ⚠-marked ones
 when it has a safe option, uses an item 10% of the time, retreats from 15% of riddles (otherwise
-guesses) and flees 10% of fight rounds. Latest figures (20,000 games): **17.6% wins**.
-Pixel Power running out while wandering 30.8%, Bolt-Bot 14.3%, the six story fail endings 25.6%,
-Energy 4.6%, Luck 0.4%, tokens 0.4%, and 6.2% go home.
+guesses and pays a random allowed penalty, again until it gets one right) and flees 10% of fight
+rounds. Latest figures (20,000 games): **16.7% wins**. Energy running out 20.2% (mostly halved by
+wrong riddle answers), Pixel Power running out while wandering 14.1%, the boss 14.0% (random players
+who start the duel now win 22% of them, down from 41%), the six story fail endings 25.2%, tokens 3.1%,
+Luck 0.5%, and 6.3% go home.
 
 The score tests replay the locally stored optimal path (skipped when `scripts/score-paths.local.json` is absent) (it must score exactly 100%, find all 12 animals and
 earn ZODIAC MASTER), check that the reference still matches `scripts/score-reference.json`,
@@ -290,7 +313,11 @@ and check that no random win ever scores above it.
 (working board, and missing table), and saves screenshots to `screenshots/`. It covers: the creator
 (always blank, can't be skipped, nickname rules), PRESS START, choices, stats and the move timer,
 ⚠ warnings, halving, random riddles (different in a second game, same after a reload) with both
-penalties and retreat, the dice-gamble odds and result (Luck only; Luck 0 = YOUR LUCK RAN OUT),
+penalties and retreat, the riddle loop (wrong + pay → "RIDDLE 2 · TRY AGAIN!" with a different riddle,
+same after a reload → correct answer passes; wrong + halve → head back for free), bonus stars (counter,
+star-burst and toast on a won luck roll, none on a loss, on the win and trapped endings, posted, in
+the ✦ STARS column, and an older online table without the column), the boss fight (HP 10, 3-damage
+bops, boosts listed and lit for a prepared hero), the dice-gamble odds and result (Luck only; Luck 0 = YOUR LUCK RAN OUT),
 Shopping Forever (YOUR PIXEL POWER RAN OUT, Pixel Power shows 0), the 12/12 LEGEND! finale and its
 voucher (same code after a reload, printable), redeeming it in the creator (+2 tokens, made-up codes
 rejected, only once), RUN AWAY from Bolt-Bot on round 0, after 1

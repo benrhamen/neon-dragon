@@ -20,6 +20,7 @@ let book = null;
 let player = null; // { name, avatar } for this run only
 let state = null;
 let prevStats = {};
+let prevStars = null; // bonus stars last drawn in the HUD (for the star-burst on a new one)
 let lastRenderedSection = null;
 let busy = false;
 let scoreRecorded = false;
@@ -107,6 +108,7 @@ function newRun() {
 
 function beginRender() {
   prevStats = { ...state.stats };
+  prevStars = null;
   lastRenderedSection = null;
   scoreRecorded = !!state.ended;
   document.body.classList.add('in-game');
@@ -266,14 +268,16 @@ function renderRiddle(box) {
         ? `<button class="choice ${o.warning ? 'danger' : ''}" data-pen="${o.index}" data-testid="penalty-${o.index}"><span class="cursor">${o.warning ? '⚠' : '▶'}</span><span class="choice-label">${esc(T(o.label))}${warnText(o.warning)}</span></button>`
         : `<button class="choice locked" disabled data-testid="penalty-${o.index}"><span class="cursor">${LOCK}</span><span class="choice-label">${esc(T(o.label))}<span class="need">${esc(o.need)}</span></span></button>`).join('')}</div>`;
   } else {
-    body = `<div class="result bad" data-testid="riddle-result" data-correct="false">PENALTY PAID</div><button class="btn btn-big" data-testid="continue">CONTINUE ▶</button>`;
+    body = `<div class="result bad" data-testid="riddle-result" data-correct="false">PENALTY PAID</div>${r.untilCorrect
+      ? `<p class="outcome">${esc((npc?.name || 'They').toUpperCase())} HAS ANOTHER RIDDLE FOR YOU. YOU CAN STILL HEAD BACK BEFORE ANSWERING IT.</p><button class="btn btn-big" data-testid="continue">NEXT RIDDLE ▶</button>`
+      : '<button class="btn btn-big" data-testid="continue">CONTINUE ▶</button>'}`;
   }
   box.innerHTML = `
     <div class="riddle" data-testid="riddle" data-character="${esc(rd.character)}">
       <div class="riddle-head">
         <canvas class="pix riddle-npc" data-npc></canvas>
         <div><div class="riddle-name">${esc((npc?.name || rd.character).toUpperCase())}</div>
-        <div class="riddle-count">${total > 1 ? `RIDDLE ${Math.min(r.index + 1, total)} OF ${total}` : `ONE RIDDLE${r.question.category ? ` · ${esc(r.question.category.toUpperCase())}` : ''}`}</div></div>
+        <div class="riddle-count" data-testid="riddle-count">${r.untilCorrect ? `RIDDLE ${r.index + 1}${r.question.category ? ` · ${esc(r.question.category.toUpperCase())}` : ''}${r.index ? ' · TRY AGAIN!' : ''}` : total > 1 ? `RIDDLE ${Math.min(r.index + 1, total)} OF ${total}` : `ONE RIDDLE${r.question.category ? ` · ${esc(r.question.category.toUpperCase())}` : ''}`}</div></div>
       </div>
       ${body}
     </div>`;
@@ -376,8 +380,13 @@ function renderCombat(box) {
   const last = p.rounds[p.rounds.length - 1];
   const nm = player.name;
   const { count } = E.parseDice(cs.dice);
+  const dmg = E.combatDamage(book, state, sec, enemy);
+  const boostsHTML = c.boosts?.length ? `<div class="boosts" data-testid="boosts">${c.boosts.map((b) => {
+    const on = dmg.boosts.includes(b);
+    return `<span class="boost ${on ? 'on' : ''}" data-testid="boost">${on ? '✔' : '·'} ${esc(T(b.label).toUpperCase())} ${b.attack ? `+${b.attack} ATK` : ''}${b.armor ? `-${b.armor} DMG` : ''}</span>`;
+  }).join('')}</div>` : '';
   box.innerHTML = `
-    <div class="combat" data-testid="combat">
+    <div class="combat ${enemy.damage && enemy.damage > cs.damage ? 'boss' : ''}" data-testid="combat">
       ${c.intro ? `<p class="combat-intro">${esc(T(c.intro))}</p>` : ''}
       <div class="fighters">
         <div class="fighter you ${last?.winner === 'enemy' ? 'hit' : ''}">
@@ -385,7 +394,7 @@ function renderCombat(box) {
           <div class="fname">${esc(nm)}</div>
           <div class="hpbar"><i style="width:${Math.max(0, (hp / hpMax) * 100)}%"></i></div>
           <div class="fstat">${esc(book.stats[cs.healthStat].name.toUpperCase())} ${hp}/${hpMax}</div>
-          <div class="fstat dim">ATTACK ${state.stats[cs.attackStat]}</div>
+          <div class="fstat dim" data-testid="your-attack">ATTACK ${state.stats[cs.attackStat] + dmg.attack}${dmg.attack ? ` <span class="ok">(+${dmg.attack})</span>` : ''}</div>
           <div class="dice-row small" data-pd>${Array.from({ length: count }, (_, i) => dieHTML(last ? last.playerRolls[i] : null)).join('')}</div>
         </div>
         <div class="vs">VS</div>
@@ -394,10 +403,11 @@ function renderCombat(box) {
           <div class="fname">${esc(enemy.name)}</div>
           <div class="hpbar foe-bar"><i style="width:${(p.enemyHealth / enemy.health) * 100}%"></i></div>
           <div class="fstat" data-testid="enemy-hp">HP ${p.enemyHealth}/${enemy.health}</div>
-          <div class="fstat dim">ATTACK ${enemy.attack}</div>
+          <div class="fstat dim">ATTACK ${enemy.attack} · BOP -${dmg.enemy}</div>
           <div class="dice-row small" data-ed>${Array.from({ length: count }, (_, i) => dieHTML(last ? last.enemyRolls[i] : null)).join('')}</div>
         </div>
       </div>
+      ${boostsHTML}
       <div class="round-log" data-testid="round-log">${last ? roundText(last, nm, cs) : 'ROUND 1 · PRESS ATTACK TO ROLL!'}</div>
       <div class="combat-buttons"></div>
     </div>`;
@@ -437,9 +447,9 @@ function renderCombat(box) {
   if (c.flee) $('[data-testid=flee]', btns).addEventListener('click', () => { busy = false; act(() => E.flee(book, state, rng)); });
 }
 function roundText(r, nm, cs) {
-  const you = `${esc(nm)}: ${r.playerRolls.join('+')}+${r.playerTotal - r.playerRolls.reduce((a, b) => a + b, 0)} = <b>${r.playerTotal}</b>`;
+  const you = `${esc(nm)}: ${r.playerRolls.join('+')}+${r.playerTotal - r.playerRolls.reduce((a, b) => a + b, 0)}${r.boost ? ` (INCL. +${r.boost} BOOST)` : ''} = <b>${r.playerTotal}</b>`;
   const foe = `${esc(r.enemy)}: ${r.enemyRolls.join('+')}+${r.enemyTotal - r.enemyRolls.reduce((a, b) => a + b, 0)} = <b>${r.enemyTotal}</b>`;
-  const res = r.winner === 'player' ? `<span class="ok">YOU LAND A BOP! (-${cs.damage})</span>` : r.winner === 'enemy' ? `<span class="bad">OUCH! YOU GET BOPPED (-${cs.damage})</span>` : '<span>BLOCKED! NOBODY IS HURT</span>';
+  const res = r.winner === 'player' ? `<span class="ok">YOU LAND A BOP! (-${r.damage ?? cs.damage})</span>` : r.winner === 'enemy' ? `<span class="bad">OUCH! YOU GET BOPPED (-${r.damage ?? cs.damage})</span>` : '<span>BLOCKED! NOBODY IS HURT</span>';
   return `ROUND ${r.n} · ${you} · ${foe}<br>${res}${r.nextEnemy ? `<br>NEXT UP: ${esc(r.nextEnemy)}!` : ''}`;
 }
 
@@ -467,6 +477,7 @@ function renderEnding(box) {
         <div><b>${state.moves || 0}</b><span>MOVES</span></div>
         <div><b data-testid="end-zodiac">${z ? `${z.met.length}/${z.total}` : '-'}</b><span>ZODIAC</span></div>
         <div><b>${new Set(state.history).size}</b><span>PLACES</span></div>
+        ${endStarsHTML()}
       </div>
       ${score ? scoreBoardHTML(score) : `<p class="no-score">NO SCORE THIS TIME. ONLY HEROES WHO SAVE PIXEL HARBOUR GET A SCORE!</p>`}
       <div class="ending-buttons">
@@ -509,6 +520,11 @@ function legendHTML(z) {
     <div class="voucher-actions"><button class="btn btn-small" data-testid="print-voucher">🖨 PRINT VOUCHER</button><span class="dim">OR TAKE A SCREENSHOT!</span></div>`;
 }
 
+function endStarsHTML() {
+  if (!E.bonusStarsEnabled(book)) return '';
+  return `<div class="end-stars"><b data-testid="end-stars"><span class="star-pix"><i class="pstar"></i></span>${state.bonusStars || 0}</b><span>BONUS STARS</span></div>`;
+}
+
 function scoreBoardHTML(score) {
   return `
     <div class="score-screen" data-testid="score-screen">
@@ -527,7 +543,7 @@ function scoreBoardHTML(score) {
 function finishScore(box, score) {
   const status = $('#scoreStatus', box);
   const z = zodiacInfo();
-  const entry = { nickname: player.name, avatar: player.avatar, score_pct: score.percent ?? 0, rank: score.rank || '', zodiac_count: z ? z.met.length : 0 };
+  const entry = { nickname: player.name, avatar: player.avatar, score_pct: score.percent ?? 0, rank: score.rank || '', zodiac_count: z ? z.met.length : 0, bonus_stars: state.bonusStars || 0 };
   if (!scoreRecorded) {
     const before = LB.bestLocal(bookId());
     const pos = LB.addLocalScore(bookId(), entry);
@@ -573,6 +589,7 @@ function renderTrapped(box) {
       <div class="ending-stats">
         <div><b>${state.moves || 0}</b><span>MOVES</span></div>
         <div><b data-testid="end-zodiac">${zodiacInfo() ? `${zodiacInfo().met.length}/${zodiacInfo().total}` : '-'}</b><span>ZODIAC</span></div>
+        ${endStarsHTML()}
       </div>
       <div class="ending-buttons">
         <button class="btn btn-big btn-start insert-coin-btn" data-testid="play-again">INSERT COIN · PLAY AGAIN</button>
@@ -656,13 +673,35 @@ function renderStats() {
     }
     mini.push(`<span class="mini-stat ${cls} ${def.display === 'timer' && v <= 10 ? 'low' : ''}" style="--c:${def.color || '#29e7ff'}">${esc(def.short || def.name)} <b>${v}</b></span>`);
   }
+  const starsOn = E.bonusStarsEnabled(book);
+  const nStars = state.bonusStars || 0;
+  const newStar = starsOn && prevStars !== null && nStars > prevStars;
+  if (starsOn) {
+    rows.push(starsPanelHTML(nStars, newStar));
+    mini.push(`<span class="mini-stat mini-stars ${newStar ? 'up' : ''}" data-testid="mini-stars"><i class="pstar"></i> <b>${nStars}</b></span>`);
+  }
+  prevStars = nStars;
   wrap.innerHTML = rows.join('');
+  if (newStar) { const el = $('[data-testid=stars-panel]', wrap); setTimeout(() => el?.classList.remove('burst'), 1300); }
   $$('[data-sprite]', wrap).forEach((c) => drawSprite(c, book.stats[c.dataset.sprite].sprite));
   const items = Object.entries(state.inventory).filter(([, q]) => q > 0);
   mini.push(`<button class="mini-stat mini-inv" data-jump="inventory">BAG <b>${items.length}</b></button>`);
   hud.innerHTML = mini.join('');
   $('[data-jump]', hud)?.addEventListener('click', () => $('#inventory').scrollIntoView({ behavior: 'smooth', block: 'center' }));
   prevStats = { ...state.stats };
+}
+
+// Bonus stars: a sparkly, purely cosmetic counter (one per won luck roll). A new star plays a
+// pixel star-burst: 8 little pixel squares fly out from the star and the number pops.
+function starsPanelHTML(n, burst) {
+  const sparks = Array.from({ length: 8 }, (_, i) => `<i class="spark s${i}"></i>`).join('');
+  const twinkles = Array.from({ length: Math.min(n, 12) }, (_, i) => `<i class="tw" style="--d:${(i * 0.37) % 2}s"></i>`).join('');
+  return `
+        <div class="stat stars-stat ${burst ? 'burst' : ''}" data-testid="stars-panel" title="Bonus stars: win a luck roll to earn one. Just for fun: they don't count in your score and can't be spent.">
+          <div class="stat-top"><span class="stat-name"><span class="star-pix" aria-hidden="true"><i class="pstar"></i><span class="burst-sparks">${sparks}</span></span>BONUS STARS</span><span class="stat-val stars-val" data-testid="stars">${n}</span></div>
+          <div class="star-twinkles" aria-hidden="true">${twinkles || '<span class="stars-hint">WIN A LUCK ROLL!</span>'}</div>
+          <div class="timer-note stars-note">NOT IN YOUR SCORE</div>
+        </div>`;
 }
 
 let openItem = null;
@@ -752,7 +791,8 @@ function showMessages(msgs, { silent = false } = {}) {
     if (m.type === 'item') kind = m.delta > 0 ? 'good' : 'bad';
     if (m.halved) kind = 'halved';
     if (m.type === 'depleted') kind = 'bad';
-    if (kind === 'good' && sound === 'select') sound = 'coin';
+    if (m.type === 'star') kind = 'star';
+    if ((kind === 'good' || kind === 'star') && sound === 'select') sound = 'coin';
     if ((kind === 'bad' || kind === 'halved') && m.type === 'stat') sound = 'hurt';
     setTimeout(() => toast(m.text.toUpperCase(), kind), i * 180);
   });
@@ -765,6 +805,7 @@ function toast(text, kind = 'info') {
   const t = document.createElement('div');
   t.className = `toast ${kind}`;
   t.textContent = text;
+  if (kind === 'star') { t.insertAdjacentHTML('afterbegin', '<i class="pstar"></i> '); t.insertAdjacentHTML('beforeend', ' <i class="pstar"></i>'); }
   $('#toasts').appendChild(t);
   setTimeout(() => t.classList.add('out'), 2200);
   setTimeout(() => t.remove(), 2700);
@@ -897,8 +938,8 @@ function openCreator() {
 // ---------------- best scores ----------------
 function scoreRowsHTML(rows) {
   if (!rows.length) return '<div class="empty" data-testid="scores-empty">NO SCORES YET. BE THE FIRST!</div>';
-  return `<table class="scores-table" data-testid="scores-table"><thead><tr><th>#</th><th></th><th>NAME</th><th>SCORE</th><th>RANK</th><th>ZODIAC</th><th>DATE</th></tr></thead><tbody>${rows.map((r, i) => `
-    <tr class="${i === 0 ? 'top' : ''}" data-testid="score-row"><td>${i + 1}</td><td><canvas class="pix score-av" data-av="${i}"></canvas></td><td class="nm">${esc(r.nickname)}</td><td class="pct">${r.score_pct}%</td><td class="rk">${esc(r.rank || '')}</td><td>${r.zodiac_count ?? 0}/${zodiacTotal()}</td><td class="dt">${esc(String(r.created_at || '').slice(0, 10))}</td></tr>`).join('')}</tbody></table>`;
+  return `<table class="scores-table" data-testid="scores-table"><thead><tr><th>#</th><th></th><th>NAME</th><th>SCORE</th><th>RANK</th><th>ZODIAC</th><th class="st" title="Bonus stars: just for fun, not part of the score"><i class="pstar"></i> STARS</th><th>DATE</th></tr></thead><tbody>${rows.map((r, i) => `
+    <tr class="${i === 0 ? 'top' : ''}" data-testid="score-row"><td>${i + 1}</td><td><canvas class="pix score-av" data-av="${i}"></canvas></td><td class="nm">${esc(r.nickname)}</td><td class="pct">${r.score_pct}%</td><td class="rk">${esc(r.rank || '')}</td><td>${r.zodiac_count ?? 0}/${zodiacTotal()}</td><td class="st" data-testid="score-stars">${r.bonus_stars == null ? '-' : `<span class="star-pix"><i class="pstar"></i></span>${r.bonus_stars | 0}`}</td><td class="dt">${esc(String(r.created_at || '').slice(0, 10))}</td></tr>`).join('')}</tbody></table>`;
 }
 
 function openScores({ back = null } = {}) {
