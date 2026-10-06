@@ -46,7 +46,7 @@ const choose = async (page, label) => { await page.locator('.choice:not(.locked)
 
 // --- mocked Supabase REST: records requests, serves a fake World Top 50 or a missing table ---
 const globalRows = [
-  { nickname: 'PIXELPRO', avatar: { skin: 2, hairStyle: 'bun', hairColor: 3, outfit: 2, accessory: 'crown' }, score_pct: 97, rank: 'NEON HERO', zodiac_count: 11, bonus_stars: 9, created_at: '2026-10-01T10:00:00Z' },
+  { nickname: 'PIXELPRO', avatar: { skin: 7, hairStyle: 'bun', hairColor: 3, outfit: 2, accessory: 'crown', beard: true, beanie: true, cape: true }, score_pct: 97, rank: 'NEON HERO', zodiac_count: 11, bonus_stars: 9, created_at: '2026-10-01T10:00:00Z' },
   { nickname: 'ZOE', avatar: { skin: 4, hairStyle: 'long', hairColor: 4, outfit: 0, accessory: 'none' }, score_pct: 64, rank: 'DING-DING DASHER', zodiac_count: 7, created_at: '2026-10-02T10:00:00Z' },
 ];
 async function mockSupabase(ctx) {
@@ -72,7 +72,7 @@ async function inject(page, setup, { name = 'MAX' } = {}) {
     E.attachRiddlePool(book, await (await fetch('data/riddles.json')).json());
     const st = E.newGame(book, { rng: () => 0.5, playerName: name, riddleSeed: 12345 }).state;
     new Function('E', 'book', 'st', setup)(E, book, st);
-    localStorage.setItem(RUN_KEY, JSON.stringify({ player: { name, avatar: { skin: 1, hairStyle: 'spiky', hairColor: 0, outfit: 4, accessory: 'headphones' } }, state: st }));
+    localStorage.setItem(RUN_KEY, JSON.stringify({ player: { name, avatar: { skin: 6, hairStyle: 'spiky', hairColor: 0, outfit: 4, accessory: 'headphones', beanie: true, cape: true } }, state: st }));
   }, { setup, name, RUN_KEY });
   await page.reload();
   await T(page, 'section-title').waitFor();
@@ -94,6 +94,8 @@ async function showRiddle(page) {
   await page.evaluate(() => { document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()); document.querySelector('[data-testid=riddle]')?.scrollIntoView({ block: 'end' }); });
   await page.waitForTimeout(150);
 }
+// x=2,y=12 of the 16x16 avatar is empty unless the hero wears a cape
+const capeAt = (loc) => loc.evaluate((c) => { const k = document.createElement('canvas'); k.width = 16; k.height = 16; const x = k.getContext('2d'); x.drawImage(c, 0, 0, 16, 16); return x.getImageData(2, 12, 1, 1).data[3] > 0; });
 const noToasts = async (page) => (await page.locator('#toasts .toast').count()) === 0;
 
 async function createHero(page, name, { customise = true } = {}) {
@@ -140,20 +142,42 @@ try {
   check((await T(page, 'name-input').inputValue()) === 'MAX', 'nickname is shown in arcade capitals');
   await page.waitForTimeout(300);
   await shot(page, '01-creator.png');
+  console.log('creator: new skins and add-ons');
+  check(await page.locator('.swatch[data-key=skin]').count() === 9 && await page.locator('.swatch[aria-label="skin blue"]').count() === 1 && await page.locator('.swatch[aria-label="skin green"]').count() === 1 && await page.locator('.swatch[aria-label="skin grey"]').count() === 1, '9 skin colours, including blue, green and grey');
+  for (const k of ['beard', 'beanie', 'cape']) check((await T(page, `extra-${k}`).getAttribute('aria-pressed')) === 'false', `${k}: an independent toggle, off by default`);
+  const plain = await T(page, 'avatar-preview').evaluate((c) => c.toDataURL());
+  const looks = new Set([plain]);
+  await page.locator('.swatch[aria-label="skin green"]').click();
+  for (const k of ['beard', 'beanie', 'cape']) { await T(page, `extra-${k}`).click(); looks.add(await T(page, 'avatar-preview').evaluate((c) => c.toDataURL())); }
+  check(looks.size === 4 && await capeAt(T(page, 'avatar-preview')), 'each add-on changes the preview (beard, beanie, cape all on together)');
+  check((await T(page, 'extra-beanie').getAttribute('aria-pressed')) === 'true' && (await text(page, 'extra-cape')).includes('CAPE'), 'toggles show their on state');
+  await T(page, 'extra-beard').click();
+  check((await T(page, 'extra-beard').getAttribute('aria-pressed')) === 'false' && (await T(page, 'extra-beanie').getAttribute('aria-pressed')) === 'true', 'toggling one add-on off leaves the others on');
+  await T(page, 'extra-beard').click();
+  // beanie with a hat (cap / crown) and with long hair
+  for (let i = 0; i < 4; i++) { await page.locator('.cycler[data-key=accessory] .arrow[data-dir="1"]').click(); looks.add(await T(page, 'avatar-preview').evaluate((c) => c.toDataURL())); }
+  check(looks.size >= 7, 'beanie combines with every hat / gear option');
+  for (let i = 0; i < 5 && !(await page.locator('[data-val-for=accessory]').textContent()).includes('PHONES'); i++) await page.locator('.cycler[data-key=accessory] .arrow[data-dir="1"]').click();
+  await page.locator('.swatch[data-key=hairColor][data-val="2"]').click();
+  await page.waitForTimeout(200);
+  await shot(page, '28-creator-new-options.png');
   await T(page, 'press-start').click();
   await modal.waitFor({ state: 'detached' });
+  const savedAv = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)).player.avatar, RUN_KEY);
+  check(savedAv.skin === 7 && savedAv.beard === true && savedAv.beanie === true && savedAv.cape === true && JSON.stringify(savedAv).length <= 512, `the saved hero keeps skin + add-ons, well under the 512-character limit (${JSON.stringify(savedAv).length} chars)`);
+  check(await capeAt(page.locator('#heroAvatar')), 'in-game hero panel draws the cape');
 
   console.log('first moves');
   check((await text(page, 'hero-name')) === 'MAX', 'hero panel shows the nickname');
   check((await text(page, 'section-title')) === 'Insert Coin', 'adventure starts at the first section');
-  check(await stat(page, 'power') === 96 && await stat(page, 'energy') === 16 && await stat(page, 'tokens') === 12, 'starts with 96 Pixel Power, 16 Energy, 12 tokens');
+  check(await stat(page, 'power') === 150 && await stat(page, 'energy') === 32 && await stat(page, 'tokens') === 5, 'starts with 150 Pixel Power, 32 Energy, 5 tokens');
   check(await T(page, 'stars-panel').isVisible() && (await text(page, 'stars')) === '0' && (await text(page, 'stars-panel')).includes('NOT IN YOUR SCORE'), 'stats panel shows a BONUS STARS counter at 0 (marked: not in your score)');
   check((await text(page, 'tracker-count')) === '0/12', 'Zodiac Collection panel shows 0/12');
   check(await page.locator('.stat.timer .timer-bar').count() === 1, 'Pixel Power is shown as a countdown bar');
   const keys = await page.evaluate(() => Object.keys(localStorage));
   check(keys.includes(RUN_KEY) && !keys.some((k) => k.startsWith('gb.profiles')), 'only the current run is autosaved (no player profiles)');
   await choose(page, 'Ask Auntie Lam');
-  check(await stat(page, 'power') === 95, 'each move uses 1 Pixel Power');
+  check(await stat(page, 'power') === 149, 'each move uses 1 Pixel Power');
   check((await text(page, 'move-count')) === 'MOVE 1', 'move counter shows MOVE 1');
   const where = await text(page, 'section-title');
   await page.reload();
@@ -203,7 +227,7 @@ try {
   check((await text(page, 'riddle-question')) === rq.question, 'the saved riddle is the one on screen');
   await T(page, `riddle-option-${rq.answer}`).click();
   check((await T(page, 'riddle-result').getAttribute('data-correct')) === 'true', 'Loulou: correct answer passes');
-  check(await stat(page, 'tokens') === 7 && await stat(page, 'energy') === 14, 'correct answer: +1 token, +2 Energy');
+  check(await stat(page, 'tokens') === 6 && await stat(page, 'energy') === 14, 'correct answer: +2 Energy, no tokens');
   await T(page, 'continue').click();
   await page.waitForTimeout(200);
   check((await text(page, 'section-title')) === 'The Peak' && (await text(page, 'tracker-count')) === '1/12', 'Loulou finished after one riddle: back at the Peak, Goat added to the Zodiac Collection');
@@ -230,7 +254,7 @@ try {
   await page.reload(); await T(page, 'riddle').waitFor();
   check((await text(page, 'riddle-question')) === rq2.question && (await text(page, 'riddle-count')).startsWith('RIDDLE 2'), 'reload keeps riddle 2 (no reroll)');
   await T(page, `riddle-option-${rq2.answer}`).click();
-  check((await T(page, 'riddle-result').getAttribute('data-correct')) === 'true' && await stat(page, 'tokens') === 5, 'riddle 2 answered right: +1 token');
+  check((await T(page, 'riddle-result').getAttribute('data-correct')) === 'true' && await stat(page, 'tokens') === 4, 'riddle 2 answered right: no token reward');
   await T(page, 'continue').click();
   await page.waitForTimeout(200);
   check((await text(page, 'section-title')) === 'The Peak Tram', 'a correct answer finally gets you past the Monkey');
@@ -249,7 +273,7 @@ try {
   await page.waitForTimeout(200);
   check((await text(page, 'section-title')) === snakeBackTitle && await stat(page, 'energy') === 6, `wrong + halve, then head back for free (${snakeBackTitle}, Energy still 6)`);
   // retreat
-  await inject(page, go('liv') + 'st.stats.power = 30;');
+  await inject(page, go('liv') + 'st.stats.power = 30; st.flags.coins_causeway = true;');
   const tBefore = await stat(page, 'tokens');
   await T(page, 'riddle-retreat').click();
   await page.waitForTimeout(200);
@@ -280,6 +304,7 @@ try {
   check((await T(page, 'ending').getAttribute('data-style')) === 'trapped', 'Energy at 0 = trapped-style ending');
   check((await text(page, 'trapped-title')) === 'TRAPPED IN THE GAME FOREVER' && (await text(page, 'trapped-cause')).includes('ENERGY'), 'shows TRAPPED IN THE GAME FOREVER and the cause');
   check(!(await page.evaluate((k) => localStorage.getItem(k), RUN_KEY)), 'the finished run is cleared from storage');
+  check(await capeAt(page.locator('#heroAvatar')), 'the GAME OVER screen still shows the hero with the cape');
   await page.waitForTimeout(400);
   await page.waitForTimeout(700);
   check(await noToasts(page), 'no toast pop-ups cover the trapped GAME OVER screen');
@@ -293,7 +318,7 @@ try {
   await T(page, 'name-input').fill('kai');
   await T(page, 'press-start').click();
   await T(page, 'avatar-modal').waitFor({ state: 'detached' });
-  check((await text(page, 'hero-name')) === 'KAI' && await stat(page, 'power') === 96 && (await text(page, 'section-title')) === 'Insert Coin', 'START begins a fresh game with the new hero');
+  check((await text(page, 'hero-name')) === 'KAI' && await stat(page, 'power') === 150 && (await text(page, 'section-title')) === 'Insert Coin', 'START begins a fresh game with the new hero');
 
   console.log('win + score');
   net.mode = 'ok';
@@ -318,6 +343,7 @@ try {
   const post = net.requests.find((r) => r.method === 'POST');
   check((await text(page, 'post-result')).includes('SENT'), 'POST TO WORLD TOP 50 sends the score (mocked)');
   check(post && post.headers.apikey?.startsWith('sb_publishable_') && !post.headers.authorization, 'REST call uses the apikey header only (publishable key, no Bearer)');
+  check(post && JSON.parse(post.body).avatar.cape === true && JSON.parse(post.body).avatar.beanie === true && JSON.stringify(JSON.parse(post.body).avatar).length <= 512, 'posted avatar carries the add-ons (under 512 characters)');
   check(post && JSON.parse(post.body).nickname === 'MAX' && JSON.parse(post.body).score_pct === pct && JSON.parse(post.body).bonus_stars === 5, 'posted row has nickname + score (+ cosmetic bonus_stars)');
 
   console.log('best scores');
@@ -326,10 +352,12 @@ try {
   await page.locator('[data-testid=scores-body] [data-testid=score-row]').first().waitFor();
   check(await page.locator('[data-testid=score-row]').count() === 2 && (await page.locator('[data-testid=score-row] .nm').first().textContent()) === 'PIXELPRO', 'World Top 50 tab shows the shared board');
   check((await page.locator('.scores-table th.st').textContent()).includes('STARS') && (await page.locator('[data-testid=score-stars]').first().textContent()).includes('9'), 'Best Scores table has a cosmetic ✦ STARS column');
+  check(await capeAt(page.locator('[data-testid=score-row] canvas[data-av]').first()) && !(await capeAt(page.locator('[data-testid=score-row] canvas[data-av]').nth(1))), 'World Top 50: a new avatar draws its add-ons; an old avatar (no add-on fields) still loads, without them');
   await page.waitForTimeout(700);
   await shot(page, '15-best-scores-world.png');
   await T(page, 'tab-local').click();
   check((await page.locator('[data-testid=score-row] .nm').first().textContent()) === 'MAX' && (await page.locator('[data-testid=score-stars]').first().textContent()).includes('5'), 'My Device tab shows this device\'s top 10 (with stars)');
+  check(await capeAt(page.locator('[data-testid=score-row] canvas[data-av]').first()), 'My Device Best Scores draw the hero with the cape');
   await page.waitForTimeout(300);
   await shot(page, '16-best-scores-device.png');
   await T(page, 'scores-back').click();
@@ -379,7 +407,7 @@ try {
   await shot(page, '23-shopping-forever.png');
 
   console.log('dice gamble');
-  await inject(page, go('horse_race') + 'st.stats.energy = 12; st.stats.tokens = 5;');
+  await inject(page, go('horse_race') + 'st.stats.energy = 12; st.stats.tokens = 5; st.flags.coins_causeway = true;');
   const odds = await text(page, 'gamble-odds');
   check(odds.includes('WIN 8+ (42%)') && odds.includes('7 = HALF LUCK (17%)') && odds.includes('6 OR LESS LOSE -2 LUCK (42%)'), `gamble screen shows the odds (${odds})`);
   const luckBefore = await stat(page, 'luck');
@@ -408,39 +436,100 @@ try {
 
   console.log('run away from Bolt-Bot');
   // round 0: before any attack
-  await inject(page, go('bot_battle') + 'st.stats.energy = 9;');
+  await inject(page, go('bot_battle') + 'st.stats.energy = 9; st.stats.power = 50;');
+  check(await capeAt(page.locator('[data-you]')), 'the fight screen draws the hero with the cape');
   const flee = T(page, 'flee');
-  check(await flee.isVisible() && (await flee.textContent()).includes('RUN AWAY! (back to the tram, -1 Energy)'), 'RUN AWAY button is visible and labelled before the first round');
+  check(await flee.isVisible() && (await flee.textContent()).includes('RUN AWAY! (back to the lookout, -3 Pixel Power)'), 'RUN AWAY button is visible and labelled before the first round');
   await page.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
   await shot(page, '21-bolt-bot-run-away.png');
   await flee.click();
   await page.waitForTimeout(300);
-  check((await text(page, 'section-title')) === 'Central' && await stat(page, 'energy') === 8, 'RUN AWAY on round 0: back to Central, -1 Energy');
+  check((await text(page, 'section-title')) === 'The Peak' && await stat(page, 'power') === 46 && await stat(page, 'energy') === 9, 'RUN AWAY on round 0: back to the Peak lookout, -3 Pixel Power (and -1 for the move)');
+  check(await page.locator('.choice:not(.locked)', { hasText: 'BOSS duel' }).count() === 1 && await page.locator('.choice', { hasText: 'Sky Tower' }).count() === 0, 'the duel is still waiting: no way into the tower without it');
   // after 1 and 2 attack rounds (Turbo Bolt-Bot needs 5 bops; from 12 Energy you survive 3 of its 3-damage bops, so it's never decided yet)
   for (const rounds of [1, 2]) {
-    await inject(page, go('bot_battle') + 'st.stats.energy = 12;');
+    await inject(page, go('bot_battle') + 'st.stats.energy = 12; st.stats.power = 50;');
     for (let i = 0; i < rounds; i++) {
       await T(page, 'attack').click();
       await page.waitForFunction(() => { const b = document.querySelector('[data-testid=attack]'); return b && !b.disabled && document.querySelector('[data-testid=flee]'); }, null, { timeout: 10000 });
     }
     const hint = await text(page, 'flee-hint');
-    const e = await stat(page, 'energy');
     check(await T(page, 'flee').isVisible() && hint.includes(`ROUND ${rounds + 1}`), `RUN AWAY still offered after ${rounds} attack round(s)`);
     await T(page, 'flee').click();
     await page.waitForTimeout(300);
-    check((await text(page, 'section-title')) === 'Central' && await stat(page, 'energy') === e - 1, `RUN AWAY after ${rounds} round(s) works: Central, -1 Energy`);
+    check((await text(page, 'section-title')) === 'The Peak' && await stat(page, 'power') === 46, `RUN AWAY after ${rounds} round(s) works: the Peak, -3 Pixel Power`);
   }
-  await inject(page, go('bot_battle') + 'st.stats.energy = 1;');
-  check((await T(page, 'flee').textContent()).includes('⚠') && await T(page, 'warning').first().isVisible(), 'RUN AWAY at Energy 1 shows the ⚠ trapped warning');
+  await inject(page, go('bot_battle') + 'st.stats.power = 3;');
+  check((await T(page, 'flee').textContent()).includes('⚠') && await T(page, 'warning').first().isVisible(), 'RUN AWAY with 3 Pixel Power left shows the ⚠ trapped warning');
+  // the old bypasses are now in-fight advantages, picked up at the Peak before the duel
+  await inject(page, go('peak_top') + "st.inventory.whistle = 1; st.inventory.egg_tart = 1; st.flags.goat_tips = true; st.stats.energy = 10;");
+  check(await page.locator('.choice', { hasText: 'Sky Tower' }).count() === 0 && await page.locator('.choice:not(.locked)', { hasText: 'BOSS duel' }).count() === 1, 'the Peak: the duel is the only way into the tower');
+  await choose(page, 'Blow the Silver Whistle');
+  check((await text(page, 'section-title')).length > 0 && await page.locator('.choice', { hasText: 'Challenge the dizzy robot' }).count() === 1, 'whistle: the robot goes dizzy, and the duel still has to be fought');
+  await choose(page, 'Get ready some more');
+  await choose(page, 'Share your egg tart');
+  check(await stat(page, 'energy') === 14, 'snack break: +4 Energy before the fight (10 → 14)');
+  await choose(page, 'Get ready some more');
+  await choose(page, 'Climb to the high ledge');
+  await choose(page, 'Leap down on Bolt-Bot');
+  check((await text(page, 'enemy-hp')) === 'HP 6/10', 'the dizzy robot starts the duel with 6/10 HP');
+  check(await page.locator('[data-testid=boost].on').count() === 3, 'whistle, snack and high ground light up in the boost list');
   // the boss: tougher numbers on screen, and boosts for a well-prepared hero
   await inject(page, go('bot_battle') + 'st.stats.luck = 8;');
   check((await text(page, 'enemy-hp')) === 'HP 10/10' && (await text(page, 'combat')).includes('BOP -3') && (await text(page, 'your-attack')) === 'ATTACK 8', 'boss: Turbo Bolt-Bot HP 10, bops for 3; no boosts = your plain Luck');
-  check(await page.locator('[data-testid=boost].on').count() === 0 && await page.locator('[data-testid=boost]').count() === 4, 'boss: 4 possible boosts listed, none active yet');
-  await inject(page, go('bot_battle') + "st.stats.luck = 8; st.inventory.feather = 1; st.inventory.umbrella = 1; for (const e of book.trackers[0].entries.slice(0, 8)) st.flags[e.flag] = true;");
-  check(await page.locator('[data-testid=boost].on').count() === 4 && (await text(page, 'your-attack')).startsWith('ATTACK 11') && (await text(page, 'combat')).includes('BOP -2'), 'well-prepared: all 4 boosts light up (+3 attack, umbrella softens bops to 2)');
+  check(await page.locator('[data-testid=boost].on').count() === 0 && await page.locator('[data-testid=boost]').count() === 7, 'boss: 7 possible boosts listed, none active yet');
+  const boostText = await text(page, 'boosts');
+  check(/WHISTLE/.test(boostText) && /BOT -4 HP/.test(boostText) && /SNACK/.test(boostText) && /\+4 ENERGY/.test(boostText) && /HIGH GROUND/.test(boostText), 'boost list shows the whistle (BOT -4 HP), the snack (+4 ENERGY) and the high ground');
+  await inject(page, go('peak_top') + "st.stats.luck = 8; st.inventory.feather = 1; st.inventory.umbrella = 1; for (const e of book.trackers[0].entries.slice(0, 8)) st.flags[e.flag] = true; Object.assign(st.flags, { high_ground: true, bot_dizzy: true, robot_friend: true });" + go('bot_battle'));
+  check(await page.locator('[data-testid=boost].on').count() === 7 && (await text(page, 'your-attack')).startsWith('ATTACK 12') && (await text(page, 'combat')).includes('BOP -2') && (await text(page, 'enemy-hp')) === 'HP 6/10', 'well-prepared: all 7 boosts light up (+4 attack, umbrella softens bops to 2, robot dizzy at 6/10 HP)');
   await page.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
   await T(page, 'boosts').scrollIntoViewIfNeeded();
   await shot(page, '27-boss-boosts.png');
+
+  console.log('right path / wrong path (gremlins in disguise)');
+  await inject(page, go('happy_valley') + 'st.stats.power = 40; st.stats.energy = 12;');
+  const clip = page.locator('.choice:not(.locked)', { hasText: 'clip-clop' });
+  const moo = page.locator('.choice:not(.locked)', { hasText: 'MOOOO' });
+  check(await clip.count() === 1 && await moo.count() === 1, 'Happy Valley: two paths, the clip-clop horse and the horse that said MOOOO');
+  check((await text(page, 'section-text')).includes('clip-clop') && (await text(page, 'section-text')).includes('MOOOO'), 'the clue is in the story text too');
+  await page.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
+  await shot(page, '31-fork-happy-valley.png');
+  await choose(page, 'MOOOO');
+  check((await text(page, 'section-title')) === 'Neigh-ver Mind!' && (await text(page, 'section-text')).includes('horse costume') && await stat(page, 'power') === 37 && (await text(page, 'tracker-count')) === '0/12', 'wrong path: a gremlin in a horse costume, -2 Pixel Power (plus the move), no zodiac animal');
+  check(await T(page, 'riddle').count() === 0 && await page.locator('.choice').count() === 1, 'no riddle there, just the way back');
+  await page.waitForTimeout(400);
+  await shot(page, '32-gremlin-reveal.png');
+  await choose(page, 'Go back to the rail');
+  check((await text(page, 'section-title')) === 'Happy Valley' && await stat(page, 'power') === 36 && await moo.count() === 0, 'retreat: back at the fork (one more move), the unmasked gremlin is gone');
+  await choose(page, 'clip-clop');
+  check((await text(page, 'section-title')) === 'The Real Horse' && (await text(page, 'tracker-count')) === '1/12', 'right path: the real Horse joins the Zodiac Collection');
+
+  console.log('Statue Square and the PiGeons');
+  await inject(page, go('central') + 'st.inventory.egg_tart = 2; st.inventory.pineapple_bun = 1; st.stats.energy = 10; st.stats.luck = 9; st.stats.power = 40; st.bonusStars = 0;');
+  await choose(page, 'Statue Square');
+  check((await text(page, 'section-title')) === 'Statue Square' && (await page.locator('.illus img').getAttribute('src')).endsWith('statue.svg'), 'Statue Square: new place with its own pixel scene');
+  const inv = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)).state.inventory, RUN_KEY);
+  check(!inv.egg_tart && !inv.pineapple_bun && await stat(page, 'energy') === 8 && await stat(page, 'luck') === 7 && await stat(page, 'power') === 37, 'with food: the PiGeons eat every egg tart and bun; -2 Pixel Power, -2 Energy, -2 Luck');
+  check((await text(page, 'section-text')).includes('PiGeons') && (await text(page, 'stars')) === '0', 'the PiGeons swarm story shows; no star');
+  await page.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
+  await page.getByText('swoops down', { exact: false }).first().scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
+  await shot(page, '29-statue-square-pigeons.png');
+  await inject(page, go('central') + 'st.bonusStars = 2; st.stats.power = 40;');
+  await choose(page, 'Statue Square');
+  await page.waitForTimeout(150);
+  check((await text(page, 'stars')) === '3' && await page.locator('[data-testid=stars-panel].burst').count() === 1, 'without food: the PiGeons ignore you and you find a cool star (+1 bonus star, star-burst)');
+  const pigeonStar = await page.locator('.toast.star').first().waitFor({ timeout: 2000 }).then(() => true, () => false);
+  check(pigeonStar && (await text(page, 'section-text')).includes('whistle') && await stat(page, 'power') === 39, 'a BONUS STAR toast, a clue from an old PiGeon, and no stat change beyond the move');
+  await page.waitForTimeout(250);
+  await shot(page, '30-statue-square-star.png');
+  await choose(page, 'Head back to Central');
+  await choose(page, 'Statue Square');
+  check((await text(page, 'stars')) === '3', 'the Statue Square star is found only once per game');
+  await inject(page, go('central') + 'st.inventory.egg_tart = 1; st.stats.energy = 2;');
+  await choose(page, 'Statue Square');
+  await T(page, 'ending').waitFor();
+  check((await text(page, 'trapped-cause')).includes('ENERGY'), 'losing your last Energy to the PiGeons is the normal trapped GAME OVER');
 
   console.log('zodiac master');
   await inject(page, go('dragon_summit') + "st.inventory.pearl = 1; for (const e of book.trackers[0].entries.slice(0, 11)) st.flags[e.flag] = true; st.stats.power = 20;");
@@ -475,7 +564,7 @@ try {
   await T(page, 'name-input').fill('ZED');
   await T(page, 'press-start').click();
   await T(page, 'avatar-modal').waitFor({ state: 'detached' });
-  check(await stat(page, 'tokens') === 14, 'redeemed voucher: the new game starts with 14 tokens');
+  check(await stat(page, 'tokens') === 7, 'redeemed voucher: the new game starts with 7 tokens');
   await page.locator('#restartBtn').click();
   await T(page, 'confirm-yes').click();
   await T(page, 'avatar-modal').waitFor();
@@ -485,7 +574,7 @@ try {
   await T(page, 'name-input').fill('ZED');
   await T(page, 'press-start').click();
   await T(page, 'avatar-modal').waitFor({ state: 'detached' });
-  check(await stat(page, 'tokens') === 12, 'used voucher: no bonus (12 tokens)');
+  check(await stat(page, 'tokens') === 5, 'used voucher: no bonus (5 tokens)');
   await page.locator('#restartBtn').click();
   await T(page, 'confirm-yes').click();
   await T(page, 'avatar-modal').waitFor();
@@ -509,17 +598,16 @@ try {
   await showRiddle(m);
   await shot(m, '19-mobile-riddle.png');
   // mobile: the RUN AWAY button is on screen (no scrolling hunt) and works after a round
-  await inject(m, go('bot_battle') + 'st.stats.energy = 12;', { name: 'ZOE' });
+  await inject(m, go('bot_battle') + 'st.stats.energy = 12; st.stats.power = 50;', { name: 'ZOE' });
   await T(m, 'attack').tap();
   await m.waitForFunction(() => { const b = document.querySelector('[data-testid=attack]'); return b && !b.disabled && document.querySelector('[data-testid=flee]'); }, null, { timeout: 10000 });
   const fb = await T(m, 'flee').boundingBox();
   check(fb && fb.y + fb.height <= 844 && fb.width >= 390 * 0.65, `mobile: RUN AWAY is full-width and inside the screen after a round (y=${Math.round(fb?.y)})`);
   await m.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
   await shot(m, '22-mobile-run-away.png');
-  const me = await stat(m, 'energy');
   await T(m, 'flee').tap();
   await m.waitForTimeout(300);
-  check((await text(m, 'section-title')) === 'Central' && await stat(m, 'energy') === me - 1, 'mobile: tapping RUN AWAY goes back to Central, -1 Energy');
+  check((await text(m, 'section-title')) === 'The Peak' && await stat(m, 'power') === 46, 'mobile: tapping RUN AWAY goes back to the Peak, -3 Pixel Power');
   const overflow = await m.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   check(!overflow, 'mobile: no horizontal scrolling');
   await m.close();

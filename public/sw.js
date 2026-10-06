@@ -2,7 +2,7 @@
 // Only same-origin GETs are handled: the online leaderboard (Supabase) always goes to the network.
 // Bump CACHE on every release: the new worker installs, skips waiting, claims open tabs and the
 // page offers a one-tap reload.
-const CACHE = 'neon-gamebook-v5';
+const CACHE = 'neon-gamebook-v6';
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'js/app.js', 'js/engine.js', 'js/avatar.js', 'js/sound.js', 'js/leaderboard.js', 'js/voucher.js', 'js/config.js',
   'data/neon-dragon.json', 'data/riddles.json', 'fonts/PressStart2P-Regular.ttf', 'fonts/VT323-Regular.ttf', 'manifest.webmanifest',

@@ -197,12 +197,16 @@ export function applyEffects(book, state, effects, messages = []) {
       if (gained > 0 && state.found) state.found[e.addItem] = true;
       if (gained > 0) messages.push({ type: 'item', item: e.addItem, delta: gained, text: `Got ${gained > 1 ? gained + '× ' : ''}${def.name || e.addItem}!` });
     } else if ('removeItem' in e) {
+      // lost: true = taken away (e.g. stolen), not "used" by the player: it doesn't count as used.
       const have = itemCount(state, e.removeItem);
       const q = Math.min(have, e.quantity ?? 1);
       const left = have - q;
       if (left > 0) state.inventory[e.removeItem] = left; else delete state.inventory[e.removeItem];
-      if (q > 0 && state.used) state.used[e.removeItem] = true;
-      if (q > 0) messages.push({ type: 'item', item: e.removeItem, delta: -q, text: `Used ${q > 1 ? q + '× ' : ''}${book.items?.[e.removeItem]?.name || e.removeItem}` });
+      if (q > 0 && state.used && !e.lost) state.used[e.removeItem] = true;
+      if (q > 0) messages.push({ type: 'item', item: e.removeItem, delta: -q, text: `${e.lost ? 'Lost' : 'Used'} ${q > 1 ? q + '× ' : ''}${book.items?.[e.removeItem]?.name || e.removeItem}` });
+    } else if ('bonusStar' in e) {
+      // cosmetic bonus star(s) from the story (only when rules.bonusStars is on); never a stat or score
+      for (let i = 0; i < (e.bonusStar || 0); i++) awardBonusStar(book, state, messages);
     } else if ('setFlag' in e) {
       state.flags[e.setFlag] = e.value ?? true;
     } else if ('clearFlag' in e) {
@@ -263,10 +267,12 @@ export function enterSection(book, state, id, messages = [], rng = Math.random) 
   }
   if (sec.combat) {
     const c = sec.combat;
+    // boosts with `stun` weaken the first enemy before the fight starts (never below 1 HP)
+    const stun = combatBoosts(book, state, sec).stun;
     state.pending = {
       kind: 'combat',
       enemyIndex: 0,
-      enemyHealth: c.enemies[0].health,
+      enemyHealth: Math.max(1, c.enemies[0].health - stun),
       round: 0,
       rounds: [],
       result: null,
@@ -428,16 +434,19 @@ export function combatSettings(book, sec) {
   };
 }
 
-// Combat boosts: sec.combat.boosts = [{label, conditions?, tracker?, min?, attack?, armor?}].
+// Combat boosts: sec.combat.boosts = [{label, conditions?, tracker?, min?, attack?, armor?, stun?, note?}].
 // A boost is active when its conditions hold and (if tracker is set) at least `min` entries of that
-// tracker are met. attack adds to the player's roll total; armor lowers each enemy hit (never below 1).
+// tracker are met. attack adds to the player's roll total; armor lowers each enemy hit (never below 1);
+// stun takes HP off the first enemy when the fight starts; note is display-only (for an advantage the
+// story already applied, e.g. a snack eaten before the fight).
 export function combatBoosts(book, state, sec = book.sections[state.current]) {
-  const out = { attack: 0, armor: 0, active: [] };
+  const out = { attack: 0, armor: 0, stun: 0, active: [] };
   for (const b of sec.combat?.boosts || []) {
     if (!checkCondition(book, state, b.conditions)) continue;
     if (b.tracker && (trackerProgress(book, state).find((t) => t.id === b.tracker)?.met.length ?? 0) < (b.min ?? 1)) continue;
     out.attack += b.attack || 0;
     out.armor += b.armor || 0;
+    out.stun += b.stun || 0;
     out.active.push(b);
   }
   return out;
@@ -793,7 +802,7 @@ export function lintBook(book) {
       if (!stats[cs.healthStat]) errors.push(`${where}: combat needs a health stat`);
       for (const b of sec.combat.boosts || []) {
         if (b.tracker && !(book.trackers || []).some((t) => t.id === b.tracker)) errors.push(`${where}: combat boost "${b.label}" uses unknown tracker ${b.tracker}`);
-        if (!b.attack && !b.armor) warnings.push(`${where}: combat boost "${b.label}" gives no attack or armor`);
+        if (!b.attack && !b.armor && !b.stun && !b.note) warnings.push(`${where}: combat boost "${b.label}" gives no attack, armor or stun`);
       }
     }
     if (sec.riddle) {

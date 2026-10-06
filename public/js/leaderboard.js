@@ -2,6 +2,7 @@
 // REST, plain fetch, no SDK). If the online board isn't configured or can't be reached, the game
 // quietly uses the device table instead.
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { normalizeAvatar } from './avatar.js';
 
 const LOCAL_MAX = 10;
 const GLOBAL_MAX = 50;
@@ -93,7 +94,7 @@ export async function submitGlobal(entry) {
   if (nicknameProblem(nickname)) throw new Error('nickname not allowed');
   const body = {
     nickname,
-    avatar: entry.avatar || {},
+    avatar: normalizeAvatar(entry.avatar),
     score_pct: Math.max(0, Math.min(100, Math.round(entry.score_pct))),
     rank: String(entry.rank || '').slice(0, 24),
     zodiac_count: Math.max(0, Math.min(12, entry.zodiac_count | 0)),

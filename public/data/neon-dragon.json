@@ -6,7 +6,7 @@
   "title": "The Neon Dragon of Pixel Harbour",
   "subtitle": "A pocket gamebook adventure across Hong Kong",
   "author": "Original story",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "language": "en",
   "ageRange": "9-11",
   "original": true,
@@ -57,9 +57,9 @@
    "name": "Energy",
    "short": "NRG",
    "description": "If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
-   "initial": 16,
+   "initial": 32,
    "min": 0,
-   "max": 16,
+   "max": 32,
    "color": "#3dff6e",
    "icon": "⚡",
    "display": "bar"
@@ -68,7 +68,7 @@
    "name": "Pixel Power",
    "short": "PWR",
    "description": "Your move timer: every move uses 1. Halving traps drain it, each zodiac friend you meet adds +2. If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
-   "initial": 96,
+   "initial": 150,
    "min": 0,
    "color": "#29e7ff",
    "icon": "★",
@@ -91,7 +91,7 @@
    "name": "Tokens",
    "short": "TOK",
    "description": "Arcade tokens pay for rides, snacks and riddle mistakes. If you run out, you're OUT! Never spend your last one.",
-   "initial": 12,
+   "initial": 5,
    "min": 0,
    "color": "#ffd23f",
    "icon": "🪙",
@@ -152,8 +152,35 @@
   "goat_tips": {
    "description": "Loulou taught you the secret climbing route"
   },
+  "flock_swarm": {
+   "description": "The PiGeons swarmed you on this visit to Statue Square"
+  },
+  "flock_found": {
+   "description": "Found the cool star at Statue Square on this visit"
+  },
+  "flock_star": {
+   "description": "Already found the Statue Square star (once per game)"
+  },
+  "coins_central": {
+   "description": "Picked up the 3 tokens in Central"
+  },
+  "coins_man_mo": {
+   "description": "Got 3 tokens from the Man Mo keeper"
+  },
+  "coins_dingding": {
+   "description": "Found 3 tokens under the tram seat"
+  },
+  "coins_causeway": {
+   "description": "Got 3 tokens from the Causeway Bay shopkeeper"
+  },
   "robot_friend": {
-   "description": "Fed Bolt-Bot"
+   "description": "Shared a snack with Bolt-Bot before the duel (+4 Energy)"
+  },
+  "bot_dizzy": {
+   "description": "Whistled Bolt-Bot dizzy (it starts the duel with 4 less HP)"
+  },
+  "high_ground": {
+   "description": "Took the high ledge above the tower door (+1 attack in the duel)"
   },
   "secret_route": {
    "description": "Found the pearl in the Gremlin Vault"
@@ -495,6 +522,34 @@
   }
  },
  "characters": {
+  "flock": {
+   "name": "PiGeons",
+   "sprite": {
+    "palette": {
+     "g": "#9aa0b8",
+     "G": "#c3c8da",
+     "W": "#6b7090",
+     "k": "#1b1b2a",
+     "o": "#ff8a1f",
+     "n": "#5fd38a",
+     "p": "#b06bd0"
+    },
+    "rows": [
+     "............",
+     "......gg....",
+     ".....gGGg...",
+     ".....gGkGo..",
+     "....nnGGg...",
+     "...gnpggg...",
+     "..gggpgggg..",
+     ".gWWggggggg.",
+     ".gWWWgggggg.",
+     "..gggggggg..",
+     "....o..o....",
+     "...oo.oo...."
+    ]
+   }
+  },
   "liv": {
    "name": "Liv the Phoenix",
    "sprite": {
@@ -933,6 +988,479 @@
      "................"
     ]
    }
+  },
+  "gremlin": {
+   "name": "Glitch Gremlin",
+   "sprite": {
+    "palette": {
+     "P": "#8a3ffc",
+     "p": "#5a1fb0",
+     "z": "#7dff4a",
+     "K": "#1b1b2a",
+     "W": "#ffffff"
+    },
+    "rows": [
+     "................",
+     "..P..........P..",
+     "..PP........PP..",
+     "..PPP.PPPP.PPP..",
+     "...PPPPPPPPPP...",
+     "...PPPPPPPPPP...",
+     "..PPzzPPPPzzPP..",
+     "..PPzKPPPPzKPP..",
+     "..PPPPPPPPPPPP..",
+     "..PPWKWKWKWKPP..",
+     "...PPKKKKKKPP...",
+     "....PPPPPPPP....",
+     "...pPPPPPPPPp...",
+     "..pp.PPPPPP.pp..",
+     "....pp....pp....",
+     "...ppp....ppp..."
+    ]
+   }
+  },
+  "rabbit_costume": {
+   "name": "Gremlin dressed as Rabbit",
+   "sprite": {
+    "palette": {
+     "W": "#ffffff",
+     "w": "#dfe3f0",
+     "P": "#ff9eb0",
+     "K": "#1b1b2a",
+     "R": "#ff3d5a",
+     "Y": "#ffd23f",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "....ww....ww....",
+     "....WP....PW....",
+     "....WP....PW....",
+     "....WP....PW....",
+     "....WW....WW....",
+     "...WWWWWWWWWW...",
+     "..WWWWWWWWWWWW..",
+     "..WWzWWWWWWzWW..",
+     "..WPWWWWWWWWPW..",
+     "...WWWWPZWWWW...",
+     "....wWWWkWWw....",
+     "...RRRRRZRRRR...",
+     "..WRRYRRkRYRRW..",
+     "..WRRRRRZRRRRW..",
+     "...wWW....WWw...",
+     "...WWW....WWW..."
+    ]
+   }
+  },
+  "rat_costume": {
+   "name": "Gremlin dressed as Rat",
+   "sprite": {
+    "palette": {
+     "G": "#a3abbd",
+     "g": "#6b7387",
+     "P": "#ff9eb0",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "N": "#ff5d8f",
+     "Y": "#ffd23f",
+     "y": "#b8860b",
+     "w": "#e6e9f0",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "................",
+     "..ggg......ggg..",
+     ".gPPPg....gPPPg.",
+     ".gPPPgGGGGgPPPg.",
+     "..ggGGGGGGGGgg..",
+     "...GGGGGGGGGG...",
+     "...GWzGGGGWzG...",
+     "...GGGGGGGGGG...",
+     "..w.GGGNNGGG.w..",
+     "...w.gGGZGg.w...",
+     "....gGwwkwGg....",
+     "...yGGwwZwGG..g.",
+     "..yYYGwwkwGG..g.",
+     "..yYYGGGZGGG.g..",
+     "....GGG..GGGg...",
+     "...PPP....PPP..."
+    ]
+   }
+  },
+  "ox_costume": {
+   "name": "Gremlin dressed as Ox",
+   "sprite": {
+    "palette": {
+     "B": "#8a5a34",
+     "b": "#5e3a1f",
+     "W": "#f4ead2",
+     "w": "#c9b98f",
+     "S": "#e8b08a",
+     "s": "#b9785a",
+     "K": "#1b1b2a",
+     "Y": "#ffd23f",
+     "H": "#2b1a0e",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "................",
+     "WW............WW",
+     ".WW..........WW.",
+     "..WWbBBBBBBbWW..",
+     "..bBBBHHHHBBBb..",
+     "bbBBBBBBBBBBBBbb",
+     ".bBBzWBBBBzWBBb.",
+     "...BBBBBBBBBB...",
+     "...BSSSSSSSSB...",
+     "...SsSSSZSSsS...",
+     "...SSSSYkSSSS...",
+     "....bSSSZSSb....",
+     "...BBBBBkBBBB...",
+     "..BBBBwwZwBBBB..",
+     "...BBB....BBB...",
+     "...HHH....HHH..."
+    ]
+   }
+  },
+  "pig_costume": {
+   "name": "Gremlin dressed as Pig",
+   "sprite": {
+    "palette": {
+     "P": "#ffb3c7",
+     "p": "#e8849e",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "N": "#ff8fae",
+     "n": "#c45a78",
+     "A": "#f5f5f5",
+     "a": "#cfd6e6",
+     "R": "#ff3355",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "................",
+     "...pp......pp...",
+     "...pPp....pPp...",
+     "...PPPPPPPPPP...",
+     "..PPPPPPPPPPPP..",
+     "..PPWzPPPPWzPP..",
+     "..PPPPPPPPPPPP..",
+     "..PPPPNNNNPPPP..",
+     "..PpPNnNNnNPpP..",
+     "...PPPNNZNPPP...",
+     "....PPPPkPPP....",
+     "...AAAAAZAAAA...",
+     "..PAAARAkRAAAP..",
+     "..PAAAAAZAAAAP..",
+     "...PPP....PPP...",
+     "...ppp....ppp..."
+    ]
+   }
+  },
+  "dog_costume": {
+   "name": "Gremlin dressed as Dog",
+   "sprite": {
+    "palette": {
+     "T": "#d9a066",
+     "t": "#a8723e",
+     "W": "#ffffff",
+     "K": "#1b1b2a",
+     "P": "#ff5d8f",
+     "B": "#2a6fdb",
+     "Y": "#ffd23f",
+     "w": "#f4e6cf",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "................",
+     "..tt........tt..",
+     ".tTTt......tTTt.",
+     ".tTTtTTTTTTtTTt.",
+     ".tTTTTTTTTTTTTt.",
+     "..tTTTTTTTTTTt..",
+     "...TWzTTTTWzT...",
+     "...TTTTTTTTTT...",
+     "....TwwzzwwT....",
+     "....wwwwZwww....",
+     ".....wwPkww.....",
+     "...BBBBYZBBB....",
+     "...TTwwwkwTTT.t.",
+     "...TTwwwZwTTTt..",
+     "....TTT.TTT.....",
+     "...www...www...."
+    ]
+   }
+  },
+  "liv_costume": {
+   "name": "Gremlin dressed as Liv",
+   "sprite": {
+    "palette": {
+     "R": "#ff3b2f",
+     "r": "#c41f2a",
+     "O": "#ff8a1f",
+     "Y": "#ffd23f",
+     "W": "#fff3b0",
+     "K": "#1b1b2a",
+     "E": "#ffffff",
+     "B": "#ffb000",
+     "b": "#d9822b",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "....Y..Y...Y....",
+     "....YO.YO.YO....",
+     ".....OYOOYO.....",
+     ".....RRRRRRO....",
+     "....RRRRRRRR....",
+     "....RzzRRzzR....",
+     "....RRRBBRRR....",
+     ".Y..ORRbbRRO..Y.",
+     "YO...ORRRRO...OY",
+     "YOOrRRRWZRRRrOOY",
+     "YORRRRWYkWRRRROY",
+     ".YORrRWYZWRrROY.",
+     "..YOrRRWkRRrOY..",
+     "....rRRRZRRr....",
+     ".....B.OYO.B....",
+     "....BB..Y..BB..."
+    ]
+   }
+  },
+  "tiger_costume": {
+   "name": "Gremlin dressed as Tiger",
+   "sprite": {
+    "palette": {
+     "O": "#ff8a1f",
+     "o": "#d9661a",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "w": "#ffe9cc",
+     "P": "#ff9eb0",
+     "G": "#3dff6e",
+     "g": "#1f9a4c",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "................",
+     "..oo........oo..",
+     ".oPPo......oPPo.",
+     ".oOOOOzOOzOOOOo.",
+     "..OzOOOzzOOOzO..",
+     "..OOOOOOOOOOOO..",
+     "..OOGzOOOOGzOO..",
+     "..zOOOOOOOOOOz..",
+     "..OwwwwPPwwwwO..",
+     "...wwwwKZwwww...",
+     "....wwwwkwww....",
+     "...KOOOOZOOOK...",
+     "..WOOKOwkOKOOW..",
+     "..WOOOOwZOOOOW..",
+     "...OOK....KOO...",
+     "...www....www..."
+    ]
+   }
+  },
+  "horse_costume": {
+   "name": "Gremlin dressed as Horse",
+   "sprite": {
+    "palette": {
+     "B": "#c47a2c",
+     "b": "#8a5320",
+     "M": "#3a2418",
+     "W": "#ffffff",
+     "K": "#1b1b2a",
+     "N": "#e8a07a",
+     "R": "#ff3355",
+     "Y": "#ffd23f",
+     "w": "#ffffff",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "................",
+     ".....b....b.....",
+     "....bBM..MBb....",
+     "....BBMMMMBB....",
+     "....BBBMMBBB....",
+     "...BBBBMMBBBB...",
+     "...BWzBBBBWzB...",
+     "...BBBBBBBBBB...",
+     "....BBBBBBBB....",
+     "....BNNNZNNB....",
+     "....NKNNkNKN....",
+     ".....NNNZNN.....",
+     "...RRRRYkRRRR...",
+     "..BRRRRYZRRRRB..",
+     "...BBB....BBB...",
+     "...KKK....KKK..."
+    ]
+   }
+  },
+  "rooster_costume": {
+   "name": "Gremlin dressed as Rooster",
+   "sprite": {
+    "palette": {
+     "R": "#ff3355",
+     "r": "#c41f2a",
+     "W": "#ffffff",
+     "w": "#dcdcdc",
+     "Y": "#ffd23f",
+     "K": "#1b1b2a",
+     "O": "#ff8a1f",
+     "G": "#3dcf6e",
+     "B": "#2a6fdb",
+     "N": "#1f3a8a",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     ".......R.R......",
+     "......RRRRR.....",
+     ".....NNNNNNN....",
+     "....NNNNNNNNN...",
+     ".....WWWWWW.....",
+     "....WzWWWWzW....",
+     "....WWWYYWWW....",
+     "....WWWYYOWW....",
+     ".....WRRWWW.....",
+     "....NNNNZNNNG...",
+     "...NNNNYkNNNGG..",
+     "...NNNNNZNNNGB..",
+     "....NNNNkNNN.G..",
+     ".....WW..WW.....",
+     ".....YY..YY.....",
+     "....YYY..YYY...."
+    ]
+   }
+  },
+  "monkey_costume": {
+   "name": "Gremlin dressed as Monkey",
+   "sprite": {
+    "palette": {
+     "B": "#9a6236",
+     "b": "#6b4022",
+     "F": "#f2c79a",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "P": "#ff9eb0",
+     "Y": "#ffd23f",
+     "y": "#c9a32a",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "................",
+     ".....BBBBBB.....",
+     "....BBBBBBBB....",
+     "..FBBFFFFFFBBF..",
+     "..FBFWzFFWzFBF..",
+     "..FBFFFFFFFFBF..",
+     "...BFFFFFFFFB...",
+     "....FFPPPPFF....",
+     ".....FFFFFF.....",
+     "....BBBBZBBB....",
+     "...BBBFFkFBBBYy.",
+     "..FBBBFFZFBBBYy.",
+     "..F.BBBBkBBB.F..",
+     "....BBB..BBB..b.",
+     "...FFF....FFFb..",
+     "..............b."
+    ]
+   }
+  },
+  "snake_costume": {
+   "name": "Gremlin dressed as Snake",
+   "sprite": {
+    "palette": {
+     "G": "#3dcf6e",
+     "g": "#1f8a4c",
+     "Y": "#ffd23f",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "R": "#ff3355",
+     "B": "#c47a2c",
+     "b": "#8a5320",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "................",
+     ".....GGGGGG.....",
+     "....GGGGGGGG....",
+     "...GGWzGGWzGG...",
+     "...GGGGGGGGGG...",
+     "....GGGGGGGG....",
+     ".....GGGGGG.....",
+     "......GGGG......",
+     "......GRRg......",
+     ".......RZGg.....",
+     "...gGGGGkGGg....",
+     "..gGYGGYZGYGGg..",
+     ".gGGGGGGkGGGGGg.",
+     ".gGYGGYGZYGGYGg.",
+     "..ggGGGGGGGGgg..",
+     "................"
+    ]
+   }
+  },
+  "loulou_costume": {
+   "name": "Gremlin dressed as Loulou",
+   "sprite": {
+    "palette": {
+     "F": "#f4f1e8",
+     "f": "#c9c1ae",
+     "H": "#d8b47a",
+     "h": "#9a7440",
+     "Y": "#ffd23f",
+     "R": "#ff3355",
+     "S": "#14142a",
+     "G": "#29e7ff",
+     "N": "#ff9eb0",
+     "n": "#d97b8f",
+     "J": "#8a3ffc",
+     "j": "#6a2bd0",
+     "W": "#ffffff",
+     "E": "#e8d9c4",
+     "z": "#7dff4a",
+     "Z": "#e8e8e8",
+     "k": "#1b1b2a"
+    },
+    "rows": [
+     "....Y.YYYY.Y....",
+     ".hh.YYYRRYYY.hh.",
+     "hHH.FFFFFFFF.HHh",
+     "hH..FFFFFFFF..Hh",
+     ".h..FFFFFFFF..h.",
+     "zzzSSSSSSSSSSzzz",
+     ".zzSGSSSSGSSSzz.",
+     "....SSSFFSSS....",
+     "....FFFFFFFF....",
+     ".....fNNZNf.....",
+     ".....FnFknF.....",
+     "....JJJWZJJJ....",
+     "...FJYJJkJYJF...",
+     "...FjJYJZYJjF...",
+     "....ff.YY.ff....",
+     "..WRRR....RRRW.."
+    ]
+   }
   }
  },
  "trackers": [
@@ -1059,12 +1587,12 @@
   "reference": {
    "byStartStat": "luck",
    "values": {
-    "7": 1155,
-    "8": 1165,
-    "9": 1175,
-    "10": 1185,
-    "11": 1195,
-    "12": 1205
+    "7": 1550,
+    "8": 1560,
+    "9": 1570,
+    "10": 1580,
+    "11": 1590,
+    "12": 1600
    }
   },
   "ranks": [
@@ -1162,6 +1690,7 @@
     "When you open your eyes, you're standing on a waterfront made of chunky square pixels. In front of you is Hong Kong... but not quite. The skyscrapers are built from glowing blocks, the harbour sparkles in eight colours, and the moon is a perfect pixel circle.",
     "A plump orange cat with a dumpling-shaped face sits beside you. \"Finally! Player One!\" it says. \"I'm Siu Mai. Yes, like the dumpling. No, you may not eat me. The Glitch Gremlins stole the Neon Dragon's Pearl of Light and took it to the Sky Tower on the Peak, across the harbour. If it isn't back by midnight, every light here goes out. For good.\"",
     "\"Rules of this game,\" Siu Mai adds. \"Your Pixel Power is your timer: every move uses one, so don't dawdle. If it, your Energy or your Luck hits zero, you're trapped in the game forever. Run out of tokens and you're OUT. Oh, and the zodiac animals are all out tonight, except the Dragon, who's busy helping the moon. Each one you meet gives you a bit of Pixel Power. Meet all eleven and the Dragon herself might join you at the end: all twelve! Nobody's ever managed it.\"",
+    "\"One more thing,\" Siu Mai whispers. \"The gremlins love dressing up as zodiac animals to trick heroes. Look closely before you pick a path! A gremlin in a costume always slips up somewhere: glowing green eyes, a zip, the wrong noise, or a whiff of engine oil. A real animal does real animal things.\"",
     "\"So,\" says Siu Mai, \"how are we crossing the harbour?\""
    ],
    "illustration": {
@@ -1192,7 +1721,8 @@
    "title": "Temple Street Night Market",
    "text": [
     "Paper lanterns sway above a street packed with stalls. A pixel fish-ball seller flips sizzling snacks, a robot grandma sells socks that change colour every few seconds, and a fortune-telling parrot shouts \"NEXT!\" at nobody in particular.",
-    "A rabbit is selling glowing lanterns. A rat in a tiny waistcoat is counting coins under a stall. And a claw machine stuffed with prizes has something small and brass glinting at the bottom.",
+    "Two lantern stalls glow side by side, each run by a white rabbit. One rabbit nibbles a carrot, her pink nose twitching non-stop. The other stands very still, and under its hood its eyes glow a spooky green.",
+    "Under the stalls, two rats in tiny waistcoats are counting coins. One squeaks happily with every coin. The other one's long tail looks oddly like a black plastic cable, and the air around it smells of engine oil. And a claw machine stuffed with prizes has something small and brass glinting at the bottom.",
     "In a dark alley, a grinning gremlin beckons. \"Psst! Shortcut to the Peak! Totally safe!\" Siu Mai's fur stands on end."
    ],
    "illustration": {
@@ -1202,15 +1732,45 @@
    },
    "choices": [
     {
-     "label": "Visit the rabbit's lantern stall",
+     "label": "Visit the lantern stall of the rabbit with glowing green eyes",
+     "target": "gremlin_rabbit",
+     "hideIf": {
+      "any": [
+       {
+        "flag": "zodiac_rabbit",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_rabbit"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Visit the lantern stall of the rabbit whose nose twitches as she nibbles a carrot",
      "target": "lantern_stall"
     },
     {
-     "label": "Say hello to the rat in the waistcoat",
+     "label": "Say hello to the rat who squeaks as she counts",
      "target": "rat",
      "hideIf": {
       "flag": "zodiac_rat",
       "equals": true
+     }
+    },
+    {
+     "label": "Say hello to the rat with the cable-like tail (it smells of engine oil)",
+     "target": "gremlin_rat",
+     "hideIf": {
+      "any": [
+       {
+        "flag": "zodiac_rat",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_rat"
+       }
+      ]
      }
     },
     {
@@ -1754,7 +2314,8 @@
    "title": "Across the Harbour",
    "text": [
     "The Star Ferry chugs across the sparkling harbour. Pixel fish leap alongside, and the city lights twinkle on the waves, though some of them flicker and go dark as you watch.",
-    "Halfway across, three small purple gremlins pop out of the water, giggling. The captain flicks out his long tongue (THWIP!) and they tumble back into the waves. \"Pests,\" he grumbles from the wheelhouse. \"Come in for a cup of something hot.\""
+    "Halfway across, three small purple gremlins pop out of the water, giggling. The captain flicks out his long tongue (THWIP!) and they tumble back into the waves. \"Pests,\" he grumbles from the wheelhouse. \"Come in for a cup of something hot. The Ox is down below too.\"",
+    "Two doors lead off the deck. A trail of big, muddy hoofprints goes in through the wheelhouse door. The other door has a wonky sign, OX IN HERE, and from behind it something says: \"Oink... I mean, MOO!\""
    ],
    "illustration": {
     "src": "img/ferry.svg",
@@ -1763,7 +2324,18 @@
    },
    "choices": [
     {
-     "label": "Join the captain in the wheelhouse",
+     "label": "Knock on the door marked OX IN HERE (\"Oink... I mean, MOO!\")",
+     "target": "gremlin_ox",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "gremlin_ox"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Follow the muddy hoofprints into the wheelhouse",
      "target": "ferry_captain"
     },
     {
@@ -1886,7 +2458,7 @@
   "taxi_ride": {
    "title": "Cross-Harbour Grumbles",
    "text": [
-    "The taxi lurches off. The driver complains the whole way: about the traffic, the gremlins, the price of fish balls, his knees, and a pigeon that looked at him funny in 2003.",
+    "The taxi lurches off. The driver complains the whole way: about the traffic, the gremlins, the price of fish balls, his knees, and a PiGeon that looked at him funny in 2003.",
     "The tunnel lights flicker green and purple; gremlins are messing with them. \"See?\" he grumbles. \"Nobody fixes anything any more.\""
    ],
    "illustration": {
@@ -1912,7 +2484,7 @@
   "taxi_agree": {
    "title": "A Soft Centre",
    "text": [
-    "\"Yes, terrible traffic.\" \"Yes, fish balls are too expensive.\" \"Yes, that pigeon was very rude.\"",
+    "\"Yes, terrible traffic.\" \"Yes, fish balls are too expensive.\" \"Yes, that PiGeon was very rude.\"",
     "Slowly, the driver's eyebrows un-grump. At the kerb in Causeway Bay he hands you a milk sweet and an umbrella from under his seat. \"Somebody left it. Rain's coming, I feel it in my knees. Don't tell anyone I was nice.\""
    ],
    "onEnter": [
@@ -2154,6 +2726,7 @@
    "title": "Central",
    "text": [
     "Central is a canyon of glittering towers. Walkways float between buildings like ribbons, people hurry everywhere at once, and an escalator climbs right up the side of the hill.",
+    "Two cafés on the corner both have a pig on the sign. One has green tiles and smells of sweet milk tea. At the other, a 'pig' waves at you from the door, and its curly tail is held on with a safety pin. Down on Central Pier, the water laps at the steps.",
     "Up the steep old streets is Man Mo Temple. A dim sum restaurant clatters with trolleys. Ding-ding trams rattle past. And just up the road, the little red Peak Tram waits to climb the mountain."
    ],
    "illustration": {
@@ -2161,6 +2734,28 @@
     "alt": "The pixel towers of Central at night",
     "pixelated": true
    },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "coins_central",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "stat": "tokens",
+       "add": 3
+      },
+      {
+       "message": "Three arcade tokens glint in a crack in the pavement! +3 tokens"
+      },
+      {
+       "setFlag": "coins_central"
+      }
+     ]
+    }
+   ],
    "choices": [
     {
      "label": "Climb the steep streets to Man Mo Temple",
@@ -2174,7 +2769,27 @@
      }
     },
     {
-     "label": "Find Pig's cha chaan teng, like Auntie Lam said",
+     "label": "Find Pig's cha chaan teng: the café where a 'pig' waves from the door, its curly tail held on with a safety pin",
+     "target": "gremlin_pig",
+     "conditions": {
+      "flag": "met_auntie",
+      "equals": true
+     },
+     "hideIf": {
+      "any": [
+       {
+        "flag": "zodiac_pig",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_pig"
+       }
+      ]
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Find Pig's cha chaan teng: the green-tiled café that smells of sweet milk tea",
      "target": "cha_chaan_teng",
      "conditions": {
       "flag": "met_auntie",
@@ -2187,7 +2802,7 @@
      "hideIfLocked": true
     },
     {
-     "label": "Blow the Silver Whistle on Central Pier",
+     "label": "Blow the Silver Whistle at the end of the pier, where wet paw prints come up from the water",
      "target": "dog",
      "conditions": {
       "hasItem": "whistle"
@@ -2199,8 +2814,27 @@
      "hideIfLocked": true
     },
     {
+     "label": "Blow the Silver Whistle by the pier kiosk, where a 'dog' answers with a loud \"MEOW!\"",
+     "target": "gremlin_dog",
+     "conditions": {
+      "hasItem": "whistle"
+     },
+     "hideIf": {
+      "any": [
+       {
+        "flag": "zodiac_dog",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_dog"
+       }
+      ]
+     },
+     "hideIfLocked": true
+    },
+    {
      "label": "Ride the Peak Tram up the mountain",
-     "target": "tram_monkey",
+     "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
       "equals": true
@@ -2214,6 +2848,135 @@
       "equals": true
      },
      "hideIfLocked": true
+    },
+    {
+     "label": "Hop on a ding-ding tram",
+     "target": "dingding"
+    },
+    {
+     "label": "Wander over to Statue Square (famous for its PiGeons)",
+     "target": "statue_square"
+    }
+   ]
+  },
+  "statue_square": {
+   "title": "Statue Square",
+   "text": [
+    "Statue Square is a wide paved plaza between the glass towers, with a splashing fountain and a grand old domed courthouse that glows in the dark. A golden statue stands on top of the dome, holding a set of scales.",
+    "And the square belongs to the PiGeons. Hundreds of them, strutting, bobbing and cooing, their necks shimmering green and purple under the streetlights.",
+    {
+     "if": {
+      "flag": "flock_swarm",
+      "equals": true
+     },
+     "text": "Then every PiGeon in the square stops. Turns. And sniffs. They have smelled your snacks. With a roar of wings, a grey cloud of PiGeons swoops down on you! They peck open your bag, gobble every last egg tart and bun, and leave you dizzy, flappy and covered in crumbs. (-2 Pixel Power, -2 Energy, -2 Luck.)"
+    },
+    {
+     "if": {
+      "flag": "flock_swarm",
+      "equals": false
+     },
+     "text": "The PiGeons look you up and down, see that you have no buns and no egg tarts, and go straight back to their bobbing. One old PiGeon waddles past and mutters: \"Coo. That tin robot up on the Peak? Coo. Goes all dizzy at a whistle, it does. Coo.\""
+    },
+    {
+     "if": {
+      "flag": "flock_found",
+      "equals": true
+     },
+     "text": "Where it was pecking, something glitters between the paving stones: a tiny, twinkling pixel star! You pick it up and it zooms into your star counter. (+1 bonus star, just for fun.)"
+    }
+   ],
+   "illustration": {
+    "src": "img/statue.svg",
+    "alt": "Statue Square at night, crowded with PiGeons",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "flock",
+      "x": 70,
+      "y": 30,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "clearFlag": "flock_swarm"
+    },
+    {
+     "clearFlag": "flock_found"
+    },
+    {
+     "if": {
+      "any": [
+       {
+        "hasItem": "egg_tart"
+       },
+       {
+        "hasItem": "pineapple_bun"
+       }
+      ]
+     },
+     "then": [
+      {
+       "setFlag": "flock_swarm"
+      },
+      {
+       "message": "The PiGeons swarm you!"
+      },
+      {
+       "removeItem": "egg_tart",
+       "quantity": 99,
+       "lost": true
+      },
+      {
+       "removeItem": "pineapple_bun",
+       "quantity": 99,
+       "lost": true
+      },
+      {
+       "stat": "power",
+       "add": -2
+      },
+      {
+       "stat": "energy",
+       "add": -2
+      },
+      {
+       "stat": "luck",
+       "add": -2
+      }
+     ],
+     "else": [
+      {
+       "if": {
+        "not": {
+         "flag": "flock_star",
+         "equals": true
+        }
+       },
+       "then": [
+        {
+         "setFlag": "flock_star"
+        },
+        {
+         "setFlag": "flock_found"
+        },
+        {
+         "bonusStar": 1
+        },
+        {
+         "message": "You found a cool star!"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "label": "Head back to Central",
+     "target": "central"
     },
     {
      "label": "Hop on a ding-ding tram",
@@ -2283,7 +3046,7 @@
     },
     {
      "label": "Ask Pig the way to the Peak Tram, and go",
-     "target": "tram_monkey",
+     "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
       "equals": true
@@ -2359,7 +3122,7 @@
     },
     {
      "label": "Follow the dog's nose to the Peak Tram",
-     "target": "tram_monkey",
+     "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
       "equals": true
@@ -2387,6 +3150,28 @@
     "alt": "A quiet temple with hanging incense coils and soft smoke",
     "pixelated": true
    },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "coins_man_mo",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "stat": "tokens",
+       "add": 3
+      },
+      {
+       "message": "The keeper presses three tokens into your hand: \"For courage.\" +3 tokens"
+      },
+      {
+       "setFlag": "coins_man_mo"
+      }
+     ]
+    }
+   ],
    "choices": [
     {
      "label": "Bow, walk softly and look around",
@@ -2469,7 +3254,7 @@
     },
     {
      "label": "Walk along the hill to the Peak Tram",
-     "target": "tram_monkey",
+     "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
       "equals": true
@@ -2580,7 +3365,7 @@
     },
     {
      "label": "Waddle round the corner to the Peak Tram",
-     "target": "tram_monkey",
+     "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
       "equals": true
@@ -2688,7 +3473,7 @@
    "title": "Causeway Bay",
    "text": [
     "You pop out into Causeway Bay and the noise hits you like a wave: beeping crossings, chattering crowds, music from twenty shops at once. Neon signs stack up the buildings like a giant, glowing bookshelf, though some are flickering and going dark.",
-    "On top of the tallest sign sits a bird made of fire, keeping it alight with her own glow. Over the road, the giant screen at Times Square shows the Gremlin King's face: \"MIDNIGHT SALE! ALL LIGHTS 100% OFF!\" And next to a bubble tea shop, a new shop flashes: GLITCH MEGA SALE. EVERYTHING FREE!!!"
+    "On top of the tallest sign sits a bird made of fire, keeping it alight with her own glow: you can feel her warmth on your face even from down here. On a smaller sign across the road sits a second 'fiery bird', but its flames are cold, flickering strips of light that buzz like a broken fridge. Over the road, the giant screen at Times Square shows the Gremlin King's face: \"MIDNIGHT SALE! ALL LIGHTS 100% OFF!\" And next to a bubble tea shop, a new shop flashes: GLITCH MEGA SALE. EVERYTHING FREE!!!"
    ],
    "illustration": {
     "src": "img/causeway.svg",
@@ -2703,6 +3488,28 @@
      }
     ]
    },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "coins_causeway",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "stat": "tokens",
+       "add": 3
+      },
+      {
+       "message": "A shopkeeper sweeping up drops you three spare arcade tokens! +3 tokens"
+      },
+      {
+       "setFlag": "coins_causeway"
+      }
+     ]
+    }
+   ],
    "choices": [
     {
      "label": "Get a bubble tea (tap Octopus card)",
@@ -2743,7 +3550,22 @@
      ]
     },
     {
-     "label": "Call up to the fiery bird on the neon sign",
+     "label": "Call up to the 'fiery bird' whose cold flames buzz like a broken fridge",
+     "target": "gremlin_liv",
+     "hideIf": {
+      "any": [
+       {
+        "flag": "liv_passed",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_liv"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Call up to the fiery bird whose warmth you can feel from the street",
      "target": "liv",
      "hideIf": {
       "flag": "liv_passed",
@@ -2851,15 +3673,11 @@
     "untilCorrect": true,
     "onCorrect": [
      {
-      "stat": "tokens",
-      "add": 1
-     },
-     {
       "stat": "energy",
       "add": 2
      },
      {
-      "message": "Correct! +1 token, +2 Energy"
+      "message": "Correct! +2 Energy"
      }
     ],
     "wrong": {
@@ -3157,7 +3975,75 @@
   "victoria_park": {
    "title": "Victoria Park",
    "text": [
-    "Victoria Park is full of people doing slow, flowing tai chi under the trees. At the front, leading the class, is a stripy tiger in silk pyjamas, moving as smoothly as water.",
+    "Victoria Park is full of people doing slow, flowing tai chi. Tonight there are two classes, and each one is led by a stripy tiger in silk pyjamas.",
+    "Under the trees, the first tiger moves as smoothly as water, leaving big, soft paw prints in the damp grass. By the fountain, the second 'tiger' is waving its arms about, and its stripes are running in the drizzle, as if somebody painted them on. \"Woof! I mean... ROAR!\" it calls."
+   ],
+   "illustration": {
+    "src": "img/park.svg",
+    "alt": "Two tai chi classes in Victoria Park, each led by a tiger",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "tiger",
+      "x": 18,
+      "y": 22,
+      "scale": 2
+     },
+     {
+      "id": "tiger_costume",
+      "x": 62,
+      "y": 22,
+      "scale": 2
+     }
+    ]
+   },
+   "choices": [
+    {
+     "label": "Join the class under the trees, where big soft paw prints dot the grass",
+     "target": "tiger_class",
+     "hideIf": {
+      "flag": "zodiac_tiger",
+      "equals": true
+     }
+    },
+    {
+     "label": "Join the class by the fountain, led by the 'tiger' whose painted stripes are running",
+     "target": "gremlin_tiger",
+     "hideIf": {
+      "any": [
+       {
+        "flag": "zodiac_tiger",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_tiger"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Join the Tiger's class under the trees again",
+     "target": "tiger_class",
+     "conditions": {
+      "flag": "zodiac_tiger",
+      "equals": true
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Head back to Causeway Bay",
+     "target": "causeway_bay"
+    },
+    {
+     "label": "Catch the red minibus at the park gate",
+     "target": "minibus"
+    }
+   ]
+  },
+  "tiger_class": {
+   "title": "The Tiger's Class",
+   "text": [
+    "The real Tiger flows from one pose to the next as smoothly as water. Up close, you can hear a deep, happy purr rumbling in her chest.",
     "\"Join us!\" the Tiger purrs. \"Copy my moves. But only if you're feeling lucky, little one. Wobbly heroes fall in the flower beds.\""
    ],
    "illustration": {
@@ -3262,7 +4148,75 @@
   "happy_valley": {
    "title": "Happy Valley",
    "text": [
-    "The Happy Valley racecourse glows like a giant green bowl in the middle of the city. On the track, a horse in red-and-gold racing silks is doing warm-up stretches.",
+    "The Happy Valley racecourse glows like a giant green bowl in the middle of the city. Two horses in red-and-gold racing silks are warming up on the track.",
+    "One trots up and down, her hooves going clip-clop, clip-clop, her tail swishing at the moths. The other stands by the rail, chewing slowly. As you watch, it lifts its head and goes: \"MOOOO.\" Then it looks around, very embarrassed."
+   ],
+   "illustration": {
+    "src": "img/racecourse.svg",
+    "alt": "Two horses in racing silks at the Happy Valley racecourse",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "horse_costume",
+      "x": 14,
+      "y": 22,
+      "scale": 2
+     },
+     {
+      "id": "horse",
+      "x": 60,
+      "y": 22,
+      "scale": 2
+     }
+    ]
+   },
+   "choices": [
+    {
+     "label": "Go and meet the horse that just said \"MOOOO\"",
+     "target": "gremlin_horse",
+     "hideIf": {
+      "any": [
+       {
+        "flag": "zodiac_horse",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_horse"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Go and meet the horse whose hooves go clip-clop",
+     "target": "horse_track",
+     "hideIf": {
+      "flag": "zodiac_horse",
+      "equals": true
+     }
+    },
+    {
+     "label": "Go and see the Horse again",
+     "target": "horse_track",
+     "conditions": {
+      "flag": "zodiac_horse",
+      "equals": true
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Head back to Causeway Bay",
+     "target": "causeway_bay"
+    },
+    {
+     "label": "Catch the red minibus outside the racecourse",
+     "target": "minibus"
+    }
+   ]
+  },
+  "horse_track": {
+   "title": "The Real Horse",
+   "text": [
+    "Clip-clop, clip-clop. The real Horse trots over and tosses her mane.",
     "\"Fancy a race?\" the Horse neighs. \"One token to enter. Beat me and I'll pay you three! Lose, and your luck runs out of puff.\" Siu Mai whispers, \"Betting is a gamble. Most of the time, the horse wins, you know.\""
    ],
    "illustration": {
@@ -3369,8 +4323,110 @@
   "dingding": {
    "title": "Ding-Ding!",
    "text": [
-    "The old double-decker tram rattles along the middle of the road: ding-ding! You climb to the top deck and grab the front seat, the best seat in the whole of Hong Kong.",
-    "The conductor is a rooster in a smart blue cap. \"Cock-a-doodle-DING!\" he crows, ringing the bell. \"Early bird gets the luck, little hero!\" Shop signs slide past close enough to touch. Where to?"
+    "The old double-decker tram rattles along the middle of the road: ding-ding! Shop signs slide past close enough to touch.",
+    "Tonight this tram has two conductors in rooster costumes... or are they? Up on the top deck, one throws back his head and crows \"Cock-a-doodle-DING!\" as the neon signs light up like a sunrise. Downstairs, the other's floppy red comb looks a lot like a rubber washing-up glove, and it just says \"Ding.\" in a bored, buzzy voice. Where to?"
+   ],
+   "illustration": {
+    "src": "img/tram.svg",
+    "alt": "A double-decker ding-ding tram with two rooster conductors",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "rooster",
+      "x": 66,
+      "y": 24,
+      "scale": 1
+     },
+     {
+      "id": "rooster_costume",
+      "x": 40,
+      "y": 34,
+      "scale": 1
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "coins_dingding",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "stat": "tokens",
+       "add": 3
+      },
+      {
+       "message": "Three tokens roll out from under your seat! +3 tokens"
+      },
+      {
+       "setFlag": "coins_dingding"
+      }
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "label": "Sit downstairs with the conductor whose comb looks like a rubber glove",
+     "target": "gremlin_rooster",
+     "hideIf": {
+      "any": [
+       {
+        "flag": "zodiac_rooster",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_rooster"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Climb to the top deck, where the conductor crows at the neon sunrise",
+     "target": "rooster_deck",
+     "hideIf": {
+      "flag": "zodiac_rooster",
+      "equals": true
+     }
+    },
+    {
+     "label": "Hop off in Sheung Wan, near Man Mo Temple",
+     "target": "man_mo"
+    },
+    {
+     "label": "Hop off in Central",
+     "target": "central"
+    },
+    {
+     "label": "Ride east to Causeway Bay",
+     "target": "causeway_bay"
+    },
+    {
+     "label": "Hop off at the Peak Tram stop",
+     "target": "tram_gate",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Hop off at the Peak Tram stop",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
+    }
+   ]
+  },
+  "rooster_deck": {
+   "title": "Top Deck",
+   "text": [
+    "You climb to the top deck and grab the front seat, the best seat in the whole of Hong Kong.",
+    "The conductor is a real rooster in a smart blue cap. \"Cock-a-doodle-DING!\" he crows, ringing the bell. \"Early bird gets the luck, little hero!\" Where to?"
    ],
    "illustration": {
     "src": "img/tram.svg",
@@ -3446,7 +4502,7 @@
     },
     {
      "label": "Hop off at the Peak Tram stop",
-     "target": "tram_monkey",
+     "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
       "equals": true
@@ -3489,7 +4545,7 @@
    "choices": [
     {
      "label": "Climb out at the Peak Tram station",
-     "target": "tram_monkey",
+     "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
       "equals": true
@@ -3521,7 +4577,7 @@
    "choices": [
     {
      "label": "Stagger out at the Peak Tram station",
-     "target": "tram_monkey",
+     "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
       "equals": true
@@ -3538,10 +4594,53 @@
     }
    ]
   },
+  "tram_gate": {
+   "title": "The Peak Tram Station",
+   "text": [
+    "The Peak Tram station has two ticket barriers, and a monkey is swinging from each one.",
+    "The monkey on the first barrier is peeling a banana and chattering \"Ook-ook!\". The monkey on the second is eating its banana WITH THE SKIN ON, and its long tail is a bendy, stripy drinking straw."
+   ],
+   "illustration": {
+    "src": "img/tunnel.svg",
+    "alt": "Two monkeys swinging on two Peak Tram barriers",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "monkey",
+      "x": 18,
+      "y": 22,
+      "scale": 2
+     },
+     {
+      "id": "monkey_costume",
+      "x": 62,
+      "y": 22,
+      "scale": 2
+     }
+    ]
+   },
+   "choices": [
+    {
+     "label": "Go to the barrier of the monkey peeling a banana",
+     "target": "tram_monkey"
+    },
+    {
+     "label": "Go to the barrier of the monkey with the drinking-straw tail",
+     "target": "gremlin_monkey",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "gremlin_monkey"
+       }
+      ]
+     }
+    }
+   ]
+  },
   "tram_monkey": {
    "title": "The Monkey at the Tram",
    "text": [
-    "At the Peak Tram station, a cheeky monkey is swinging from the ticket barrier, munching a banana. \"Nobody rides MY tram,\" he chatters, \"unless they can answer my riddle! Get it wrong and you pay, then you get another one!\"",
+    "At the barrier, the cheeky monkey swings by his tail, munching his banana. \"Nobody rides MY tram,\" he chatters, \"unless they can answer my riddle! Get it wrong and you pay, then you get another one!\"",
     "Behind you, the street leads back to Central. You could always find another way up the mountain..."
    ],
    "illustration": {
@@ -3563,15 +4662,11 @@
     "untilCorrect": true,
     "onCorrect": [
      {
-      "stat": "tokens",
-      "add": 1
-     },
-     {
       "stat": "energy",
       "add": 2
      },
      {
-      "message": "Correct! +1 token, +2 Energy"
+      "message": "Correct! +2 Energy"
      }
     ],
     "wrong": {
@@ -3723,12 +4818,27 @@
   "tunnel_lit": {
    "title": "Hidden Door",
    "text": [
-    "Warm light spills through the tunnel. The giggling stops (gremlins hate light!) and you spot something the dark was hiding: a small round door in the tunnel wall, painted with a dragon's claw.",
-    "Underneath, someone has scratched: GREMLIN VAULT. KEEP OUT. (THIS MEANS YOU.)"
+    "Warm light spills through the tunnel. The giggling stops (gremlins hate light!) and you spot something the dark was hiding: two small round doors in the tunnel wall, both painted with a dragon's claw.",
+    "Underneath, someone has scratched: GREMLIN VAULT. KEEP OUT. (THIS MEANS YOU.) In the light you can see a papery, see-through shed snake skin lying in front of one door. From behind the other comes a hiss... that sounds exactly like a leaking bicycle pump."
    ],
    "choices": [
     {
-     "label": "Unlock the door with the brass key",
+     "label": "Unlock the door that hisses like a leaking bicycle pump",
+     "target": "gremlin_snake",
+     "conditions": {
+      "hasItem": "brass_key"
+     },
+     "lockedHint": "Needs a Brass Key. Somewhere in Pixel Harbour there must be one...",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "gremlin_snake"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Unlock the door with the shed snake skin in front of it",
      "target": "vault_snake",
      "conditions": {
       "hasItem": "brass_key"
@@ -3766,15 +4876,11 @@
     "untilCorrect": true,
     "onCorrect": [
      {
-      "stat": "tokens",
-      "add": 1
-     },
-     {
       "stat": "energy",
       "add": 2
      },
      {
-      "message": "Correct! +1 token, +2 Energy"
+      "message": "Correct! +2 Energy"
      }
     ],
     "wrong": {
@@ -3842,7 +4948,8 @@
    "title": "The Gremlin Vault",
    "text": [
     "The vault is piled high with everything the gremlins have ever stolen: odd socks, TV remotes, a thousand lost umbrellas, every pen you have ever lent anyone, and a big jar of tokens.",
-    "You scoop up the Pearl of Light. It feels warm, like holding a tiny sun. The Snake winks. \"Take ssssome tokens too. The gremlins owe everyone.\""
+    "You scoop up the Pearl of Light. It feels warm, like holding a tiny sun. The Snake winks. \"Take ssssome tokens too. The gremlins owe everyone.\"",
+    "\"One more thing,\" hisses the Snake. \"The only way up to the Dragon is through the Sky Tower door, and that big tin bully guards it. You'll have to get past Bolt-Bot. No sssneaking.\""
    ],
    "illustration": {
     "src": "img/vault.svg",
@@ -3866,8 +4973,8 @@
    ],
    "choices": [
     {
-     "label": "Race up to the Neon Dragon",
-     "target": "dragon_summit"
+     "label": "Climb the vault's secret stairs back up to the Peak",
+     "target": "peak_top"
     }
    ]
   },
@@ -3876,7 +4983,7 @@
    "text": [
     "The top of the Peak is windy and wild. Far below, Pixel Harbour twinkles, but whole streets have already gone dark. The Sky Tower looms above you, and the Neon Dragon is coiled weakly around it, her lights dim and flickering.",
     "Blocking the tower door stands BOLT-BOT, the gremlins' guard: a rusty robot as tall as a bus, with a saucepan for a head. \"HALT. NO. PLAYERS. ALLOWED.\" Its tummy makes a long, sad rumble.",
-    "Over by the lookout railing, a goat in golden sneakers and a tiny crown is doing tricks for a crowd of tourists."
+    "Over by the lookout railing, two goats in golden sneakers and tiny crowns are doing tricks for the tourists. One lands a backflip with a sharp clatter of hooves. The other has its sneakers on the wrong feet, and when it bows, you hear the soft zzzip of a zip."
    ],
    "illustration": {
     "src": "img/robot.svg",
@@ -3885,20 +4992,28 @@
    },
    "choices": [
     {
-     "label": "Blow the Silver Whistle",
+     "label": "Blow the Silver Whistle at Bolt-Bot (it'll be dizzy for the duel)",
      "target": "bot_dance",
      "conditions": {
       "hasItem": "whistle"
      },
-     "lockedHint": "Needs a Silver Whistle"
+     "lockedHint": "Needs a Silver Whistle",
+     "hideIf": {
+      "flag": "bot_dizzy",
+      "equals": true
+     }
     },
     {
-     "label": "Offer Bolt-Bot your egg tart",
+     "label": "Share your egg tart with Bolt-Bot before the duel",
      "target": "bot_snack",
      "conditions": {
       "hasItem": "egg_tart"
      },
      "lockedHint": "Needs an Egg Tart",
+     "hideIf": {
+      "flag": "robot_friend",
+      "equals": true
+     },
      "effects": [
       {
        "removeItem": "egg_tart"
@@ -3906,10 +5021,14 @@
      ]
     },
     {
-     "label": "Offer Bolt-Bot your bubble tea",
+     "label": "Share your bubble tea with Bolt-Bot before the duel",
      "target": "bot_snack",
      "conditions": {
       "hasItem": "bubble_tea"
+     },
+     "hideIf": {
+      "flag": "robot_friend",
+      "equals": true
      },
      "hideIfLocked": true,
      "effects": [
@@ -3919,7 +5038,22 @@
      ]
     },
     {
-     "label": "Talk to the goat in golden sneakers",
+     "label": "Talk to the goat with its sneakers on the wrong feet",
+     "target": "gremlin_goat",
+     "hideIf": {
+      "any": [
+       {
+        "flag": "loulou_passed",
+        "equals": true
+       },
+       {
+        "visited": "gremlin_goat"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Talk to the goat who lands her backflips with a clatter of hooves",
      "target": "loulou",
      "hideIf": {
       "flag": "loulou_passed",
@@ -3927,10 +5061,14 @@
      }
     },
     {
-     "label": "Climb the tower the way Loulou showed you",
+     "label": "Climb to the high ledge above the door, the way Loulou showed you",
      "target": "goat_climb",
      "conditions": {
       "flag": "goat_tips",
+      "equals": true
+     },
+     "hideIf": {
+      "flag": "high_ground",
       "equals": true
      },
      "hideIfLocked": true
@@ -3951,8 +5089,8 @@
      }
     },
     {
-     "label": "Pop back down the lit tunnel to the dragon-claw door",
-     "target": "vault_snake",
+     "label": "Pop back down the lit tunnel to the dragon-claw doors",
+     "target": "tunnel_lit",
      "conditions": {
       "all": [
        {
@@ -3963,10 +5101,13 @@
        }
       ]
      },
+     "hideIf": {
+      "visited": "vault"
+     },
      "hideIfLocked": true
     },
     {
-     "label": "Challenge Bolt-Bot to a BOSS duel! (tough!)",
+     "label": "Challenge Bolt-Bot to the BOSS duel! (the only way into the tower)",
      "target": "bot_battle"
     },
     {
@@ -3984,7 +5125,7 @@
    "title": "Loulou the GOAT",
    "text": [
     "The goat finishes a triple backflip off the railing, lands perfectly and bows. The tourists go wild. \"Loulou the GOAT,\" she says, adjusting her crown. \"Greatest Of All Time. Also, an actual goat. Zodiac goat, if you're counting.\"",
-    "\"Want to know how to get past that robot? I know a secret climbing route. GOATs climb anything. But first: a riddle. Mess it up and it'll cost you, then I'll throw you another. Or wander off and try another path. Your call, champ.\""
+    "\"Want an edge against that robot? I know a secret climbing route up to the ledge above its door. GOATs climb anything. But first: a riddle. Mess it up and it'll cost you, then I'll throw you another. Or wander off and try another path. Your call, champ.\""
    ],
    "illustration": {
     "src": "img/peak.svg",
@@ -4005,15 +5146,11 @@
     "untilCorrect": true,
     "onCorrect": [
      {
-      "stat": "tokens",
-      "add": 1
-     },
-     {
       "stat": "energy",
       "add": 2
      },
      {
-      "message": "Correct! +1 token, +2 Energy"
+      "message": "Correct! +2 Energy"
      }
     ],
     "wrong": {
@@ -4080,7 +5217,7 @@
        "setFlag": "goat_tips"
       },
       {
-       "message": "Loulou taught you her secret climbing route!"
+       "message": "Loulou taught you her secret climbing route! (High ground: +1 attack against Bolt-Bot)"
       },
       {
        "message": "Loulou winks: \"Spotted a little dragon-claw door in the tunnel on the way up? It's only a hop back down. No need to ride all the way to the bottom!\""
@@ -4090,15 +5227,24 @@
    }
   },
   "goat_climb": {
-   "title": "The GOAT Route",
+   "title": "The High Ground",
    "text": [
-    "Hop on the bin. Spring to the lamp-post. Toes on the drainpipe. Never look down. You climb exactly the way Loulou showed you, and Bolt-Bot never even notices.",
-    "You swing in through a high window of the Sky Tower. Siu Mai, who climbed it without any help at all, is already waiting."
+    "Hop on the bin. Spring to the lamp-post. Toes on the drainpipe. Never look down. You climb exactly the way Loulou showed you, right up to the stone ledge above the tower door.",
+    "Bolt-Bot is directly below you, scanning the path. It has no idea you're up here. The tower windows are all locked tight, so the only way in is still through that door, but now you've got the HIGH GROUND. (+1 attack in the duel.)"
+   ],
+   "onEnter": [
+    {
+     "setFlag": "high_ground"
+    }
    ],
    "choices": [
     {
-     "label": "Creep up to the top of the tower",
-     "target": "tower_top"
+     "label": "Leap down on Bolt-Bot and start the duel!",
+     "target": "bot_battle"
+    },
+    {
+     "label": "Climb back down and get ready some more",
+     "target": "peak_top"
     }
    ]
   },
@@ -4128,31 +5274,48 @@
   "bot_dance": {
    "title": "Robot Boogie",
    "text": [
-    "You blow one bright silver note. Bolt-Bot freezes. Then its feet start tapping. In seconds it's doing the robot (badly) and it boogies right out of the doorway and away down the hill.",
-    "\"I. CANNOT. STOP,\" it wails happily."
+    "You blow one bright silver note. Bolt-Bot freezes. Then its feet start tapping. In seconds it's doing the robot (badly), spinning round and round in front of the door.",
+    "\"I. CANNOT. STOP,\" it wails. When the music in its head finally stops, it wobbles back into the doorway, dizzy and dented. It still won't let you pass, but it'll start the duel with 4 less HP!"
+   ],
+   "onEnter": [
+    {
+     "setFlag": "bot_dizzy"
+    }
    ],
    "choices": [
     {
-     "label": "Dash into the Sky Tower",
-     "target": "tower_top"
+     "label": "Challenge the dizzy robot to the duel!",
+     "target": "bot_battle"
+    },
+    {
+     "label": "Get ready some more",
+     "target": "peak_top"
     }
    ]
   },
   "bot_snack": {
-   "title": "Snack Attack",
+   "title": "Snack Break",
    "text": [
-    "Bolt-Bot sniffs. Its saucepan head tilts. Then it gobbles your snack in one bite, and its eyes turn into two pink hearts.",
-    "\"DELICIOUS. NOBODY. EVER. FEEDS. BOLT-BOT.\" It steps aside and gives you a creaky thumbs-up. Auntie Lam was right!"
+    "Bolt-Bot sniffs. Its saucepan head tilts. You break your snack in half and sit down on the step together for a quick picnic. Its eyes turn into two pink hearts.",
+    "\"DELICIOUS. THANK. YOU.\" Then it stands up and cracks its knuckles. \"BUT. RULES. ARE. RULES. NOBODY. PASSES. WITHOUT. A. DUEL.\" At least you're full of energy now. (+4 Energy before the fight.)"
    ],
    "onEnter": [
     {
      "setFlag": "robot_friend"
+    },
+    {
+     "stat": "energy",
+     "add": 4
     }
    ],
    "choices": [
     {
-     "label": "Dash into the Sky Tower",
-     "target": "tower_top"
+     "label": "Challenge Bolt-Bot to the duel!",
+     "target": "bot_battle"
+    },
+    {
+     "label": "Get ready some more",
+     "target": "peak_top"
     }
    ]
   },
@@ -4163,7 +5326,7 @@
     "\"BEEP BOOP. FINAL. BOSS. ACTIVATED. PREPARE. FOR. MEGA. BOPPING.\""
    ],
    "combat": {
-    "intro": "BOSS FIGHT! Turbo Bolt-Bot has ATTACK 8 and 10 HP, and its mega-bops knock off 3 Energy. Each round you both roll two dice and add your attack (your LUCK plus any boosts). Higher total lands a bop: you knock off 2 HP. Friends and gear help: 4+ zodiac friends +1 attack, 8+ another +1, the Phoenix Feather +1, and the duck Umbrella blocks 1 damage from every bop. Changed your mind? You can RUN AWAY at any point until the duel is decided. Careful: if your Energy hits 0, you're trapped in the game forever.",
+    "intro": "BOSS FIGHT! Turbo Bolt-Bot has ATTACK 8 and 10 HP, and its mega-bops knock off 3 Energy. Each round you both roll two dice and add your attack (your LUCK plus any boosts). Higher total lands a bop: you knock off 2 HP. Friends and gear help: 2+ zodiac friends +1 attack, 4+ another +1, the Phoenix Feather +1, Loulou's high ground +1, the Silver Whistle makes it start dizzy (4 less HP), a shared snack fills you up before the fight, and the duck Umbrella blocks 1 damage from every bop. This is the only way into the tower: RUN AWAY (back to the lookout, -3 Pixel Power) and you'll have to come back and fight. Careful: if your Energy hits 0, you're trapped in the game forever.",
     "enemies": [
      {
       "name": "Turbo Bolt-Bot",
@@ -4202,13 +5365,13 @@
      {
       "label": "Zodiac friends cheer you on",
       "tracker": "zodiac",
-      "min": 4,
+      "min": 2,
       "attack": 1
      },
      {
       "label": "The whole zodiac crowd roars",
       "tracker": "zodiac",
-      "min": 8,
+      "min": 4,
       "attack": 1
      },
      {
@@ -4224,6 +5387,30 @@
        "hasItem": "umbrella"
       },
       "armor": 1
+     },
+     {
+      "label": "High ground (Loulou's climb)",
+      "conditions": {
+       "flag": "high_ground",
+       "equals": true
+      },
+      "attack": 1
+     },
+     {
+      "label": "Silver Whistle: dizzy robot",
+      "conditions": {
+       "flag": "bot_dizzy",
+       "equals": true
+      },
+      "stun": 4
+     },
+     {
+      "label": "Snack break",
+      "conditions": {
+       "flag": "robot_friend",
+       "equals": true
+      },
+      "note": "+4 Energy before the fight"
      }
     ],
     "win": {
@@ -4235,12 +5422,15 @@
      "text": "Turbo Bolt-Bot mega-bops you!"
     },
     "flee": {
-     "label": "RUN AWAY! (back to the tram, -1 Energy)",
-     "target": "central",
+     "label": "RUN AWAY! (back to the lookout, -3 Pixel Power)",
+     "target": "peak_top",
      "effects": [
       {
-       "stat": "energy",
-       "add": -1
+       "stat": "power",
+       "add": -3
+      },
+      {
+       "message": "You scramble back to the lookout. Bolt-Bot is still guarding the door: you'll have to come back and fight!"
       }
      ]
     }
@@ -4264,7 +5454,18 @@
    "choices": [
     {
      "label": "Dash into the Sky Tower",
-     "target": "tower_top"
+     "target": "tower_top",
+     "hideIf": {
+      "hasItem": "pearl"
+     }
+    },
+    {
+     "label": "You already have the Pearl: race up the tower stairs to the Neon Dragon!",
+     "target": "dragon_summit",
+     "conditions": {
+      "hasItem": "pearl"
+     },
+     "hideIfLocked": true
     }
    ]
   },
@@ -4811,6 +6012,510 @@
     "title": "THE END?",
     "stars": 0
    }
+  },
+  "gremlin_rabbit": {
+   "title": "Not a Bunny!",
+   "text": [
+    "The rabbit turns round. Its ears are cardboard, its fluffy tail is a cotton-wool ball, and under the hood two green lights blink at you. It pulls off its head: it's a GLITCH GREMLIN in a rabbit costume!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it zaps you with a fizzing spark from its fingertips and scampers off into the shadows. (-2 Pixel Power)",
+    "Siu Mai shakes its head. \"Glowing green eyes! Real rabbits have twitchy noses, not glowing eyes. That's how you spot a gremlin. The real rabbit must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/market.svg",
+    "alt": "A Glitch Gremlin stepping out of a rabbit costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "rabbit_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Pixel Power"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back and find the real rabbit's stall",
+     "target": "market"
+    }
+   ]
+  },
+  "gremlin_rat": {
+   "title": "Rat-Bot?",
+   "text": [
+    "You crouch down to say hello. The 'rat' turns, and its cable tail plugs itself into a socket with a BZZT. A zip runs all the way down its waistcoat. It's a GLITCH GREMLIN dressed as a rat!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it blows a raspberry, stamps on your toe and scampers off into the shadows. (-2 Energy)",
+    "Siu Mai shakes its head. \"A cable for a tail, and that engine-oil smell! Real rats squeak. That's how you spot a gremlin. The real rat must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/market.svg",
+    "alt": "A Glitch Gremlin stepping out of a rat costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "rat_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Energy"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back and find the squeaking rat",
+     "target": "market"
+    }
+   ]
+  },
+  "gremlin_ox": {
+   "title": "Moo-ve Along!",
+   "text": [
+    "You knock. The door creaks open, and there stands an 'ox' with cardboard horns held on with sticky tape. One horn falls off. Then the whole head does. It's a GLITCH GREMLIN in an ox costume!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it blows a raspberry, stamps on your toe and scampers off into the shadows. (-2 Energy)",
+    "Siu Mai shakes its head. \"It said OINK before it said moo! And no hoofprints led to that door. That's how you spot a gremlin. The real ox must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/ferry.svg",
+    "alt": "A Glitch Gremlin stepping out of a ox costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "ox_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Energy"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back on deck and follow the hoofprints",
+     "target": "ferry"
+    }
+   ]
+  },
+  "gremlin_pig": {
+   "title": "Hog-Wash!",
+   "text": [
+    "The 'pig' holds the door open with a big grin, and the safety pin pops. Its curly tail springs off, its snout turns out to be a painted paper cup, and the whole costume slides to the floor. It's a GLITCH GREMLIN!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it zaps you with a fizzing spark from its fingertips and scampers off into the shadows. (-2 Pixel Power)",
+    "Siu Mai shakes its head. \"A tail held on with a safety pin! Pig's real café has green tiles and smells of milk tea. That's how you spot a gremlin. The real pig must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/dimsum.svg",
+    "alt": "A Glitch Gremlin stepping out of a pig costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "pig_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Pixel Power"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back and find the green-tiled café",
+     "target": "central"
+    }
+   ]
+  },
+  "gremlin_dog": {
+   "title": "Meow-ch!",
+   "text": [
+    "A scruffy 'dog' comes running, tripping over its own floppy paws. Its rescue vest is on back to front and there's a zip under its chin. \"Meow... I mean WOOF!\" Too late. It's a GLITCH GREMLIN in a dog suit!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it blows a raspberry, stamps on your toe and scampers off into the shadows. (-2 Energy)",
+    "Siu Mai shakes its head. \"Dogs don't meow! The real dog came out of the water: remember those wet paw prints? That's how you spot a gremlin. The real dog must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/harbour.svg",
+    "alt": "A Glitch Gremlin stepping out of a dog costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "dog_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Energy"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back along the pier",
+     "target": "central"
+    }
+   ]
+  },
+  "gremlin_liv": {
+   "title": "Cold Feathers!",
+   "text": [
+    "The 'fiery bird' flaps down... with a clatter. Its flames are bendy plastic strips with tiny lights, and they switch off with a click. A grinning GLITCH GREMLIN wriggles out of the bird suit!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it zaps you with a fizzing spark from its fingertips and scampers off into the shadows. (-2 Pixel Power)",
+    "Siu Mai shakes its head. \"Cold flames that buzz! A real phoenix is warm: you can feel it from the street. That's how you spot a gremlin. The real Phoenix must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/causeway.svg",
+    "alt": "A Glitch Gremlin stepping out of a Phoenix costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "liv_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Pixel Power"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back to the crossing and look again",
+     "target": "causeway_bay"
+    }
+   ]
+  },
+  "gremlin_tiger": {
+   "title": "Stripes Run!",
+   "text": [
+    "Up close, the 'tiger' smells of wet paint. Its stripes drip down onto its slippers, and it sneezes so hard its tiger head flies off. It's a GLITCH GREMLIN in a tiger costume!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it blows a raspberry, stamps on your toe and scampers off into the shadows. (-2 Energy)",
+    "Siu Mai shakes its head. \"Painted stripes that run in the rain, and it said WOOF! The real Tiger leaves soft paw prints. That's how you spot a gremlin. The real tiger must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/park.svg",
+    "alt": "A Glitch Gremlin stepping out of a tiger costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "tiger_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Energy"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back across the park",
+     "target": "victoria_park"
+    }
+   ]
+  },
+  "gremlin_horse": {
+   "title": "Neigh-ver Mind!",
+   "text": [
+    "\"Moo,\" says the 'horse' again, then claps a hand over its mouth. Its back legs walk off in one direction and its front legs in the other: it's TWO gremlins in a horse costume!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it zaps you with a fizzing spark from its fingertips and scampers off into the shadows. (-2 Pixel Power)",
+    "Siu Mai shakes its head. \"Horses neigh, they don't moo! The real Horse goes clip-clop. That's how you spot a gremlin. The real horse must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/racecourse.svg",
+    "alt": "A Glitch Gremlin stepping out of a horse costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "horse_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Pixel Power"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back to the rail and look again",
+     "target": "happy_valley"
+    }
+   ]
+  },
+  "gremlin_rooster": {
+   "title": "Fowl Play!",
+   "text": [
+    "You sit downstairs. The 'conductor' snaps its rubber-glove comb, and its beak swings open on a hinge: it is a rooster costume! Inside, a GLITCH GREMLIN grins out at you!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it blows a raspberry, stamps on your toe and scampers off into the shadows. (-2 Energy)",
+    "Siu Mai shakes its head. \"A rubber-glove comb and a buzzy 'Ding'! A real rooster crows at sunrise, even a neon one. That's how you spot a gremlin. The real rooster must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/tram.svg",
+    "alt": "A Glitch Gremlin stepping out of a rooster costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "rooster_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Energy"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back up the stairs",
+     "target": "dingding"
+    }
+   ]
+  },
+  "gremlin_monkey": {
+   "title": "Monkey Business!",
+   "text": [
+    "The 'monkey' takes another big bite of banana, skin and all, and its straw tail goes SLURP. Then it trips over the barrier and its monkey mask rolls away. It's a GLITCH GREMLIN!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it zaps you with a fizzing spark from its fingertips and scampers off into the shadows. (-2 Pixel Power)",
+    "Siu Mai shakes its head. \"Real monkeys peel their bananas! And a drinking straw is not a tail. That's how you spot a gremlin. The real monkey must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/tunnel.svg",
+    "alt": "A Glitch Gremlin stepping out of a monkey costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "monkey_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Pixel Power"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back to the barriers",
+     "target": "tram_gate"
+    }
+   ]
+  },
+  "gremlin_snake": {
+   "title": "Ssssabotage!",
+   "text": [
+    "The door swings open. Inside, a long 'snake' made of a garden hose rears up, wheezing like a bicycle pump. It's a snake costume! A GLITCH GREMLIN pops out of the end, still holding the pump!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it blows a raspberry, stamps on your toe and scampers off into the shadows. (-2 Energy)",
+    "Siu Mai shakes its head. \"That hiss was a bicycle pump! A real snake leaves its shed skin behind. That's how you spot a gremlin. The real snake must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/vault.svg",
+    "alt": "A Glitch Gremlin stepping out of a snake costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "snake_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Energy"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Back out into the tunnel and try the other door",
+     "target": "tunnel_lit"
+    }
+   ]
+  },
+  "gremlin_goat": {
+   "title": "Not the GOAT!",
+   "text": [
+    "The 'goat' tries a backflip, lands on its bottom, and its sneakers fly off its hands. Yes, hands. It's a GLITCH GREMLIN in a goat suit, and its crown is a painted bottle cap!",
+    "\"Hee hee! Fooled you!\" it cackles. Then it zaps you with a fizzing spark from its fingertips and scampers off into the shadows. (-2 Pixel Power)",
+    "Siu Mai shakes its head. \"Sneakers on the wrong feet and a zip! The real GOAT lands with a clatter of hooves. That's how you spot a gremlin. The real goat must be on the other path!\""
+   ],
+   "illustration": {
+    "src": "img/peak.svg",
+    "alt": "A Glitch Gremlin stepping out of a goat costume",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "loulou_costume",
+      "x": 14,
+      "y": 30,
+      "scale": 1
+     },
+     {
+      "id": "gremlin",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -2
+    },
+    {
+     "message": "A GREMLIN IN DISGUISE! -2 Pixel Power"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back to the lookout railing",
+     "target": "peak_top"
+    }
+   ]
   }
  }
 }

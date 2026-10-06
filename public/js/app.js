@@ -1,5 +1,5 @@
 import * as E from './engine.js';
-import { drawAvatar, drawSprite, avatarGrid, SKINS, HAIR_COLORS, OUTFITS, HAIR_STYLES, ACCESSORIES, LABELS, defaultAvatar, randomAvatar } from './avatar.js';
+import { drawAvatar, drawSprite, avatarGrid, SKINS, SKIN_NAMES, HAIR_COLORS, OUTFITS, HAIR_STYLES, ACCESSORIES, EXTRAS, LABELS, defaultAvatar, randomAvatar, normalizeAvatar } from './avatar.js';
 import { sfx, setSound, soundOn } from './sound.js';
 import * as LB from './leaderboard.js';
 import { makeVoucherCode, normalizeVoucher, VOUCHER_BONUS, VOUCHER_BONUS_TEXT } from './voucher.js';
@@ -383,7 +383,8 @@ function renderCombat(box) {
   const dmg = E.combatDamage(book, state, sec, enemy);
   const boostsHTML = c.boosts?.length ? `<div class="boosts" data-testid="boosts">${c.boosts.map((b) => {
     const on = dmg.boosts.includes(b);
-    return `<span class="boost ${on ? 'on' : ''}" data-testid="boost">${on ? '✔' : '·'} ${esc(T(b.label).toUpperCase())} ${b.attack ? `+${b.attack} ATK` : ''}${b.armor ? `-${b.armor} DMG` : ''}</span>`;
+    const fx = [b.attack && `+${b.attack} ATK`, b.armor && `-${b.armor} DMG`, b.stun && `BOT -${b.stun} HP`, b.note && esc(T(b.note).toUpperCase())].filter(Boolean).join(' · ');
+    return `<span class="boost ${on ? 'on' : ''}" data-testid="boost">${on ? '✔' : '·'} ${esc(T(b.label).toUpperCase())}: ${fx}</span>`;
   }).join('')}</div>` : '';
   box.innerHTML = `
     <div class="combat ${enemy.damage && enemy.damage > cs.damage ? 'boss' : ''}" data-testid="combat">
@@ -841,7 +842,8 @@ function confirmModal(title, text, yes = 'YES') {
 function openCreator() {
   const av = defaultAvatar();
   delete av.label;
-  const swatches = (key, colors) => `<div class="swatches" role="radiogroup" aria-label="${key}">${colors.map((c, i) => `<button class="swatch" role="radio" data-key="${key}" data-val="${i}" style="--s:${c}" aria-label="${key} ${i + 1}"></button>`).join('')}</div>`;
+  const swatches = (key, colors, names) => `<div class="swatches" role="radiogroup" aria-label="${key}">${colors.map((c, i) => `<button class="swatch" role="radio" data-key="${key}" data-val="${i}" style="--s:${c}" aria-label="${key} ${names ? names[i] : i + 1}"></button>`).join('')}</div>`;
+  const toggles = EXTRAS.map((k) => `<button class="btn btn-small toggle" data-extra="${k}" aria-pressed="false" data-testid="extra-${k}">${LABELS[k]}</button>`).join('');
   const cycler = (key) => `<div class="cycler" data-key="${key}"><button class="arrow" data-dir="-1" aria-label="previous ${key}">◀</button><span class="cycle-val" data-val-for="${key}"></span><button class="arrow" data-dir="1" aria-label="next ${key}">▶</button></div>`;
   const m = openModal(`
     <div class="creator-head">
@@ -857,11 +859,12 @@ function openCreator() {
       </div>
       <div class="controls">
         <div class="ctl-label">BUILD YOUR HERO <button class="btn btn-small btn-ghost" id="cRandom" data-testid="randomize">? RANDOM</button></div>
-        <div class="ctl-row"><span>SKIN</span>${swatches('skin', SKINS)}</div>
+        <div class="ctl-row"><span>SKIN</span>${swatches('skin', SKINS, SKIN_NAMES)}</div>
         <div class="ctl-row"><span>HAIR</span>${cycler('hairStyle')}</div>
         <div class="ctl-row"><span>COLOR</span>${swatches('hairColor', HAIR_COLORS)}</div>
         <div class="ctl-row"><span>OUTFIT</span>${swatches('outfit', OUTFITS)}</div>
         <div class="ctl-row"><span>EXTRA</span>${cycler('accessory')}</div>
+        <div class="ctl-row"><span>ADD-ONS</span><div class="toggles" role="group" aria-label="add-ons">${toggles}</div></div>
         <label class="ctl-label" for="cName">ENTER A NICKNAME</label>
         <input id="cName" class="name-input" maxlength="${LB.NICK_MAX}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NICKNAME" data-testid="name-input" value="">
         <div class="nick-tip" data-testid="nick-tip">Use a nickname, not your real name. Max ${LB.NICK_MAX} letters.</div>
@@ -885,6 +888,7 @@ function openCreator() {
     drawAvatar(preview, av);
     $$('.swatch', m).forEach((s) => { const on = av[s.dataset.key] === +s.dataset.val; s.classList.toggle('on', on); s.setAttribute('aria-checked', String(on)); });
     for (const k of Object.keys(lists)) $(`[data-val-for=${k}]`, m).textContent = LABELS[av[k]] || av[k];
+    $$('[data-extra]', m).forEach((b) => { const on = !!av[b.dataset.extra]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); b.textContent = `${on ? '✔ ' : ''}${LABELS[b.dataset.extra]}`; });
     const nm = LB.cleanNickname(nameIn.value);
     const problem = nm ? LB.nicknameProblem(nm) : null;
     $('#cEcho', m).textContent = nm || '???';
@@ -897,7 +901,8 @@ function openCreator() {
     av[c.dataset.key] = list[(list.indexOf(av[c.dataset.key]) + +a.dataset.dir + list.length) % list.length];
     sfx.select(); refresh();
   })));
-  $('#cRandom', m).addEventListener('click', () => { const r = randomAvatar(); delete r.label; Object.assign(av, r); sfx.select(); refresh(); });
+  $$('[data-extra]', m).forEach((b) => b.addEventListener('click', () => { const k = b.dataset.extra; if (av[k]) delete av[k]; else av[k] = true; sfx.select(); refresh(); }));
+  $('#cRandom', m).addEventListener('click', () => { const r = randomAvatar(); delete r.label; for (const k of EXTRAS) delete av[k]; Object.assign(av, r); sfx.select(); refresh(); });
   nameIn.addEventListener('input', () => { const c = nameIn.value.toUpperCase(); if (c !== nameIn.value) nameIn.value = c; refresh(); });
   nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !startBtn.disabled) startBtn.click(); });
   $('#cScores', m).addEventListener('click', () => openScores({ back: openCreator }));
@@ -920,7 +925,7 @@ function openCreator() {
   startBtn.addEventListener('click', () => {
     const name = LB.cleanNickname(nameIn.value);
     if (!name || LB.nicknameProblem(name)) return;
-    player = { name, avatar: { skin: av.skin, hairStyle: av.hairStyle, hairColor: av.hairColor, outfit: av.outfit, accessory: av.accessory } };
+    player = { name, avatar: normalizeAvatar(av) };
     const useVoucher = voucher && !usedVouchers().includes(voucher);
     state = E.newGame(book, { rng, playerName: name, riddleSeed: params.get('riddleSeed') ? +params.get('riddleSeed') : null, ...(useVoucher ? { bonusEffects: VOUCHER_BONUS, bonusLabel: `voucher ${voucher}` } : {}) }).state;
     if (useVoucher) localStorage.setItem(VOUCHERS_USED_KEY, JSON.stringify([...usedVouchers(), voucher]));

@@ -1,14 +1,20 @@
 // Pixel avatar: 16x16 sprite assembled from layers, drawn on a canvas and scaled with
 // CSS `image-rendering: pixelated` so it stays crisp at any size.
 
-export const SKINS = ['#ffdbb5', '#f5c28f', '#e0a370', '#c68650', '#9a5f34', '#6b3f22'];
+// skins 6-8 (blue, green, grey) were added in v2.3.0: new colours go on the END so saved
+// avatars (which store an index) keep their skin.
+export const SKINS = ['#ffdbb5', '#f5c28f', '#e0a370', '#c68650', '#9a5f34', '#6b3f22', '#5b8cff', '#5fd068', '#a3a7b5'];
+export const SKIN_NAMES = ['peach', 'sand', 'honey', 'caramel', 'chestnut', 'cocoa', 'blue', 'green', 'grey'];
 export const HAIR_COLORS = ['#1b1b2a', '#5a3215', '#a8642a', '#f2c94c', '#ff5d8f', '#29e7ff', '#9b5cff', '#eeeeee'];
 export const OUTFITS = ['#ff2e88', '#29e7ff', '#3dff6e', '#ffd23f', '#8a3ffc', '#ff7a1a', '#f5f5f5'];
 export const HAIR_STYLES = ['short', 'spiky', 'long', 'bun', 'pigtails'];
 export const ACCESSORIES = ['none', 'cap', 'glasses', 'headphones', 'crown'];
+// optional extras: each one is an independent on/off switch (stored as true, or left out)
+export const EXTRAS = ['beard', 'beanie', 'cape'];
 export const LABELS = {
   short: 'SHORT', spiky: 'SPIKY', long: 'LONG', bun: 'BUN', pigtails: 'PIGTAILS',
   none: 'NONE', cap: 'CAP', glasses: 'GLASSES', headphones: 'PHONES', crown: 'CROWN',
+  beard: 'BEARD', beanie: 'BEANIE', cape: 'CAPE',
 };
 
 export const PRESETS = [
@@ -54,7 +60,32 @@ const ACC = {
   crown: { 0: '....Y.YYYY.Y....', 1: '....YYRYYRYY....' },
 };
 
+// beard: sideburns, a bushy jaw around the mouth and a little point on the collar
+const BEARD = { 7: '....D......D....', 8: '....DDD..DDD....', 9: '.....DDDDDD.....', 10: '.......DD.......' };
+// beanie: pulled down to the eyebrows, with a pom-pom and a folded cuff. Hair under it is
+// hidden down to the cuff; hair that hangs lower (long, pigtails) still shows.
+const BEANIE = { 1: '.......ww.......', 2: '.....NNNNNN.....', 3: '....NNNNNNNN....', 4: '...NNNNNNNNNN...', 5: '...KKKKKKKKKK...' };
+// cape: drawn BEHIND the hero (only on empty pixels), flaring out to the floor
+const CAPE = { 10: '...V........V...', 11: '..V..........V..', 12: '..V..........V..', 13: '..VV........VV..', 14: '..VVV..VV..VVV..', 15: '.VVV...VV...VVV.' };
+
 export function defaultAvatar() { return { ...PRESETS[0] }; }
+
+// Clean up any stored avatar (old saves, leaderboard rows, hand-edited data): known values only,
+// sensible defaults for anything missing, and the extras as plain on/off switches. Extras that are
+// off are left out, so old avatars and new ones without extras look exactly alike.
+export function normalizeAvatar(a) {
+  const src = a && typeof a === 'object' ? a : {};
+  const idx = (v, list) => (Number.isInteger(v) && v >= 0 && v < list.length ? v : 0);
+  const out = {
+    skin: idx(src.skin, SKINS),
+    hairStyle: HAIR_STYLES.includes(src.hairStyle) ? src.hairStyle : 'short',
+    hairColor: idx(src.hairColor, HAIR_COLORS),
+    outfit: idx(src.outfit, OUTFITS),
+    accessory: ACCESSORIES.includes(src.accessory) ? src.accessory : 'none',
+  };
+  for (const k of EXTRAS) if (src[k] === true) out[k] = true;
+  return out;
+}
 
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
@@ -62,17 +93,25 @@ function shade(hex, amt) {
   return '#' + [f(n >> 16), f((n >> 8) & 255), f(n & 255)].map((v) => v.toString(16).padStart(2, '0')).join('');
 }
 
-export function avatarGrid(a) {
+export function avatarGrid(raw) {
+  const a = normalizeAvatar(raw);
   const grid = BASE.map((r) => r.split(''));
-  const overlay = (layer) => {
-    for (const [y, row] of Object.entries(layer)) row.split('').forEach((ch, x) => { if (ch !== '.') grid[y][x] = ch; });
+  const overlay = (layer, behind = false) => {
+    for (const [y, row] of Object.entries(layer)) row.split('').forEach((ch, x) => { if (ch !== '.' && (!behind || grid[y][x] === '.')) grid[y][x] = ch; });
   };
+  if (a.cape) overlay(CAPE, true);
   overlay(HAIR[a.hairStyle] || HAIR.short);
+  if (a.beard) overlay(BEARD);
+  if (a.beanie) {
+    for (let y = 0; y <= 4; y++) grid[y] = grid[y].map((ch, x) => (ch === 'H' ? BASE[y][x] : ch));
+    overlay(BEANIE);
+  }
   overlay(ACC[a.accessory] || {});
   return grid;
 }
 
-export function drawAvatar(canvas, a) {
+export function drawAvatar(canvas, raw) {
+  const a = normalizeAvatar(raw);
   const ctx = canvas.getContext('2d');
   canvas.width = 16; canvas.height = 16;
   ctx.clearRect(0, 0, 16, 16);
@@ -91,6 +130,11 @@ export function drawAvatar(canvas, a) {
     A: '#ff2e88',
     Y: '#ffd23f',
     R: '#ff3355',
+    D: shade(HAIR_COLORS[a.hairColor] ?? HAIR_COLORS[0], -0.15),
+    N: a.outfit === 6 ? '#c4183c' : outfit, // a white outfit gets a red beanie (white would vanish)
+    K: a.outfit === 6 ? '#f5f5f5' : shade(outfit, 0.45),
+    w: '#f5f5f5',
+    V: a.outfit === 6 ? '#c4183c' : shade(outfit, -0.45),
   };
   avatarGrid(a).forEach((row, y) => row.forEach((ch, x) => {
     if (pal[ch]) { ctx.fillStyle = pal[ch]; ctx.fillRect(x, y, 1, 1); }
@@ -103,6 +147,7 @@ export function randomAvatar() {
     label: 'CUSTOM',
     skin: r(SKINS.length), hairStyle: HAIR_STYLES[r(HAIR_STYLES.length)], hairColor: r(HAIR_COLORS.length),
     outfit: r(OUTFITS.length), accessory: ACCESSORIES[r(ACCESSORIES.length)],
+    ...Object.fromEntries(EXTRAS.filter(() => Math.random() < 0.3).map((k) => [k, true])),
   };
 }
 

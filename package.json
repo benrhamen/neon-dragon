@@ -1,6 +1,6 @@
 {
   "name": "neon-gamebook",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Retro arcade gamebook reader prototype (static site)",
   "scripts": {
     "validate": "node tests/validate.mjs",
