@@ -191,7 +191,7 @@
     },
     "scoring": {
       "type": "object",
-      "description": "Final SCORE shown on winning endings. Each component is value × points; the total is shown as a percentage of `reference`, the best total any path can reach (compute it with scripts/score-reference.mjs), so the optimal path scores exactly 100%.",
+      "description": "Final SCORE shown on winning endings. Each component is value \u00d7 points; the total is shown as a percentage of `reference`, the best total any path can reach (compute it with scripts/score-reference.mjs), so the optimal path scores exactly 100%.",
       "required": [
         "components",
         "reference"
@@ -307,6 +307,10 @@
           }
         }
       }
+    },
+    "riddlePool": {
+      "type": "string",
+      "description": "Relative path (from the book file) to a riddle pool JSON file (schema/riddles.schema.json). Riddle encounters with \"draw\" pick their questions from it at random, with no repeats within one game."
     }
   },
   "$defs": {
@@ -859,7 +863,7 @@
             },
             "halve": {
               "const": true,
-              "description": "Shorthand for multiply 0.5 with round down: 9 → 4, 1 → 0."
+              "description": "Shorthand for multiply 0.5 with round down: 9 \u2192 4, 1 \u2192 0."
             },
             "round": {
               "enum": [
@@ -1041,9 +1045,8 @@
     },
     "diceTest": {
       "type": "object",
-      "description": "Roll dice and branch on success/failure. Success if total <= the stat (Test-Your-Luck style) when 'againstStat' is set, otherwise total >= 'target'.",
+      "description": "Roll dice and branch. Luck test: success if total <= the stat ('againstStat'). Target test: total >= 'target'. Dice gamble ('type': 'gamble', used for every bet in the story; affects only 'stat', default Luck): roll 2d6 (dice); total >= winAt (default 8) = success (the prize); exactly halfOn (default 7) = 'stat' is halved (round down) and the 'seven' outcome is used; anything lower = 'stat' -loseBy (default 2) and the failure outcome. Stakes are paid by the choice leading here. The reader shows the odds before rolling.",
       "required": [
-        "dice",
         "success",
         "failure"
       ],
@@ -1080,18 +1083,140 @@
         },
         "failure": {
           "$ref": "#/$defs/outcome"
+        },
+        "type": {
+          "enum": [
+            "luck",
+            "target",
+            "gamble"
+          ],
+          "description": "Optional; 'gamble' switches to the dice-gamble rule."
+        },
+        "winAt": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "Gamble: roll this or more to win (default 8)."
+        },
+        "halfOn": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "Gamble: rolling exactly this halves halfStat (default 7)."
+        },
+        "seven": {
+          "type": "object",
+          "required": [],
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "$ref": "#/$defs/id"
+            },
+            "text": {
+              "type": "string"
+            },
+            "effects": {
+              "$ref": "#/$defs/effectList"
+            }
+          },
+          "description": "Gamble: what happens on exactly halfOn, after halving 'stat'. A missing target/text comes from 'failure'; failure effects are not applied."
+        },
+        "stat": {
+          "$ref": "#/$defs/id",
+          "description": "Gamble: the only stat a gamble changes (default luck)."
+        },
+        "loseBy": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Gamble: how much of 'stat' a lost roll costs (default 2)."
         }
       },
       "oneOf": [
         {
           "required": [
-            "againstStat"
-          ]
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "gamble"
+            }
+          },
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "againstStat"
+                ]
+              },
+              {
+                "required": [
+                  "target"
+                ]
+              }
+            ]
+          }
         },
         {
           "required": [
-            "target"
-          ]
+            "againstStat",
+            "dice"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "luck"
+              ]
+            }
+          },
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "winAt"
+                ]
+              },
+              {
+                "required": [
+                  "halfOn"
+                ]
+              },
+              {
+                "required": [
+                  "seven"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "required": [
+            "target",
+            "dice"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "target"
+              ]
+            }
+          },
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "winAt"
+                ]
+              },
+              {
+                "required": [
+                  "halfOn"
+                ]
+              },
+              {
+                "required": [
+                  "seven"
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -1234,6 +1359,10 @@
           ],
           "default": "standard",
           "description": "Presentation. \"trapped\" = dramatic arcade GAME OVER screen with the player's avatar stuck inside the machine and a CONTINUE countdown."
+        },
+        "cause": {
+          "$ref": "#/$defs/id",
+          "description": "The stat this ending blames (e.g. \"power\"). On entering, the stat is set to its minimum (0), so the stats panel matches why you lost, and the trapped screen says YOUR <STAT> RAN OUT."
         }
       }
     },
@@ -1270,7 +1399,7 @@
             },
             "characters": {
               "type": "array",
-              "description": "Character sprites drawn on top of the picture. x/y are in picture pixels on the grid below (default 96×54, the size of the bundled scenes).",
+              "description": "Character sprites drawn on top of the picture. x/y are in picture pixels on the grid below (default 96\u00d754, the size of the bundled scenes).",
               "items": {
                 "type": "object",
                 "required": [
@@ -1393,9 +1522,8 @@
     },
     "riddle": {
       "type": "object",
-      "description": "A multiple-choice riddle encounter. Before answering each question the player may RETREAT (no cost, but the encounter's success is missed). A correct answer applies onCorrect. A wrong answer makes the player pick one of wrong.options (e.g. pay 2 tokens OR halve Energy); locked options can't be picked. After the last question, success is applied.",
+      "description": "A multiple-choice riddle encounter, with fixed questions or drawn at random from the riddle pool (draw). Before answering each question the player may RETREAT (no cost, but the encounter's success is missed). A correct answer applies onCorrect. A wrong answer makes the player pick one of wrong.options (e.g. pay 2 tokens OR halve Energy); locked options can't be picked. After the last question, success is applied.",
       "required": [
-        "questions",
         "wrong",
         "success",
         "retreat"
@@ -1507,8 +1635,26 @@
         },
         "success": {
           "$ref": "#/$defs/outcome"
+        },
+        "draw": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Ask this many riddles drawn at random from the book's riddlePool instead of fixed questions. The draw is seeded and stored in the save, so reloading doesn't change the riddle, and a riddle never repeats within one game."
         }
-      }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "questions"
+          ]
+        },
+        {
+          "required": [
+            "draw"
+          ]
+        }
+      ]
     }
   }
 }

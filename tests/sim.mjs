@@ -11,7 +11,7 @@ const safe = (opts) => { const ok = opts.filter((o) => !o.warning); return ok.le
 export function randomPlay(book, seed, { maxSteps = 600 } = {}) {
   const rng = E.makeRng(seed);
   const pick = (arr) => arr[Math.floor(rng() * arr.length)];
-  const { state } = E.newGame(book, { rng, playerName: 'MAX' });
+  const { state } = E.newGame(book, { rng, playerName: 'MAX', riddleSeed: seed * 7919 });
   let steps = 0;
   while (!state.ended && steps++ < maxSteps) {
     const p = state.pending;
@@ -123,7 +123,7 @@ function optimistic(c, acc) {
 function edges(sec) {
   const out = [];
   for (const ch of sec.choices || []) out.push({ target: ch.target, cond: ch.conditions, eff: [ch.effects] });
-  if (sec.test) for (const o of [sec.test.success, sec.test.failure]) out.push({ target: o.target, eff: [o.effects] });
+  if (sec.test) for (const o of [sec.test.success, sec.test.failure, ...(sec.test.type === 'gamble' ? [E.sevenOutcome(sec.test)] : [])]) out.push({ target: o.target, eff: [o.effects] });
   if (sec.combat) { out.push({ target: sec.combat.win.target, eff: [sec.combat.win.effects] }); out.push({ target: sec.combat.lose.target, eff: [sec.combat.lose.effects] }); if (sec.combat.flee) out.push({ target: sec.combat.flee.target, eff: [sec.combat.flee.effects] }); }
   if (sec.riddle) { out.push({ target: sec.riddle.success.target, eff: [sec.riddle.success.effects, sec.riddle.onCorrect] }); out.push({ target: sec.riddle.retreat.target, eff: [sec.riddle.retreat.effects] }); }
   return out;

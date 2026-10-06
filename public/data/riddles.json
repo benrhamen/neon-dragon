@@ -1,0 +1,2521 @@
+{
+ "$schema": "../../schema/riddles.schema.json",
+ "schemaVersion": "1.0",
+ "metadata": {
+  "title": "Neon Dragon riddle pool",
+  "version": "1.0.0",
+  "ageRange": "9-11",
+  "license": {
+   "name": "All rights reserved (original work for this project)"
+  },
+  "notes": "Original riddles written for this game. Each riddle encounter draws one at random; no repeats within a game."
+ },
+ "riddles": [
+  {
+   "id": "w001",
+   "category": "wordplay",
+   "question": "Which animal is hiding inside the word CATERPILLAR?",
+   "options": [
+    "A cat",
+    "A hen",
+    "A cow",
+    "An owl"
+   ],
+   "answer": 0,
+   "explain": "CATerpillar starts with CAT."
+  },
+  {
+   "id": "w002",
+   "category": "wordplay",
+   "question": "Which TWO animals are hiding inside the word SCOWL?",
+   "options": [
+    "A seal and a cow",
+    "A cow and an owl",
+    "A cat and an owl",
+    "A cow and an eel"
+   ],
+   "answer": 1,
+   "explain": "s-COW-l and sc-OWL."
+  },
+  {
+   "id": "w003",
+   "category": "wordplay",
+   "question": "Which planet is hiding inside the word HEARTH?",
+   "options": [
+    "Mars",
+    "Earth",
+    "Venus"
+   ],
+   "answer": 1,
+   "explain": "h-EARTH."
+  },
+  {
+   "id": "w004",
+   "category": "wordplay",
+   "question": "Which number is hiding inside the word OFTEN?",
+   "options": [
+    "Ten",
+    "Two",
+    "One",
+    "Six"
+   ],
+   "answer": 0,
+   "explain": "of-TEN."
+  },
+  {
+   "id": "w005",
+   "category": "wordplay",
+   "question": "Which number is hiding inside the word WEIGHT?",
+   "options": [
+    "Two",
+    "Eight",
+    "Nine",
+    "Four"
+   ],
+   "answer": 1,
+   "explain": "w-EIGHT."
+  },
+  {
+   "id": "w006",
+   "category": "wordplay",
+   "question": "Which number is hiding inside the word STONE?",
+   "options": [
+    "Ten",
+    "Two",
+    "One",
+    "Six"
+   ],
+   "answer": 2,
+   "explain": "st-ONE."
+  },
+  {
+   "id": "w007",
+   "category": "wordplay",
+   "question": "Which part of your body is hiding inside the word SHEARS?",
+   "options": [
+    "Your toe",
+    "Your eye",
+    "Your ear",
+    "Your arm"
+   ],
+   "answer": 2,
+   "explain": "sh-EAR-s."
+  },
+  {
+   "id": "w008",
+   "category": "wordplay",
+   "question": "Write STRESSED backwards. What tasty word do you get?",
+   "options": [
+    "DESSERTS",
+    "SWEETS",
+    "DRESSES",
+    "STREETS"
+   ],
+   "answer": 0,
+   "explain": "S-T-R-E-S-S-E-D backwards is D-E-S-S-E-R-T-S."
+  },
+  {
+   "id": "w009",
+   "category": "wordplay",
+   "question": "Which of these words reads the same forwards and backwards?",
+   "options": [
+    "LAPEL",
+    "LEMON",
+    "LEVEL",
+    "LADLE"
+   ],
+   "answer": 2,
+   "explain": "L-E-V-E-L backwards is still LEVEL."
+  },
+  {
+   "id": "w010",
+   "category": "wordplay",
+   "question": "Which of these is a palindrome, the same spelled backwards?",
+   "options": [
+    "RACING",
+    "RACECAR",
+    "RACETRACK",
+    "CARPET"
+   ],
+   "answer": 1,
+   "explain": "R-A-C-E-C-A-R reads the same both ways."
+  },
+  {
+   "id": "w011",
+   "category": "wordplay",
+   "question": "Which letter can go in front of RAIN to make the thing you think with?",
+   "options": [
+    "D",
+    "T",
+    "B",
+    "G"
+   ],
+   "answer": 2,
+   "explain": "B + RAIN = BRAIN. (TRAIN and GRAIN are real words, but you don't think with them!)"
+  },
+  {
+   "id": "w012",
+   "category": "wordplay",
+   "question": "Which letter can go in front of EAR to make a big furry animal?",
+   "options": [
+    "P",
+    "F",
+    "B",
+    "Y"
+   ],
+   "answer": 2,
+   "explain": "B + EAR = BEAR."
+  },
+  {
+   "id": "w013",
+   "category": "wordplay",
+   "question": "Change ONE letter in COLD to get a shiny yellow metal.",
+   "options": [
+    "GOLD",
+    "COLT",
+    "MOLD",
+    "CORD"
+   ],
+   "answer": 0,
+   "explain": "C becomes G: GOLD."
+  },
+  {
+   "id": "w014",
+   "category": "wordplay",
+   "question": "Change ONE letter in BOAT to get an animal with horns.",
+   "options": [
+    "GOAT",
+    "MOAT",
+    "BOOT",
+    "COAT"
+   ],
+   "answer": 0,
+   "explain": "B becomes G: GOAT. Hello, Loulou!"
+  },
+  {
+   "id": "w015",
+   "category": "wordplay",
+   "question": "Which word can go in front of FLY, CUP and MILK to make three new words?",
+   "options": [
+    "BUTTER",
+    "TEA",
+    "DRAGON",
+    "FIRE"
+   ],
+   "answer": 0,
+   "explain": "Butterfly, buttercup, buttermilk."
+  },
+  {
+   "id": "w016",
+   "category": "wordplay",
+   "question": "Which word can go in front of BOW, COAT and DROP to make three new words?",
+   "options": [
+    "TEAR",
+    "RAIN",
+    "SNOW",
+    "SUN"
+   ],
+   "answer": 1,
+   "explain": "Rainbow, raincoat, raindrop."
+  },
+  {
+   "id": "w017",
+   "category": "wordplay",
+   "question": "Which word can go after SUN, MOON and STAR to make three new words?",
+   "options": [
+    "BALL",
+    "BOX",
+    "CUP",
+    "LIGHT"
+   ],
+   "answer": 3,
+   "explain": "Sunlight, moonlight, starlight."
+  },
+  {
+   "id": "w018",
+   "category": "wordplay",
+   "question": "Which word can go after TOOTH, HAIR and PAINT to make three new words?",
+   "options": [
+    "PASTE",
+    "CUT",
+    "BOX",
+    "BRUSH"
+   ],
+   "answer": 3,
+   "explain": "Toothbrush, hairbrush, paintbrush."
+  },
+  {
+   "id": "w019",
+   "category": "wordplay",
+   "question": "I sound just like a letter of the alphabet, and I buzz from flower to flower. What am I?",
+   "options": [
+    "A wasp",
+    "A fly",
+    "A bee",
+    "A moth"
+   ],
+   "answer": 2,
+   "explain": "BEE sounds like the letter B."
+  },
+  {
+   "id": "w020",
+   "category": "wordplay",
+   "question": "Which drink sounds exactly like a letter of the alphabet?",
+   "options": [
+    "Milk",
+    "Juice",
+    "Soda",
+    "Tea"
+   ],
+   "answer": 3,
+   "explain": "TEA sounds like the letter T."
+  },
+  {
+   "id": "w021",
+   "category": "wordplay",
+   "question": "Which word sounds like a letter and means a huge body of salty water?",
+   "options": [
+    "Sea",
+    "Lake",
+    "River",
+    "Pond"
+   ],
+   "answer": 0,
+   "explain": "SEA sounds like the letter C."
+  },
+  {
+   "id": "w022",
+   "category": "wordplay",
+   "question": "Which bird's name sounds exactly like a letter of the alphabet?",
+   "options": [
+    "Duck",
+    "Crow",
+    "Owl",
+    "Jay"
+   ],
+   "answer": 3,
+   "explain": "JAY sounds like the letter J."
+  },
+  {
+   "id": "w023",
+   "category": "wordplay",
+   "question": "Which of these words uses all five vowels A, E, I, O and U?",
+   "options": [
+    "OCTOPUS",
+    "ELEPHANT",
+    "EDUCATION",
+    "UMBRELLA"
+   ],
+   "answer": 2,
+   "explain": "e-d-U-c-A-t-I-O-n has A, E, I, O and U."
+  },
+  {
+   "id": "w024",
+   "category": "wordplay",
+   "question": "Mix up the letters of LISTEN. Which word can you make?",
+   "options": [
+    "LESSON",
+    "SILENT",
+    "STOLEN",
+    "LINENS"
+   ],
+   "answer": 1,
+   "explain": "L-I-S-T-E-N and S-I-L-E-N-T use exactly the same letters."
+  },
+  {
+   "id": "w025",
+   "category": "wordplay",
+   "question": "Mix up the letters of NIGHT to make another word.",
+   "options": [
+    "TIGHT",
+    "HINGE",
+    "THINK",
+    "THING"
+   ],
+   "answer": 3,
+   "explain": "N-I-G-H-T rearranges to T-H-I-N-G."
+  },
+  {
+   "id": "w026",
+   "category": "wordplay",
+   "question": "Mix up the letters of EARTH to make a part of your body.",
+   "options": [
+    "THROAT",
+    "HEAD",
+    "HAND",
+    "HEART"
+   ],
+   "answer": 3,
+   "explain": "E-A-R-T-H rearranges to H-E-A-R-T."
+  },
+  {
+   "id": "w027",
+   "category": "wordplay",
+   "question": "Mix up the letters of DUSTY to make something you do at school.",
+   "options": [
+    "STAY",
+    "DRAW",
+    "STUDY",
+    "SING"
+   ],
+   "answer": 2,
+   "explain": "D-U-S-T-Y rearranges to S-T-U-D-Y."
+  },
+  {
+   "id": "w028",
+   "category": "wordplay",
+   "question": "Mix up the letters of MELON to make a sour yellow fruit.",
+   "options": [
+    "MANGO",
+    "LEMON",
+    "LIME",
+    "GUAVA"
+   ],
+   "answer": 1,
+   "explain": "M-E-L-O-N rearranges to L-E-M-O-N."
+  },
+  {
+   "id": "w029",
+   "category": "wordplay",
+   "question": "Mix up the letters of PEACH to make a word that means 'doesn't cost much'.",
+   "options": [
+    "PEACE",
+    "CHEAP",
+    "SPEND",
+    "CHAPEL"
+   ],
+   "answer": 1,
+   "explain": "P-E-A-C-H rearranges to C-H-E-A-P."
+  },
+  {
+   "id": "w030",
+   "category": "wordplay",
+   "question": "Which of these words is made from TWO animal names stuck together?",
+   "options": [
+    "RAINBOW",
+    "MOONLIGHT",
+    "DOGFISH",
+    "SUNFLOWER"
+   ],
+   "answer": 2,
+   "explain": "DOG + FISH (and a dogfish is a real small shark!)."
+  },
+  {
+   "id": "w031",
+   "category": "wordplay",
+   "question": "Which word means both a flying mammal AND the thing you hit a ball with in cricket?",
+   "options": [
+    "CLUB",
+    "BAT",
+    "RACKET",
+    "WING"
+   ],
+   "answer": 1,
+   "explain": "A bat flies at night, and a cricket bat hits the ball."
+  },
+  {
+   "id": "w032",
+   "category": "wordplay",
+   "question": "Which word means both the outside of a tree trunk AND the noise a dog makes?",
+   "options": [
+    "BARK",
+    "SKIN",
+    "HOWL",
+    "WOOF"
+   ],
+   "answer": 0,
+   "explain": "Trees have bark, and dogs bark."
+  },
+  {
+   "id": "w033",
+   "category": "wordplay",
+   "question": "Which word means both a shape on playing cards AND a sparkly gem?",
+   "options": [
+    "RUBY",
+    "HEART",
+    "STAR",
+    "DIAMOND"
+   ],
+   "answer": 3,
+   "explain": "Diamonds are a card suit and a gemstone."
+  },
+  {
+   "id": "w034",
+   "category": "wordplay",
+   "question": "Which word means both the inside of your hand AND a tree you see on beaches?",
+   "options": [
+    "FIST",
+    "PINE",
+    "PALM",
+    "THUMB"
+   ],
+   "answer": 2,
+   "explain": "The palm of your hand, and a palm tree."
+  },
+  {
+   "id": "w035",
+   "category": "wordplay",
+   "question": "Which word means both a season of the year AND a bouncy jump?",
+   "options": [
+    "LEAP",
+    "SPRING",
+    "WINTER",
+    "SUMMER"
+   ],
+   "answer": 1,
+   "explain": "Spring is a season, and to spring is to jump."
+  },
+  {
+   "id": "w036",
+   "category": "wordplay",
+   "question": "Which word means both the edge of a river AND a place that keeps your money safe?",
+   "options": [
+    "SHORE",
+    "BANK",
+    "PURSE",
+    "SAFE"
+   ],
+   "answer": 1,
+   "explain": "A river bank, and a bank for money."
+  },
+  {
+   "id": "w037",
+   "category": "wordplay",
+   "question": "Which is the odd one out?",
+   "options": [
+    "KITTEN",
+    "PUPPY",
+    "LION",
+    "CALF"
+   ],
+   "answer": 2,
+   "explain": "Kitten, puppy and calf are all baby animals. A lion is a grown-up!"
+  },
+  {
+   "id": "w038",
+   "category": "wordplay",
+   "question": "Which word is the opposite of ANCIENT?",
+   "options": [
+    "MODERN",
+    "ANTIQUE",
+    "DUSTY",
+    "OLD"
+   ],
+   "answer": 0,
+   "explain": "Ancient means very old, so modern is the opposite."
+  },
+  {
+   "id": "w039",
+   "category": "wordplay",
+   "question": "Take the first letter off PLATE. Which word is left?",
+   "options": [
+    "LET",
+    "PLAN",
+    "LATE",
+    "PLAT"
+   ],
+   "answer": 2,
+   "explain": "P-LATE without the P is LATE."
+  },
+  {
+   "id": "w040",
+   "category": "wordplay",
+   "question": "Which word turns into a different word when you add an E to the end: KIT, BOX or CUP?",
+   "options": [
+    "KIT",
+    "CUP",
+    "BOX"
+   ],
+   "answer": 0,
+   "explain": "KIT + E = KITE. BOXE and CUPE aren't words."
+  },
+  {
+   "id": "l001",
+   "category": "logic",
+   "question": "Mei is taller than Kai. Kai is taller than Sam. Who is the shortest?",
+   "options": [
+    "Mei",
+    "Kai",
+    "Sam"
+   ],
+   "answer": 2,
+   "explain": "Mei > Kai > Sam, so Sam is the shortest."
+  },
+  {
+   "id": "l002",
+   "category": "logic",
+   "question": "Tam is older than Ana but younger than Leo. Who is the oldest?",
+   "options": [
+    "Ana",
+    "Tam",
+    "Leo"
+   ],
+   "answer": 2,
+   "explain": "Ana < Tam < Leo."
+  },
+  {
+   "id": "l003",
+   "category": "logic",
+   "question": "Siu Mai the cat is waiting in a queue. There are 3 cats in front of her and 2 cats behind her. How many cats are in the queue?",
+   "options": [
+    "6",
+    "3",
+    "5",
+    "7"
+   ],
+   "answer": 0,
+   "explain": "3 in front + Siu Mai + 2 behind = 6."
+  },
+  {
+   "id": "l004",
+   "category": "logic",
+   "question": "A tram line has 5 stops in a row. Going from one stop to the next takes 2 minutes. How long from the first stop to the last?",
+   "options": [
+    "5 minutes",
+    "6 minutes",
+    "10 minutes",
+    "8 minutes"
+   ],
+   "answer": 3,
+   "explain": "5 stops have 4 gaps between them: 4 x 2 = 8."
+  },
+  {
+   "id": "l005",
+   "category": "logic",
+   "question": "What comes next? 2, 4, 8, 16, ...",
+   "options": [
+    "18",
+    "20",
+    "24",
+    "32"
+   ],
+   "answer": 3,
+   "explain": "Each number doubles."
+  },
+  {
+   "id": "l006",
+   "category": "logic",
+   "question": "What comes next? 1, 4, 9, 16, ...",
+   "options": [
+    "23",
+    "20",
+    "32",
+    "25"
+   ],
+   "answer": 3,
+   "explain": "These are 1x1, 2x2, 3x3, 4x4, so next is 5x5."
+  },
+  {
+   "id": "l007",
+   "category": "logic",
+   "question": "What comes next? A, C, E, G, ...",
+   "options": [
+    "J",
+    "H",
+    "I",
+    "K"
+   ],
+   "answer": 2,
+   "explain": "Skip one letter each time: G, (H), I."
+  },
+  {
+   "id": "l008",
+   "category": "logic",
+   "question": "What comes next? Monday, Wednesday, Friday, ...",
+   "options": [
+    "Sunday",
+    "Thursday",
+    "Saturday",
+    "Tuesday"
+   ],
+   "answer": 0,
+   "explain": "Skip one day each time: Friday, (Saturday), Sunday."
+  },
+  {
+   "id": "l009",
+   "category": "logic",
+   "question": "What comes next? 1, 1, 2, 3, 5, 8, ...",
+   "options": [
+    "13",
+    "16",
+    "11",
+    "12"
+   ],
+   "answer": 0,
+   "explain": "Add the two numbers before: 5 + 8 = 13."
+  },
+  {
+   "id": "l010",
+   "category": "logic",
+   "question": "What comes next? 100, 90, 81, 73, ...",
+   "options": [
+    "63",
+    "66",
+    "70",
+    "65"
+   ],
+   "answer": 1,
+   "explain": "Take away 10, then 9, then 8, then 7: 73 - 7 = 66."
+  },
+  {
+   "id": "l011",
+   "category": "logic",
+   "question": "All glimmerfish are blue. Dot is a glimmerfish. What colour is Dot?",
+   "options": [
+    "You can't tell",
+    "Gold",
+    "Green",
+    "Blue"
+   ],
+   "answer": 3,
+   "explain": "Every glimmerfish is blue, and Dot is one."
+  },
+  {
+   "id": "l012",
+   "category": "logic",
+   "question": "Some dragons are green. Puff is a dragon. Is Puff green?",
+   "options": [
+    "Yes, definitely",
+    "You can't tell",
+    "No, definitely not"
+   ],
+   "answer": 1,
+   "explain": "Only SOME dragons are green, so Puff might be, or might not be."
+  },
+  {
+   "id": "l013",
+   "category": "logic",
+   "question": "A drawer holds red socks and blue socks, all mixed up. In the dark, how many socks must you grab to be SURE you have two of the same colour?",
+   "options": [
+    "4",
+    "2",
+    "3",
+    "6"
+   ],
+   "answer": 2,
+   "explain": "With 3 socks and only 2 colours, two of them must match."
+  },
+  {
+   "id": "l014",
+   "category": "logic",
+   "question": "Four friends each shake hands once with every other friend. How many handshakes is that?",
+   "options": [
+    "6",
+    "4",
+    "8",
+    "12"
+   ],
+   "answer": 0,
+   "explain": "3 + 2 + 1 = 6."
+  },
+  {
+   "id": "l015",
+   "category": "logic",
+   "question": "If yesterday was Saturday, what day will tomorrow be?",
+   "options": [
+    "Sunday",
+    "Friday",
+    "Monday",
+    "Tuesday"
+   ],
+   "answer": 2,
+   "explain": "Today is Sunday, so tomorrow is Monday."
+  },
+  {
+   "id": "l016",
+   "category": "logic",
+   "question": "The day after tomorrow is Thursday. What day is it today?",
+   "options": [
+    "Friday",
+    "Tuesday",
+    "Wednesday",
+    "Monday"
+   ],
+   "answer": 1,
+   "explain": "Tuesday, then Wednesday, then Thursday."
+  },
+  {
+   "id": "l017",
+   "category": "logic",
+   "question": "I'm thinking of a number. I double it and add 3, and I get 11. What is my number?",
+   "options": [
+    "4",
+    "5",
+    "3",
+    "7"
+   ],
+   "answer": 0,
+   "explain": "11 - 3 = 8, and half of 8 is 4."
+  },
+  {
+   "id": "l018",
+   "category": "logic",
+   "question": "A farmer has some chickens and some cows. Together they have 4 heads and 12 legs. How many cows are there?",
+   "options": [
+    "2",
+    "3",
+    "4",
+    "1"
+   ],
+   "answer": 0,
+   "explain": "2 cows (8 legs) + 2 chickens (4 legs) = 12 legs."
+  },
+  {
+   "id": "l019",
+   "category": "logic",
+   "question": "In a running race you are in 4th place, and you overtake the runner in 3rd. What place are you in now?",
+   "options": [
+    "2nd",
+    "4th",
+    "3rd",
+    "1st"
+   ],
+   "answer": 2,
+   "explain": "You took their place: 3rd."
+  },
+  {
+   "id": "l020",
+   "category": "logic",
+   "question": "Which weighs more: one kilogram of fluffy marshmallows or one kilogram of rocks?",
+   "options": [
+    "The marshmallows",
+    "They weigh the same",
+    "The rocks"
+   ],
+   "answer": 1,
+   "explain": "A kilogram is a kilogram!"
+  },
+  {
+   "id": "l021",
+   "category": "logic",
+   "question": "Liv has more stickers than Kit. Kit has more than Bo. Bo has more than Dee. Who has the fewest stickers?",
+   "options": [
+    "Liv",
+    "Bo",
+    "Kit",
+    "Dee"
+   ],
+   "answer": 3,
+   "explain": "Liv > Kit > Bo > Dee."
+  },
+  {
+   "id": "l022",
+   "category": "logic",
+   "question": "Three lanterns hang in a row. The red one is in the middle. The gold one is NOT on the left. Where is the green one?",
+   "options": [
+    "On the right",
+    "In the middle",
+    "On the left"
+   ],
+   "answer": 2,
+   "explain": "Red is in the middle, gold must be on the right, so green is on the left."
+  },
+  {
+   "id": "l023",
+   "category": "logic",
+   "question": "Which number is the odd one out? 3, 7, 12, 15, 21",
+   "options": [
+    "12",
+    "15",
+    "7",
+    "21"
+   ],
+   "answer": 0,
+   "explain": "12 is the only even number."
+  },
+  {
+   "id": "l024",
+   "category": "logic",
+   "question": "Which is the odd one out?",
+   "options": [
+    "A square",
+    "A cube",
+    "A circle",
+    "A triangle"
+   ],
+   "answer": 1,
+   "explain": "A cube is a solid 3D shape. The others are flat."
+  },
+  {
+   "id": "l025",
+   "category": "logic",
+   "question": "Which is the odd one out?",
+   "options": [
+    "Mercury",
+    "Venus",
+    "The Moon",
+    "Mars"
+   ],
+   "answer": 2,
+   "explain": "Mercury, Mars and Venus are planets. The Moon goes round the Earth."
+  },
+  {
+   "id": "l026",
+   "category": "logic",
+   "question": "Which is the odd one out?",
+   "options": [
+    "A shark",
+    "A goldfish",
+    "A dolphin",
+    "A salmon"
+   ],
+   "answer": 2,
+   "explain": "A dolphin is a mammal that breathes air. The others are fish."
+  },
+  {
+   "id": "l027",
+   "category": "logic",
+   "question": "Which is the odd one out?",
+   "options": [
+    "An owl",
+    "An eagle",
+    "A bat",
+    "A sparrow"
+   ],
+   "answer": 2,
+   "explain": "A bat is a mammal. The others are birds."
+  },
+  {
+   "id": "l028",
+   "category": "logic",
+   "question": "Which is the odd one out?",
+   "options": [
+    "A drum",
+    "A harp",
+    "A violin",
+    "A guitar"
+   ],
+   "answer": 0,
+   "explain": "A drum has no strings."
+  },
+  {
+   "id": "l029",
+   "category": "logic",
+   "question": "Kai faces north. He turns right, then turns right again. Which way is he facing now?",
+   "options": [
+    "West",
+    "South",
+    "North",
+    "East"
+   ],
+   "answer": 1,
+   "explain": "North, turn right to east, turn right again to south."
+  },
+  {
+   "id": "l030",
+   "category": "logic",
+   "question": "You are facing east. You turn left twice. Which way are you facing now?",
+   "options": [
+    "South",
+    "West",
+    "East",
+    "North"
+   ],
+   "answer": 1,
+   "explain": "East, left to north, left again to west."
+  },
+  {
+   "id": "l031",
+   "category": "logic",
+   "question": "Which number is missing? 3, 6, __, 12, 15",
+   "options": [
+    "11",
+    "8",
+    "9",
+    "10"
+   ],
+   "answer": 2,
+   "explain": "Count up in 3s."
+  },
+  {
+   "id": "l032",
+   "category": "logic",
+   "question": "In a secret code A=1, B=2, C=3 and so on. What does 3-1-20 spell?",
+   "options": [
+    "COT",
+    "BAT",
+    "CAR",
+    "CAT"
+   ],
+   "answer": 3,
+   "explain": "C is 3, A is 1, T is 20."
+  },
+  {
+   "id": "l033",
+   "category": "logic",
+   "question": "If A=1, B=2, C=3 and so on, what do the letters of BAD add up to?",
+   "options": [
+    "6",
+    "214",
+    "7",
+    "8"
+   ],
+   "answer": 2,
+   "explain": "B(2) + A(1) + D(4) = 7."
+  },
+  {
+   "id": "l034",
+   "category": "logic",
+   "question": "A clock on the wall shows 3 o'clock. What time does it seem to show in a mirror?",
+   "options": [
+    "9 o'clock",
+    "3 o'clock",
+    "12 o'clock",
+    "6 o'clock"
+   ],
+   "answer": 0,
+   "explain": "A mirror flips left and right, so the hour hand points to 9."
+  },
+  {
+   "id": "l035",
+   "category": "logic",
+   "question": "Pip stands between Ann and Cal in a line of three. Ann is first. Who is last?",
+   "options": [
+    "Cal",
+    "Ann",
+    "Pip"
+   ],
+   "answer": 0,
+   "explain": "Ann, Pip, Cal."
+  },
+  {
+   "id": "l036",
+   "category": "logic",
+   "question": "Five friends sit around a round table. How many people is each friend sitting right next to?",
+   "options": [
+    "2",
+    "3",
+    "1",
+    "4"
+   ],
+   "answer": 0,
+   "explain": "One on the left and one on the right."
+  },
+  {
+   "id": "l037",
+   "category": "logic",
+   "question": "A week from today will be a Friday. What day was it yesterday?",
+   "options": [
+    "Wednesday",
+    "Thursday",
+    "Saturday",
+    "Friday"
+   ],
+   "answer": 1,
+   "explain": "A week later is the same day, so today is Friday and yesterday was Thursday."
+  },
+  {
+   "id": "l038",
+   "category": "logic",
+   "question": "A ferry leaves every 15 minutes. One leaves at 10:00. When do the next two leave?",
+   "options": [
+    "10:30 and 11:00",
+    "10:15 and 10:45",
+    "10:15 and 10:30",
+    "10:10 and 10:20"
+   ],
+   "answer": 2,
+   "explain": "Add 15 minutes each time."
+  },
+  {
+   "id": "l039",
+   "category": "logic",
+   "question": "Box A is heavier than Box B. Box C is lighter than Box B. Which box is the lightest?",
+   "options": [
+    "Box B",
+    "Box A",
+    "Box C"
+   ],
+   "answer": 2,
+   "explain": "A > B > C."
+  },
+  {
+   "id": "l040",
+   "category": "logic",
+   "question": "Some of the gremlins are purple. All of the gremlins love noodles. Which MUST be true?",
+   "options": [
+    "Only purple gremlins love noodles",
+    "Every purple gremlin loves noodles",
+    "Every gremlin is purple"
+   ],
+   "answer": 1,
+   "explain": "All gremlins love noodles, so the purple ones do too."
+  },
+  {
+   "id": "n001",
+   "category": "nature",
+   "question": "Which of these animals is a mammal that can really fly, not just glide?",
+   "options": [
+    "A bat",
+    "A penguin",
+    "A flying squirrel",
+    "A flying fish"
+   ],
+   "answer": 0,
+   "explain": "Bats flap real wings. Flying fish and flying squirrels only glide."
+  },
+  {
+   "id": "n002",
+   "category": "nature",
+   "question": "How many legs does a spider have?",
+   "options": [
+    "8",
+    "10",
+    "4",
+    "6"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "n003",
+   "category": "nature",
+   "question": "How many legs does an insect, like an ant or a beetle, have?",
+   "options": [
+    "4",
+    "10",
+    "8",
+    "6"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "n004",
+   "category": "nature",
+   "question": "A hungry caterpillar wraps itself up and waits. What can it turn into?",
+   "options": [
+    "A butterfly or a moth",
+    "A bee",
+    "A spider",
+    "A beetle"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "n005",
+   "category": "nature",
+   "question": "Which planet is called the Red Planet?",
+   "options": [
+    "Saturn",
+    "Venus",
+    "Jupiter",
+    "Mars"
+   ],
+   "answer": 3,
+   "explain": "Its rusty dust makes it look red."
+  },
+  {
+   "id": "n006",
+   "category": "nature",
+   "question": "What is the closest star to Earth?",
+   "options": [
+    "The North Star",
+    "The Moon",
+    "Mars",
+    "The Sun"
+   ],
+   "answer": 3,
+   "explain": "The Sun is a star! The Moon and Mars aren't stars at all."
+  },
+  {
+   "id": "n007",
+   "category": "nature",
+   "question": "Plants breathe in a gas from the air to help make their food. Which gas?",
+   "options": [
+    "Steam",
+    "Carbon dioxide",
+    "Oxygen",
+    "Helium"
+   ],
+   "answer": 1,
+   "explain": "Plants take in carbon dioxide and give out oxygen."
+  },
+  {
+   "id": "n008",
+   "category": "nature",
+   "question": "What sweet, sticky food do honeybees make?",
+   "options": [
+    "Jam",
+    "Syrup",
+    "Toffee",
+    "Honey"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "n009",
+   "category": "nature",
+   "question": "Which is the biggest ocean on Earth?",
+   "options": [
+    "The Pacific Ocean",
+    "The Indian Ocean",
+    "The Atlantic Ocean",
+    "The Arctic Ocean"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "n010",
+   "category": "nature",
+   "question": "At what temperature does pure water freeze into ice?",
+   "options": [
+    "-50 degrees Celsius",
+    "0 degrees Celsius",
+    "100 degrees Celsius",
+    "10 degrees Celsius"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "n011",
+   "category": "nature",
+   "question": "At sea level, at what temperature does water boil?",
+   "options": [
+    "50 degrees Celsius",
+    "200 degrees Celsius",
+    "100 degrees Celsius",
+    "0 degrees Celsius"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "n012",
+   "category": "nature",
+   "question": "What is the biggest animal that has ever lived on Earth?",
+   "options": [
+    "The elephant",
+    "The giraffe",
+    "The blue whale",
+    "Tyrannosaurus rex"
+   ],
+   "answer": 2,
+   "explain": "Blue whales are even bigger than the biggest dinosaurs."
+  },
+  {
+   "id": "n013",
+   "category": "nature",
+   "question": "A frog begins its life as a tiny swimming...",
+   "options": [
+    "Chick",
+    "Tadpole",
+    "Caterpillar",
+    "Cub"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "n014",
+   "category": "nature",
+   "question": "Which bird can't fly but is the fastest runner of all birds?",
+   "options": [
+    "The eagle",
+    "The chicken",
+    "The ostrich",
+    "The penguin"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "n015",
+   "category": "nature",
+   "question": "Which part of a plant drinks up water from the soil?",
+   "options": [
+    "The seeds",
+    "The petals",
+    "The leaves",
+    "The roots"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "n016",
+   "category": "nature",
+   "question": "Which of these animals carries its baby in a pouch?",
+   "options": [
+    "A zebra",
+    "A kangaroo",
+    "A tiger",
+    "A panda"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "n017",
+   "category": "nature",
+   "question": "How many hearts does an octopus have?",
+   "options": [
+    "8",
+    "3",
+    "2",
+    "1"
+   ],
+   "answer": 1,
+   "explain": "Two pump blood to the gills and one pumps it round the body."
+  },
+  {
+   "id": "n018",
+   "category": "nature",
+   "question": "A snake flicks its tongue in and out. What is it doing?",
+   "options": [
+    "Smelling the air",
+    "Listening",
+    "Cooling down",
+    "Saying hello"
+   ],
+   "answer": 0,
+   "explain": "Snakes pick up smells with their tongues."
+  },
+  {
+   "id": "n019",
+   "category": "nature",
+   "question": "Which of these is NOT a mammal?",
+   "options": [
+    "A bat",
+    "A whale",
+    "A dolphin",
+    "A shark"
+   ],
+   "answer": 3,
+   "explain": "Sharks are fish. Whales, bats and dolphins are mammals."
+  },
+  {
+   "id": "n020",
+   "category": "nature",
+   "question": "What do we call an animal that eats only plants?",
+   "options": [
+    "A herbivore",
+    "A predator",
+    "An omnivore",
+    "A carnivore"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "n021",
+   "category": "nature",
+   "question": "In Hong Kong, typhoons mostly come in which part of the year?",
+   "options": [
+    "Summer and early autumn",
+    "Only in spring",
+    "Only in winter",
+    "Never"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "n022",
+   "category": "nature",
+   "question": "Pink Chinese white dolphins can be spotted in the sea near which Hong Kong island?",
+   "options": [
+    "Cheung Chau's top hill",
+    "Victoria Peak",
+    "Ap Lei Chau",
+    "Lantau Island"
+   ],
+   "answer": 3,
+   "explain": "Many live in the waters west of Lantau, near Tai O."
+  },
+  {
+   "id": "n023",
+   "category": "nature",
+   "question": "Why does the Moon shine at night?",
+   "options": [
+    "It glows from the cold",
+    "It is on fire",
+    "It reflects light from the Sun",
+    "It has its own lamps"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "n024",
+   "category": "nature",
+   "question": "About how long does the Earth take to travel once around the Sun?",
+   "options": [
+    "One year",
+    "One hour",
+    "One month",
+    "One day"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "n025",
+   "category": "nature",
+   "question": "About how long does the Earth take to spin around once?",
+   "options": [
+    "One minute",
+    "One day",
+    "One week",
+    "One year"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "n026",
+   "category": "nature",
+   "question": "What do you need to make a rainbow?",
+   "options": [
+    "Thunder and lightning",
+    "Wind and clouds",
+    "Moonlight on snow",
+    "Sunlight shining through raindrops"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "n027",
+   "category": "nature",
+   "question": "Which of these animals is a reptile?",
+   "options": [
+    "A salmon",
+    "A crocodile",
+    "A frog",
+    "A duck"
+   ],
+   "answer": 1,
+   "explain": "Frogs are amphibians, salmon are fish, ducks are birds."
+  },
+  {
+   "id": "n028",
+   "category": "nature",
+   "question": "A baby lion is called a...",
+   "options": [
+    "Foal",
+    "Calf",
+    "Kid",
+    "Cub"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "n029",
+   "category": "nature",
+   "question": "What do giant pandas eat most of the time?",
+   "options": [
+    "Rice",
+    "Bamboo",
+    "Honey",
+    "Fish"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "n030",
+   "category": "nature",
+   "question": "Which is the biggest planet in our Solar System?",
+   "options": [
+    "Earth",
+    "Jupiter",
+    "Mars",
+    "Mercury"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "n031",
+   "category": "nature",
+   "question": "In which direction does the Sun rise in the morning?",
+   "options": [
+    "West",
+    "North",
+    "South",
+    "East"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "n032",
+   "category": "nature",
+   "question": "How many arms does a common starfish have?",
+   "options": [
+    "6",
+    "4",
+    "5",
+    "8"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "n033",
+   "category": "nature",
+   "question": "Which of these animals is famous for changing the colour of its skin?",
+   "options": [
+    "A camel",
+    "An elephant",
+    "A chameleon",
+    "A giraffe"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "n034",
+   "category": "nature",
+   "question": "Most penguins live in which half of the world?",
+   "options": [
+    "Only at the North Pole",
+    "The southern half",
+    "The northern half"
+   ],
+   "answer": 1,
+   "explain": "Penguins live south of the Equator (and there are none at the North Pole)."
+  },
+  {
+   "id": "n035",
+   "category": "nature",
+   "question": "What do we call a big group of fish swimming together?",
+   "options": [
+    "A school",
+    "A flock",
+    "A herd",
+    "A pack"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "n036",
+   "category": "nature",
+   "question": "Which is the fastest animal on land?",
+   "options": [
+    "The kangaroo",
+    "The lion",
+    "The cheetah",
+    "The horse"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "n037",
+   "category": "nature",
+   "question": "Mangrove trees, like the ones at Mai Po in Hong Kong, grow best where?",
+   "options": [
+    "In sandy deserts",
+    "On snowy mountain tops",
+    "On muddy, salty shores",
+    "Inside caves"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "n038",
+   "category": "nature",
+   "question": "Which animal sleeps hanging upside down by its feet?",
+   "options": [
+    "A bat",
+    "A goldfish",
+    "An owl",
+    "A monkey"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "n039",
+   "category": "nature",
+   "question": "How many bones does a grown-up human body usually have?",
+   "options": [
+    "306",
+    "56",
+    "206",
+    "106"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "n040",
+   "category": "nature",
+   "question": "What is the biggest organ of your body?",
+   "options": [
+    "Your stomach",
+    "Your heart",
+    "Your skin",
+    "Your brain"
+   ],
+   "answer": 2,
+   "explain": "Skin covers your whole body!"
+  },
+  {
+   "id": "c001",
+   "category": "culture",
+   "question": "How many animals are there in the Chinese zodiac?",
+   "options": [
+    "13",
+    "10",
+    "11",
+    "12"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "c002",
+   "category": "culture",
+   "question": "Which animal comes FIRST in the Chinese zodiac?",
+   "options": [
+    "The Dragon",
+    "The Tiger",
+    "The Rat",
+    "The Ox"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c003",
+   "category": "culture",
+   "question": "Which zodiac animal comes straight after the Rat?",
+   "options": [
+    "The Pig",
+    "The Ox",
+    "The Tiger",
+    "The Rabbit"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c004",
+   "category": "culture",
+   "question": "Which is the only animal in the Chinese zodiac that isn't real?",
+   "options": [
+    "The Goat",
+    "The Snake",
+    "The Rooster",
+    "The Dragon"
+   ],
+   "answer": 3,
+   "explain": "Dragons are mythical. (Don't tell the Neon Dragon!)"
+  },
+  {
+   "id": "c005",
+   "category": "culture",
+   "question": "Which animal comes LAST in the Chinese zodiac?",
+   "options": [
+    "The Rat",
+    "The Dog",
+    "The Pig",
+    "The Monkey"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c006",
+   "category": "culture",
+   "question": "Which zodiac animal comes just before the Dog?",
+   "options": [
+    "The Rooster",
+    "The Monkey",
+    "The Pig",
+    "The Horse"
+   ],
+   "answer": 0,
+   "explain": "... Monkey, Rooster, Dog, Pig."
+  },
+  {
+   "id": "c007",
+   "category": "culture",
+   "question": "In the old story of the Great Race, which clever animal rode on the Ox's back and hopped off at the end to win?",
+   "options": [
+    "The Cat",
+    "The Rat",
+    "The Monkey",
+    "The Rabbit"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c008",
+   "category": "culture",
+   "question": "In the legend of the Great Race, which animal missed out on the zodiac because the Rat tricked it?",
+   "options": [
+    "The Cat",
+    "The Goat",
+    "The Horse",
+    "The Dog"
+   ],
+   "answer": 0,
+   "explain": "That's why, people say, cats chase rats!"
+  },
+  {
+   "id": "c009",
+   "category": "culture",
+   "question": "2025 was the Year of the Snake. Which animal's year is 2026?",
+   "options": [
+    "The Dragon",
+    "The Horse",
+    "The Goat",
+    "The Rat"
+   ],
+   "answer": 1,
+   "explain": "Snake, then Horse."
+  },
+  {
+   "id": "c010",
+   "category": "culture",
+   "question": "How many years does it take for the same zodiac animal to come round again?",
+   "options": [
+    "8",
+    "60",
+    "12",
+    "10"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c011",
+   "category": "culture",
+   "question": "The zodiac Goat has other English names too. Which is one of them?",
+   "options": [
+    "The Deer",
+    "The Cow",
+    "The Llama",
+    "The Sheep"
+   ],
+   "answer": 3,
+   "explain": "The Goat is also called the Sheep or the Ram."
+  },
+  {
+   "id": "c012",
+   "category": "culture",
+   "question": "At Chinese New Year, what colour are the lucky money envelopes?",
+   "options": [
+    "White",
+    "Green",
+    "Red",
+    "Black"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c013",
+   "category": "culture",
+   "question": "What do people in Hong Kong call the lucky red money packets?",
+   "options": [
+    "Char siu",
+    "Siu mai",
+    "Dim sum",
+    "Lai see"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "c014",
+   "category": "culture",
+   "question": "Which greeting do people say for Chinese New Year?",
+   "options": [
+    "Zou san",
+    "Kung Hei Fat Choy",
+    "Baai baai",
+    "Happy Halloween"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c015",
+   "category": "culture",
+   "question": "During a lion dance, what does the lion stretch up high to 'eat'?",
+   "options": [
+    "A lettuce",
+    "A kite",
+    "A football",
+    "A cake"
+   ],
+   "answer": 0,
+   "explain": "Lettuce sounds like 'growing wealth' in Cantonese."
+  },
+  {
+   "id": "c016",
+   "category": "culture",
+   "question": "What round treat do people share at the Mid-Autumn Festival?",
+   "options": [
+    "Pineapple buns",
+    "Mooncakes",
+    "Egg tarts",
+    "Rice dumplings"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c017",
+   "category": "culture",
+   "question": "At which festival do children carry glowing lanterns under the big full moon?",
+   "options": [
+    "Mid-Autumn Festival",
+    "Dragon Boat Festival",
+    "Ching Ming Festival"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "c018",
+   "category": "culture",
+   "question": "What do people eat at the Dragon Boat Festival?",
+   "options": [
+    "Mooncakes",
+    "Birthday cake",
+    "Sticky rice dumplings wrapped in leaves",
+    "Egg tarts"
+   ],
+   "answer": 2,
+   "explain": "They're called zongzi (joong in Cantonese)."
+  },
+  {
+   "id": "c019",
+   "category": "culture",
+   "question": "Long, colourful boats race to the beat of a drum at which festival?",
+   "options": [
+    "Mid-Autumn Festival",
+    "The Dragon Boat Festival",
+    "Chinese New Year"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c020",
+   "category": "culture",
+   "question": "At which festival do families visit and sweep their ancestors' graves?",
+   "options": [
+    "Dragon Boat Festival",
+    "Ching Ming Festival",
+    "Mid-Autumn Festival"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c021",
+   "category": "culture",
+   "question": "In Cantonese, which number is lucky because it sounds like 'getting rich'?",
+   "options": [
+    "8",
+    "4",
+    "7",
+    "1"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "c022",
+   "category": "culture",
+   "question": "Which number do many people avoid in Hong Kong because it sounds like the word for 'death'?",
+   "options": [
+    "8",
+    "9",
+    "6",
+    "4"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "c023",
+   "category": "culture",
+   "question": "What does the name 'Hong Kong' mean in English?",
+   "options": [
+    "Dragon City",
+    "Fragrant Harbour",
+    "Golden Mountain",
+    "Pearl River"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c024",
+   "category": "culture",
+   "question": "The green-and-white Star Ferry sails across which harbour?",
+   "options": [
+    "Aberdeen Harbour",
+    "Tolo Harbour",
+    "Victoria Harbour"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c025",
+   "category": "culture",
+   "question": "Victoria Harbour lies between Hong Kong Island and...",
+   "options": [
+    "Lantau",
+    "Kowloon",
+    "Macau",
+    "Lamma Island"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c026",
+   "category": "culture",
+   "question": "What nickname do people give Hong Kong Island's double-decker trams?",
+   "options": [
+    "Ding-ding",
+    "Beep-beep",
+    "Toot-toot",
+    "Choo-choo"
+   ],
+   "answer": 0,
+   "explain": "From the sound of their bells!"
+  },
+  {
+   "id": "c027",
+   "category": "culture",
+   "question": "What is the highest mountain in Hong Kong?",
+   "options": [
+    "Sunset Peak",
+    "Victoria Peak",
+    "Lion Rock",
+    "Tai Mo Shan"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "c028",
+   "category": "culture",
+   "question": "Which is the biggest island in Hong Kong?",
+   "options": [
+    "Hong Kong Island",
+    "Lamma Island",
+    "Lantau Island",
+    "Cheung Chau"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c029",
+   "category": "culture",
+   "question": "The giant bronze Big Buddha sits on top of a hill on which island?",
+   "options": [
+    "Lantau Island",
+    "Peng Chau",
+    "Hong Kong Island",
+    "Lamma Island"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "c030",
+   "category": "culture",
+   "question": "What is the name of Hong Kong's underground railway?",
+   "options": [
+    "The Metro-Bus",
+    "The Tube",
+    "The MTR",
+    "The Subway Express"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c031",
+   "category": "culture",
+   "question": "Which card do people tap to pay for the MTR, buses and even snacks in Hong Kong?",
+   "options": [
+    "A Pearl card",
+    "An Octopus card",
+    "A Squid card",
+    "A Dragon card"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c032",
+   "category": "culture",
+   "question": "Taxis in the busy city areas of Hong Kong are which colour?",
+   "options": [
+    "Purple",
+    "Black",
+    "Yellow",
+    "Red"
+   ],
+   "answer": 3,
+   "explain": "Green taxis serve the New Territories and blue ones serve Lantau."
+  },
+  {
+   "id": "c033",
+   "category": "culture",
+   "question": "Which colour taxis drive around Lantau Island?",
+   "options": [
+    "Green",
+    "Yellow",
+    "Red",
+    "Blue"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "c034",
+   "category": "culture",
+   "question": "Yuenyeung is a Hong Kong café drink made by mixing milk tea with...",
+   "options": [
+    "Orange juice",
+    "Coffee",
+    "Lemonade",
+    "Soy sauce"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "c035",
+   "category": "culture",
+   "question": "A pineapple bun usually has no pineapple in it. So why is it called a pineapple bun?",
+   "options": [
+    "Its crunchy golden top looks like a pineapple",
+    "It tastes exactly like pineapple",
+    "It was invented on a pineapple farm",
+    "It's shaped like a palm tree"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "c036",
+   "category": "culture",
+   "question": "In Cantonese, what do you say to thank someone for a present?",
+   "options": [
+    "Do jeh",
+    "Nei hou",
+    "Zou san",
+    "Baai baai"
+   ],
+   "answer": 0,
+   "explain": "Zou san means good morning, and nei hou means hello."
+  },
+  {
+   "id": "c037",
+   "category": "culture",
+   "question": "The Chinese character 山 looks like three peaks. What does it mean?",
+   "options": [
+    "Tree",
+    "Fire",
+    "Mountain",
+    "Water"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c038",
+   "category": "culture",
+   "question": "The Chinese character 人 looks like someone walking. What does it mean?",
+   "options": [
+    "Bird",
+    "Moon",
+    "Person",
+    "Door"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "c039",
+   "category": "culture",
+   "question": "What number does the Chinese character 三 stand for?",
+   "options": [
+    "1",
+    "3",
+    "2",
+    "10"
+   ],
+   "answer": 1,
+   "explain": "Three lines, three!"
+  },
+  {
+   "id": "c040",
+   "category": "culture",
+   "question": "Temple Street in Kowloon is famous for its busy...",
+   "options": [
+    "Ski slope",
+    "Beach",
+    "Night market",
+    "Racecourse"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "m001",
+   "category": "maths",
+   "question": "Siu Mai the cat eats 3 fish balls every hour. How many fish balls does he eat in 4 hours?",
+   "options": [
+    "7",
+    "10",
+    "12",
+    "16"
+   ],
+   "answer": 2,
+   "explain": "3 x 4 = 12."
+  },
+  {
+   "id": "m002",
+   "category": "maths",
+   "question": "A bamboo steamer holds 4 dumplings. How many dumplings are in 6 steamers?",
+   "options": [
+    "10",
+    "24",
+    "20",
+    "28"
+   ],
+   "answer": 1,
+   "explain": "4 x 6 = 24."
+  },
+  {
+   "id": "m003",
+   "category": "maths",
+   "question": "What is half of 50, plus 10?",
+   "options": [
+    "25",
+    "30",
+    "60",
+    "35"
+   ],
+   "answer": 3,
+   "explain": "Half of 50 is 25, and 25 + 10 = 35."
+  },
+  {
+   "id": "m004",
+   "category": "maths",
+   "question": "What is 7 x 8?",
+   "options": [
+    "56",
+    "48",
+    "63",
+    "54"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "m005",
+   "category": "maths",
+   "question": "What is 9 x 6?",
+   "options": [
+    "45",
+    "54",
+    "63",
+    "56"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "m006",
+   "category": "maths",
+   "question": "What is 144 divided by 12?",
+   "options": [
+    "12",
+    "14",
+    "16",
+    "11"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "m007",
+   "category": "maths",
+   "question": "What is a quarter of 100?",
+   "options": [
+    "4",
+    "25",
+    "20",
+    "40"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "m008",
+   "category": "maths",
+   "question": "How many minutes are there in 2 hours?",
+   "options": [
+    "120",
+    "200",
+    "100",
+    "60"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "m009",
+   "category": "maths",
+   "question": "How many seconds are there in 3 minutes?",
+   "options": [
+    "300",
+    "120",
+    "160",
+    "180"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "m010",
+   "category": "maths",
+   "question": "How many days are there in a leap year?",
+   "options": [
+    "360",
+    "364",
+    "366",
+    "365"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "m011",
+   "category": "maths",
+   "question": "Which number is bigger?",
+   "options": [
+    "0.5",
+    "0.45",
+    "0.405",
+    "0.09"
+   ],
+   "answer": 0,
+   "explain": "0.5 is the same as 0.50, which is more than 0.45."
+  },
+  {
+   "id": "m012",
+   "category": "maths",
+   "question": "What is one half plus one quarter?",
+   "options": [
+    "One third",
+    "Three quarters",
+    "Two sixths",
+    "One whole"
+   ],
+   "answer": 1,
+   "explain": "1/2 is 2/4, and 2/4 + 1/4 = 3/4."
+  },
+  {
+   "id": "m013",
+   "category": "maths",
+   "question": "What is 47 rounded to the nearest ten?",
+   "options": [
+    "47",
+    "45",
+    "40",
+    "50"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "m014",
+   "category": "maths",
+   "question": "A triangle has one angle of 90 degrees and one of 30 degrees. How big is the third angle?",
+   "options": [
+    "30 degrees",
+    "120 degrees",
+    "60 degrees",
+    "90 degrees"
+   ],
+   "answer": 2,
+   "explain": "The angles in a triangle add up to 180: 180 - 90 - 30 = 60."
+  },
+  {
+   "id": "m015",
+   "category": "maths",
+   "question": "How many sides does a hexagon have?",
+   "options": [
+    "6",
+    "8",
+    "5",
+    "7"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "m016",
+   "category": "maths",
+   "question": "A square has sides 5 cm long. What is the distance all the way around it?",
+   "options": [
+    "20 cm",
+    "10 cm",
+    "15 cm",
+    "25 cm"
+   ],
+   "answer": 0,
+   "explain": "4 sides x 5 cm = 20 cm."
+  },
+  {
+   "id": "m017",
+   "category": "maths",
+   "question": "A rectangle is 4 cm wide and 6 cm long. What is its area?",
+   "options": [
+    "12 square cm",
+    "10 square cm",
+    "24 square cm",
+    "20 square cm"
+   ],
+   "answer": 2,
+   "explain": "4 x 6 = 24."
+  },
+  {
+   "id": "m018",
+   "category": "maths",
+   "question": "What is 10% of 200?",
+   "options": [
+    "10",
+    "2",
+    "100",
+    "20"
+   ],
+   "answer": 3,
+   "explain": "10% means one tenth, and a tenth of 200 is 20."
+  },
+  {
+   "id": "m019",
+   "category": "maths",
+   "question": "Which of these numbers is a prime number?",
+   "options": [
+    "21",
+    "15",
+    "11",
+    "9"
+   ],
+   "answer": 2,
+   "explain": "11 can only be divided by 1 and 11. 9 = 3x3, 15 = 3x5, 21 = 3x7."
+  },
+  {
+   "id": "m020",
+   "category": "maths",
+   "question": "What is 3 squared (3 x 3)?",
+   "options": [
+    "12",
+    "6",
+    "33",
+    "9"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "m021",
+   "category": "maths",
+   "question": "You have 20 tokens. You spend 7, then win 5. How many tokens do you have now?",
+   "options": [
+    "8",
+    "22",
+    "32",
+    "18"
+   ],
+   "answer": 3,
+   "explain": "20 - 7 = 13, and 13 + 5 = 18."
+  },
+  {
+   "id": "m022",
+   "category": "maths",
+   "question": "A ferry leaves at 9:45 and the trip takes 10 minutes. When does it arrive?",
+   "options": [
+    "10:05",
+    "10:55",
+    "9:55",
+    "9:50"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "m023",
+   "category": "maths",
+   "question": "A film starts at 6:30 pm and lasts 1 hour and 45 minutes. When does it finish?",
+   "options": [
+    "8:45 pm",
+    "7:15 pm",
+    "8:15 pm",
+    "7:75 pm"
+   ],
+   "answer": 2,
+   "explain": "6:30 + 1 hour = 7:30, + 45 minutes = 8:15."
+  },
+  {
+   "id": "m024",
+   "category": "maths",
+   "question": "Egg tarts cost $8 each. How much do 5 egg tarts cost?",
+   "options": [
+    "$45",
+    "$35",
+    "$13",
+    "$40"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "m025",
+   "category": "maths",
+   "question": "You pay $50 for a toy that costs $36. How much change do you get?",
+   "options": [
+    "$24",
+    "$14",
+    "$16",
+    "$86"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "m026",
+   "category": "maths",
+   "question": "Which fraction is the same as three sixths?",
+   "options": [
+    "One half",
+    "One third",
+    "One sixth",
+    "Two thirds"
+   ],
+   "answer": 0,
+   "explain": "3 out of 6 is half."
+  },
+  {
+   "id": "m027",
+   "category": "maths",
+   "question": "How many centimetres are there in one metre?",
+   "options": [
+    "10",
+    "100",
+    "1000",
+    "60"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "m028",
+   "category": "maths",
+   "question": "How many grams are there in one kilogram?",
+   "options": [
+    "100",
+    "500",
+    "10",
+    "1000"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "m029",
+   "category": "maths",
+   "question": "What is double 45?",
+   "options": [
+    "95",
+    "80",
+    "450",
+    "90"
+   ],
+   "answer": 3
+  },
+  {
+   "id": "m030",
+   "category": "maths",
+   "question": "What is 1000 take away 1?",
+   "options": [
+    "900",
+    "999",
+    "1001",
+    "99"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "m031",
+   "category": "maths",
+   "question": "What number is the Roman numeral X?",
+   "options": [
+    "5",
+    "10",
+    "100",
+    "1"
+   ],
+   "answer": 1
+  },
+  {
+   "id": "m032",
+   "category": "maths",
+   "question": "How do you write the number 4 in Roman numerals?",
+   "options": [
+    "IV",
+    "IIII",
+    "XL",
+    "VI"
+   ],
+   "answer": 0,
+   "explain": "IV means one less than five. (Some old clocks use IIII, but IV is the usual way.)"
+  },
+  {
+   "id": "m033",
+   "category": "maths",
+   "question": "The three angles inside any triangle always add up to...",
+   "options": [
+    "90 degrees",
+    "100 degrees",
+    "180 degrees",
+    "360 degrees"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "m034",
+   "category": "maths",
+   "question": "How many flat faces does a cube have?",
+   "options": [
+    "6",
+    "8",
+    "12",
+    "4"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "m035",
+   "category": "maths",
+   "question": "How many edges does a cube have?",
+   "options": [
+    "6",
+    "8",
+    "12",
+    "10"
+   ],
+   "answer": 2,
+   "explain": "4 round the top, 4 round the bottom and 4 going up the sides."
+  },
+  {
+   "id": "m036",
+   "category": "maths",
+   "question": "Counting in 5s starting at 5 (5, 10, 15...), what is the 10th number you say?",
+   "options": [
+    "100",
+    "55",
+    "45",
+    "50"
+   ],
+   "answer": 3,
+   "explain": "5 x 10 = 50."
+  },
+  {
+   "id": "m037",
+   "category": "maths",
+   "question": "Which of these numbers is odd?",
+   "options": [
+    "18",
+    "30",
+    "21",
+    "12"
+   ],
+   "answer": 2
+  },
+  {
+   "id": "m038",
+   "category": "maths",
+   "question": "How many quarters are there in 3 whole pizzas?",
+   "options": [
+    "12",
+    "3",
+    "4",
+    "7"
+   ],
+   "answer": 0,
+   "explain": "Each pizza has 4 quarters: 3 x 4 = 12."
+  },
+  {
+   "id": "m039",
+   "category": "maths",
+   "question": "A pizza is cut into 8 equal slices and you eat 3. What fraction of the pizza is left?",
+   "options": [
+    "Three eighths",
+    "Five eighths",
+    "Five threes",
+    "One half"
+   ],
+   "answer": 1,
+   "explain": "8 - 3 = 5 slices left out of 8."
+  },
+  {
+   "id": "m040",
+   "category": "maths",
+   "question": "Which is bigger: 3 x 4, or 2 x 7?",
+   "options": [
+    "2 x 7",
+    "They are the same",
+    "3 x 4"
+   ],
+   "answer": 0,
+   "explain": "3 x 4 = 12, but 2 x 7 = 14."
+  }
+ ]
+}

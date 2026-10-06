@@ -87,8 +87,14 @@ export async function submitGlobal(entry) {
     avatar: entry.avatar || {},
     score_pct: Math.max(0, Math.min(100, Math.round(entry.score_pct))),
     rank: String(entry.rank || '').slice(0, 24),
-    zodiac_count: Math.max(0, Math.min(11, entry.zodiac_count | 0)),
+    zodiac_count: Math.max(0, Math.min(12, entry.zodiac_count | 0)),
   };
-  await call('scores', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+  try {
+    await call('scores', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+  } catch (e) {
+    // a table created before the Dragon became the 12th animal only allows 0-11: post 11 rather than fail
+    if (e.status !== 400 || body.zodiac_count !== 12) throw e;
+    await call('scores', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ ...body, zodiac_count: 11 }) });
+  }
   return true;
 }

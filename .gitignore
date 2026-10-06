@@ -9,3 +9,5 @@ research-cache/
 *.pdf
 *.epub
 screenshots/
+# the best-score routes are spoilers: kept locally only
+scripts/score-paths.local.json

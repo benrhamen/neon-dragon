@@ -7,7 +7,7 @@
 --   * turns on Row Level Security: the public (anon) key may only INSERT new rows and SELECT rows;
 --     nobody using the public key can UPDATE or DELETE anything
 --   * basic anti-spam: a trigger rejects more than 5 scores per nickname per minute and more than
---     60 scores in total per minute, and stamps created_at on the server
+--     600 scores in total per minute, and stamps created_at on the server
 
 create table if not exists public.scores (
   id           bigint generated always as identity primary key,
@@ -38,7 +38,7 @@ alter table public.scores add constraint scores_rank_check
 
 alter table public.scores drop constraint if exists scores_zodiac_count_check;
 alter table public.scores add constraint scores_zodiac_count_check
-  check (zodiac_count between 0 and 11);
+  check (zodiac_count between 0 and 12);
 
 create index if not exists scores_top_idx on public.scores (score_pct desc, created_at asc);
 create index if not exists scores_recent_idx on public.scores (created_at desc);
@@ -75,7 +75,7 @@ begin
         where nickname = new.nickname and created_at > now() - interval '1 minute') >= 5 then
     raise exception 'Too many scores for this nickname. Try again in a minute.' using errcode = 'P0001';
   end if;
-  if (select count(*) from public.scores where created_at > now() - interval '1 minute') >= 60 then
+  if (select count(*) from public.scores where created_at > now() - interval '1 minute') >= 600 then
     raise exception 'Leaderboard is busy. Try again in a minute.' using errcode = 'P0001';
   end if;
   return new;

@@ -1,7 +1,7 @@
 // Gamebook engine: pure state logic, no DOM. Works in the browser and in Node (tests).
 // State is a plain JSON object so it can be saved to localStorage as-is.
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 // ---------- random numbers ----------
 // mulberry32: tiny seedable PRNG so tests can be deterministic (?seed=123).
@@ -68,7 +68,7 @@ export function interpolate(text, ctx = {}) {
 }
 
 // ---------- new game ----------
-export function newGame(book, { rng = Math.random, playerName = '' } = {}) {
+export function newGame(book, { rng = Math.random, playerName = '', riddleSeed = null, bonusEffects = null, bonusLabel = '' } = {}) {
   const state = {
     saveVersion: SAVE_VERSION,
     bookId: book.metadata.id || book.metadata.title,
@@ -89,6 +89,10 @@ export function newGame(book, { rng = Math.random, playerName = '' } = {}) {
     moves: 0, // player moves so far (each one applies rules.perMoveEffects)
     found: {}, // items ever picked up (for the score)
     used: {}, // items ever used up or handed over (for the score)
+    // Riddle draws use their own seeded generator, kept in the save, so a reload never rerolls a
+    // riddle and the dice stay independent of it.
+    riddleSeed: (riddleSeed ?? Math.floor(Math.random() * 4294967296)) >>> 0,
+    riddlesUsed: [], // pool riddle ids already asked this game (no repeats)
   };
   for (const [id, def] of Object.entries(book.stats || {})) {
     let v;
@@ -108,6 +112,8 @@ export function newGame(book, { rng = Math.random, playerName = '' } = {}) {
     state.inventory[id] = (state.inventory[id] || 0) + qty;
   }
   const messages = [];
+  // a one-time start bonus (e.g. a redeemed PLAY AGAIN voucher: +2 tokens)
+  if (bonusEffects?.length) { applyEffects(book, state, bonusEffects, messages); state.bonus = bonusLabel || 'bonus'; }
   enterSection(book, state, book.start, messages, rng);
   return { state, messages };
 }
@@ -244,6 +250,14 @@ export function enterSection(book, state, id, messages = [], rng = Math.random) 
   applyEffects(book, state, sec.onEnter, messages);
   if (sec.ending) {
     state.ended = { type: sec.ending.type, title: sec.ending.title, stars: sec.ending.stars ?? null, style: sec.ending.style || 'standard', section: id };
+    // ending.cause: the stat this ending blames is emptied, so the stats panel matches why you lost
+    if (sec.ending.cause) {
+      const stat = sec.ending.cause;
+      const before = state.stats[stat] ?? 0;
+      state.stats[stat] = statBounds(book, state, stat).min;
+      if (state.stats[stat] !== before) messages.push({ type: 'stat', stat, delta: state.stats[stat] - before, text: `${book.stats?.[stat]?.name || stat} ${before} → ${state.stats[stat]}` });
+      state.ended.cause = { stat, value: state.stats[stat] };
+    }
     return messages;
   }
   if (sec.combat) {
@@ -260,6 +274,7 @@ export function enterSection(book, state, id, messages = [], rng = Math.random) 
     state.pending = { kind: 'test', roll: null, success: null };
   } else if (sec.riddle) {
     state.pending = { kind: 'riddle', q: 0, picked: null, correct: null, penaltyDue: false, score: 0, wrong: 0 };
+    if (sec.riddle.draw) state.pending.ids = drawRiddles(book, state, sec.riddle.draw);
   }
   checkDepleted(book, state, messages, rng);
   return messages;
@@ -307,9 +322,22 @@ export function rollTest(book, state, rng = Math.random) {
   const t = sec.test;
   if (!t || state.pending?.kind !== 'test') throw new Error('No test here');
   if (state.pending.roll) return { roll: state.pending.roll, success: state.pending.success, messages: [] };
-  const roll = rollDice(t.dice, rng);
+  const roll = rollDice(t.dice || '2d6', rng);
   let success;
   let goal;
+  if (t.type === 'gamble') {
+    // Dice gamble: roll winAt or more = win; exactly halfOn = lose HALF your Luck (round down); anything else = lose 2 Luck.
+    const g = gambleRules(book, t);
+    const outcome = roll.total >= g.winAt ? 'win' : roll.total === g.halfOn ? 'half' : 'lose';
+    roll.goal = g.winAt;
+    const messages = [];
+    applyEffects(book, state, t.costEffects, messages);
+    state.pending.roll = roll;
+    state.pending.success = outcome === 'win';
+    state.pending.outcome = outcome;
+    if (checkDepleted(book, state, messages, rng)) return { roll, success: outcome === 'win', outcome, messages, diverted: true };
+    return { roll, success: outcome === 'win', outcome, messages };
+  }
   if (t.againstStat) { goal = state.stats[t.againstStat] ?? 0; success = roll.total <= goal; }
   else { const bonus = t.addStat ? state.stats[t.addStat] ?? 0 : 0; roll.total += bonus; roll.bonus = bonus; goal = t.target; success = roll.total >= goal; }
   roll.goal = goal;
@@ -321,12 +349,56 @@ export function rollTest(book, state, rng = Math.random) {
   return { roll, success, messages };
 }
 
+// ---------- dice gambles ----------
+// Every dice gamble in the story uses the same rule (the Bolt-Bot duel does not). Gambles only
+// touch Luck (t.stat): roll 2d6; winAt or more (default 8) wins the prize, exactly halfOn (default 7)
+// halves your Luck (round down), anything lower loses loseBy (default 2) Luck. Stakes are paid by the
+// choice that leads to the gamble.
+export function gambleRules(book, t) {
+  return { dice: t.dice || '2d6', winAt: t.winAt ?? 8, halfOn: t.halfOn ?? 7, loseBy: t.loseBy ?? 2, stat: t.stat || (book.stats?.luck ? 'luck' : book.rules?.healthStat || 'energy') };
+}
+// The stat change the gamble rule itself makes for an outcome ('win' | 'half' | 'lose').
+export function gambleEffects(book, t, outcome) {
+  const g = gambleRules(book, t);
+  return outcome === 'half' ? [{ stat: g.stat, halve: true }] : outcome === 'lose' ? [{ stat: g.stat, add: -g.loseBy }] : [];
+}
+// Exact probability of each total for "NdS+M" dice.
+export function diceDistribution(dice) {
+  const m = /^(\d*)d(\d+)([+-]\d+)?$/.exec(String(dice).trim());
+  if (!m) throw new Error(`Bad dice ${dice}`);
+  const n = Number(m[1] || 1), sides = Number(m[2]), mod = Number(m[3] || 0);
+  let dist = new Map([[0, 1]]);
+  for (let i = 0; i < n; i++) {
+    const next = new Map();
+    for (const [t, p] of dist) for (let f = 1; f <= sides; f++) next.set(t + f, (next.get(t + f) || 0) + p / sides);
+    dist = next;
+  }
+  return new Map([...dist].map(([t, p]) => [t + mod, p]));
+}
+// What happens on exactly halfOn (after halving): 'seven' fields, with the target and text of
+// 'failure' when missing. Failure effects are NOT added: the only cost of a 7 is the halving.
+export function sevenOutcome(t) {
+  const s = t.seven || {};
+  return { target: s.target ?? t.failure.target, text: s.text ?? t.failure.text, effects: s.effects || [] };
+}
+// {win, half, lose} probabilities (0..1) for a gamble.
+export function gambleOdds(book, t) {
+  const g = gambleRules(book, t);
+  const o = { win: 0, half: 0, lose: 0 };
+  for (const [total, p] of diceDistribution(g.dice)) o[total >= g.winAt ? 'win' : total === g.halfOn ? 'half' : 'lose'] += p;
+  return o;
+}
+
 export function continueAfterTest(book, state, rng = Math.random) {
   const sec = book.sections[state.current];
   const p = state.pending;
   if (!p || p.kind !== 'test' || !p.roll) throw new Error('Roll first');
-  const out = p.success ? sec.test.success : sec.test.failure;
   const messages = [];
+  let out = p.success ? sec.test.success : sec.test.failure;
+  if (sec.test.type === 'gamble') {
+    if (p.outcome === 'half') out = sevenOutcome(sec.test);
+    applyEffects(book, state, gambleEffects(book, sec.test, p.outcome || (p.success ? 'win' : 'lose')), messages);
+  }
   applyEffects(book, state, out.effects, messages);
   if (checkDepleted(book, state, messages, rng)) return messages;
   return move(book, state, out.target, messages, rng);
@@ -405,12 +477,45 @@ export function flee(book, state, rng = Math.random) {
 }
 
 // ---------- riddles ----------
+// Riddle pool (book.riddlePool → a riddles.json file). The app / tests load it and call
+// attachRiddlePool(book, pool); it is stored off the JSON (not enumerable) so saves stay small.
+export function attachRiddlePool(book, pool) {
+  const list = Array.isArray(pool) ? pool : pool.riddles;
+  Object.defineProperty(book, 'riddlePoolData', { value: { list, byId: Object.fromEntries(list.map((r) => [r.id, r])) }, enumerable: false, configurable: true, writable: true });
+  return book;
+}
+// mulberry32 step on the saved seed
+function riddleRandom(state) {
+  let t = (state.riddleSeed = (state.riddleSeed + 0x6d2b79f5) >>> 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+// Pick n riddles nobody has been asked yet this game (if the pool runs out, it starts over).
+export function drawRiddles(book, state, n) {
+  const pool = book.riddlePoolData;
+  if (!pool) throw new Error('This book needs its riddle pool: call attachRiddlePool(book, pool) first');
+  if (!Array.isArray(state.riddlesUsed)) state.riddlesUsed = [];
+  if (typeof state.riddleSeed !== 'number') state.riddleSeed = Math.floor(Math.random() * 4294967296) >>> 0;
+  let used = new Set(state.riddlesUsed);
+  let avail = pool.list.filter((r) => !used.has(r.id));
+  if (avail.length < n) { state.riddlesUsed = []; used = new Set(); avail = pool.list.slice(); }
+  const ids = [];
+  for (let i = 0; i < n && avail.length; i++) {
+    const j = Math.floor(riddleRandom(state) * avail.length);
+    ids.push(avail[j].id);
+    avail.splice(j, 1);
+  }
+  state.riddlesUsed.push(...ids);
+  return ids;
+}
 // Flow per question: answerRiddle(i) -> if wrong, payRiddlePenalty(j) -> continueRiddle().
 // After the last question, continueRiddle() applies riddle.success and moves on.
 export function currentRiddle(book, state) {
   const sec = book.sections[state.current];
   const p = state.pending;
   if (!sec?.riddle || p?.kind !== 'riddle') return null;
+  if (p.ids) return { riddle: sec.riddle, question: book.riddlePoolData?.byId[p.ids[p.q]], index: p.q, total: p.ids.length, pending: p };
   return { riddle: sec.riddle, question: sec.riddle.questions[p.q], index: p.q, total: sec.riddle.questions.length, pending: p };
 }
 
@@ -490,14 +595,16 @@ export function retreatRiddle(book, state, rng = Math.random) {
 // that ends the game? Used to put a "⚠" warning on risky choices so danger is always signposted.
 // The per-move Pixel Power tick is not included (the countdown bar shows that).
 export function wouldDeplete(book, state, effects, target = null) {
-  const arrive = target && book.sections[target]?.onEnter?.length && !book.sections[target]?.ending;
+  const tsec = target ? book.sections[target] : null;
+  const arrive = tsec && !tsec.ending && (tsec.onEnter?.length || tsec.test?.costEffects?.length);
   if (!effects?.length && !arrive) return null;
   const sim = JSON.parse(JSON.stringify(state));
   applyEffects(book, sim, effects, []);
   if (arrive) {
     sim.current = target;
     sim.visited[target] = (sim.visited[target] || 0) + 1;
-    applyEffects(book, sim, book.sections[target].onEnter, []);
+    applyEffects(book, sim, tsec.onEnter, []);
+    applyEffects(book, sim, tsec.test?.costEffects, []); // a dice test's cost is paid whatever you roll
   }
   for (const r of depletionRules(book)) {
     const limit = r.atOrBelow ?? statBounds(book, sim, r.stat).min;
@@ -569,7 +676,7 @@ export function computeScore(book, state) {
 export function sectionTargets(sec) {
   const t = [];
   for (const c of sec.choices || []) t.push(c.target);
-  if (sec.test) t.push(sec.test.success.target, sec.test.failure.target);
+  if (sec.test) t.push(sec.test.success.target, sec.test.failure.target, ...(sec.test.seven?.target ? [sec.test.seven.target] : []));
   if (sec.combat) { t.push(sec.combat.win.target, sec.combat.lose.target); if (sec.combat.flee) t.push(sec.combat.flee.target); }
   if (sec.riddle) t.push(sec.riddle.success.target, sec.riddle.retreat.target);
   return t;
@@ -625,6 +732,12 @@ export function lintBook(book) {
     if (sec.test) {
       if (sec.test.againstStat && !stats[sec.test.againstStat]) errors.push(`${where}: unknown stat ${sec.test.againstStat}`);
       walkEff(where, sec.test.costEffects); walkEff(where, sec.test.success.effects); walkEff(where, sec.test.failure.effects);
+      if (sec.test.type === 'gamble') {
+        walkEff(where, sec.test.seven?.effects);
+        if (sec.test.againstStat) warnings.push(`${where}: a gamble ignores againstStat`);
+        const g = gambleRules(book, sec.test);
+        if (!stats[g.stat]) errors.push(`${where}: gamble stat ${g.stat} is not a stat`);
+      }
     }
     if (sec.combat) {
       const cs = combatSettings(book, sec);
@@ -634,7 +747,7 @@ export function lintBook(book) {
     if (sec.riddle) {
       const rd = sec.riddle;
       if (rd.character && !chars[rd.character]) errors.push(`${where}: unknown character ${rd.character}`);
-      rd.questions.forEach((q, i) => { if (q.answer < 0 || q.answer >= q.options.length) errors.push(`${where}: riddle ${i} answer index out of range`); });
+      (rd.questions || []).forEach((q, i) => { if (q.answer < 0 || q.answer >= q.options.length) errors.push(`${where}: riddle ${i} answer index out of range`); });
       walkEff(where, rd.onCorrect); walkEff(where, rd.success.effects); walkEff(where, rd.retreat.effects);
       (rd.wrong?.options || []).forEach((o, i) => { walkCond(`${where} penalty ${i}`, o.conditions); walkEff(`${where} penalty ${i}`, o.effects); });
       if (!(rd.wrong?.options || []).some((o) => !o.conditions)) warnings.push(`${where}: riddle has no always-available penalty (player could get stuck)`);
@@ -642,6 +755,8 @@ export function lintBook(book) {
     }
     for (const ch of sec.illustration?.characters || []) if (!chars[ch.id]) errors.push(`${where}: illustration uses unknown character ${ch.id}`);
     if (sec.ending && (sec.choices?.length || sec.test || sec.combat)) warnings.push(`${where}: ending section also has choices/test/combat (ignored)`);
+    if (sec.ending?.cause && !stats[sec.ending.cause]) errors.push(`${where}: ending cause ${sec.ending.cause} is not a stat`);
+    if (sec.ending && ['fail', 'death'].includes(sec.ending.type) && !sec.ending.cause && !depletionRules(book).some((r) => r.target === id)) warnings.push(`${where}: ${sec.ending.type} ending has no cause stat (the stats panel won't show why you lost)`);
     if (!sec.ending && !sectionTargets(sec).length) errors.push(`${where}: dead end (no choices, test, combat or ending)`);
   }
   // reachability (ignores conditions: "could be reached")

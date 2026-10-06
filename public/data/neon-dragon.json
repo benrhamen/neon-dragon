@@ -6,7 +6,7 @@
   "title": "The Neon Dragon of Pixel Harbour",
   "subtitle": "A pocket gamebook adventure across Hong Kong",
   "author": "Original story",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "language": "en",
   "ageRange": "9-11",
   "original": true,
@@ -18,6 +18,7 @@
   }
  },
  "start": "intro",
+ "riddlePool": "riddles.json",
  "rules": {
   "healthStat": "energy",
   "depletion": [
@@ -27,6 +28,10 @@
    },
    {
     "stat": "power",
+    "target": "trapped"
+   },
+   {
+    "stat": "luck",
     "target": "trapped"
    },
    {
@@ -62,7 +67,7 @@
    "name": "Pixel Power",
    "short": "PWR",
    "description": "Your move timer: every move uses 1. Halving traps drain it, each zodiac friend you meet adds +2. If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
-   "initial": 40,
+   "initial": 58,
    "min": 0,
    "color": "#29e7ff",
    "icon": "★",
@@ -71,7 +76,7 @@
   "luck": {
    "name": "Luck",
    "short": "LCK",
-   "description": "Roll this or less on two dice to pass a luck test. Every test uses up 1 Luck, pass or fail, and some bad choices cost Luck too. At 0 or 1 Luck you can't pass any more luck tests (it isn't game over, though). Also your attack in a duel. Rolled at the start: 1 die + 6. Rare ways to win a little back: temple incense, a lucky Rooster.",
+   "description": "Roll this or less on two dice to pass a luck test. Every test uses up 1 Luck, pass or fail, some bad choices cost Luck too, and gambles risk it (lose: -2 Luck, a 7: half your Luck). If it hits 0, you're TRAPPED IN THE GAME FOREVER! Also your attack in a duel. Rolled at the start: 1 die + 6. Rare ways to win a little back: temple incense, a lucky Rooster.",
    "initial": {
     "dice": "1d6+6"
    },
@@ -135,13 +140,13 @@
    "description": "Got the rabbit's mooncake"
   },
   "liv_passed": {
-   "description": "Answered Liv the Phoenix's riddles"
+   "description": "Answered Liv the Phoenix's riddle"
   },
   "monkey_passed": {
-   "description": "Answered the monkey's riddles (Peak Tram open)"
+   "description": "Answered the monkey's riddle (Peak Tram open)"
   },
   "loulou_passed": {
-   "description": "Answered Loulou's riddles"
+   "description": "Answered Loulou's riddle"
   },
   "goat_tips": {
    "description": "Loulou taught you the secret climbing route"
@@ -184,6 +189,9 @@
   },
   "zodiac_pig": {
    "description": "Met the zodiac Pig"
+  },
+  "zodiac_dragon": {
+   "description": "The zodiac Dragon joined you at the finale (only after meeting the other eleven)"
   }
  },
  "items": {
@@ -892,6 +900,38 @@
      "...ppp....ppp..."
     ]
    }
+  },
+  "dragon": {
+   "name": "Zodiac Dragon",
+   "sprite": {
+    "palette": {
+     "J": "#2fd68b",
+     "j": "#1b8f5a",
+     "Y": "#ffd23f",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "O": "#ff9a3c",
+     "R": "#ff3355"
+    },
+    "rows": [
+     "................",
+     "..Y..........Y..",
+     "..YY........YY..",
+     "...JJJJJJJJJJ...",
+     "..JJJJJJJJJJJJ..",
+     "..JJWKJJJJWKJJ..",
+     ".JJJJJJJJJJJJJJ.",
+     "OJJjjjjjjjjjjJJO",
+     ".OJjWjWjjWjWjJO.",
+     "..JJjjjjjjjjJJ..",
+     "...JJJJJJJJJJ...",
+     "....RJJJJJJR....",
+     "...RRJYJJYJRR...",
+     "..R.JJJJJJJJ.R..",
+     ".....JJ..JJ.....",
+     "................"
+    ]
+   }
   }
  },
  "trackers": [
@@ -899,7 +939,7 @@
    "id": "zodiac",
    "label": "ZODIAC COLLECTION",
    "completeBadge": "ZODIAC MASTER",
-   "description": "Meet the eleven zodiac animals out tonight (the Dragon is busy with the moon). Only one route through the book meets them all.",
+   "description": "Meet the eleven zodiac animals out tonight. The twelfth, the Dragon, is busy with the moon: she only joins a hero who has met all eleven, at the winning finale. Only one route through the book meets them all.",
    "entries": [
     {
      "id": "rat",
@@ -966,6 +1006,12 @@
      "name": "Pig",
      "flag": "zodiac_pig",
      "character": "pig"
+    },
+    {
+     "id": "dragon",
+     "name": "Dragon (busy with the moon)",
+     "flag": "zodiac_dragon",
+     "character": "dragon"
     }
    ]
   }
@@ -1012,12 +1058,12 @@
   "reference": {
    "byStartStat": "luck",
    "values": {
-    "7": 760,
-    "8": 770,
-    "9": 780,
-    "10": 790,
-    "11": 800,
-    "12": 810
+    "7": 925,
+    "8": 935,
+    "9": 945,
+    "10": 955,
+    "11": 965,
+    "12": 975
    }
   },
   "ranks": [
@@ -1114,7 +1160,7 @@
     "The token clinks. The screen flares so brightly you have to shut your eyes, and the floor drops away like the first second of a rollercoaster.",
     "When you open your eyes, you're standing on a waterfront made of chunky square pixels. In front of you is Hong Kong... but not quite. The skyscrapers are built from glowing blocks, the harbour sparkles in eight colours, and the moon is a perfect pixel circle.",
     "A plump orange cat with a dumpling-shaped face sits beside you. \"Finally! Player One!\" it says. \"I'm Siu Mai. Yes, like the dumpling. No, you may not eat me. The Glitch Gremlins stole the Neon Dragon's Pearl of Light and took it to the Sky Tower on the Peak, across the harbour. If it isn't back by midnight, every light here goes out. For good.\"",
-    "\"Rules of this game,\" Siu Mai adds. \"Your Pixel Power is your timer: every move uses one, so don't dawdle. If it, or your Energy, hits zero, you're trapped in the game forever. Run out of tokens and you're OUT. Oh, and the zodiac animals are all out tonight, except the Dragon, who's busy helping the moon. Each one you meet gives you a bit of Pixel Power. Meet all eleven and something special happens. Nobody's ever managed it.\"",
+    "\"Rules of this game,\" Siu Mai adds. \"Your Pixel Power is your timer: every move uses one, so don't dawdle. If it, your Energy or your Luck hits zero, you're trapped in the game forever. Run out of tokens and you're OUT. Oh, and the zodiac animals are all out tonight, except the Dragon, who's busy helping the moon. Each one you meet gives you a bit of Pixel Power. Meet all eleven and the Dragon herself might join you at the end: all twelve! Nobody's ever managed it.\"",
     "\"So,\" says Siu Mai, \"how are we crossing the harbour?\""
    ],
    "illustration": {
@@ -1387,26 +1433,27 @@
    "title": "The Claw Machine",
    "text": [
     "You drop in a token. Music plays. The claw whirrs down... down... down... towards the tiny brass glint.",
-    "This one is all about luck!"
+    "Remember: claw machines are built so the house usually wins!"
    ],
    "test": {
-    "label": "TEST YOUR LUCK",
-    "prompt": "Roll two dice. If the total is equal to or less than your LUCK, the claw grabs the prize. (Each try uses up 1 LUCK, win or lose.)",
+    "type": "gamble",
+    "label": "CLAW MACHINE GAMBLE",
+    "prompt": "Roll two dice to see what the claw does.",
     "dice": "2d6",
-    "againstStat": "luck",
-    "costEffects": [
-     {
-      "stat": "luck",
-      "add": -1
-     }
-    ],
+    "winAt": 8,
+    "halfOn": 7,
+    "stat": "luck",
+    "loseBy": 2,
     "success": {
      "target": "claw_win",
      "text": "The claw grips tight!"
     },
     "failure": {
      "target": "claw_lose",
-     "text": "The claw wobbles..."
+     "text": "The claw wobbles... your token is gone, and so is some of your luck."
+    },
+    "seven": {
+     "text": "BONK! The claw swings round and bops you on the head. There goes half your luck!"
     }
    }
   },
@@ -1515,7 +1562,8 @@
    "text": [
     "You follow the gremlin again. It giggles again. Corners again. More corners. So many corners.",
     "By the time you find your way out, the clock has struck midnight and every light in Pixel Harbour has gone out. Somewhere a gremlin is laughing so hard it falls off a roof.",
-    "Fool me once, shame on the gremlin. Fool me twice..."
+    "Fool me once, shame on the gremlin. Fool me twice...",
+    "All those corners used up your very last drop of Pixel Power. ★ 0."
    ],
    "illustration": {
     "src": "img/trapped.svg",
@@ -1525,7 +1573,9 @@
    "ending": {
     "type": "fail",
     "title": "LOST IN THE ALLEYS",
-    "stars": 0
+    "stars": 0,
+    "style": "trapped",
+    "cause": "power"
    }
   },
   "pier": {
@@ -1683,7 +1733,8 @@
    "title": "All at Sea",
    "text": [
     "The purple ferry chugs out again, but this time it doesn't come back. It sails right out past the islands, with the gremlins singing all the way.",
-    "Behind you, at the stroke of midnight, the lights of Pixel Harbour blink out one by one. \"Free,\" sighs Siu Mai, \"is never free.\""
+    "Behind you, at the stroke of midnight, the lights of Pixel Harbour blink out one by one. \"Free,\" sighs Siu Mai, \"is never free.\"",
+    "The endless voyage drains your very last drop of Pixel Power. ★ 0."
    ],
    "illustration": {
     "src": "img/ferry.svg",
@@ -1693,7 +1744,9 @@
    "ending": {
     "type": "fail",
     "title": "ALL AT SEA",
-    "stars": 0
+    "stars": 0,
+    "style": "trapped",
+    "cause": "power"
    }
   },
   "ferry": {
@@ -2224,6 +2277,10 @@
      "target": "central"
     },
     {
+     "label": "Hop on a ding-ding tram to Causeway Bay",
+     "target": "dingding"
+    },
+    {
      "label": "Ask Pig the way to the Peak Tram, and go",
      "target": "tram_monkey",
      "hideIf": {
@@ -2294,6 +2351,10 @@
     {
      "label": "Give her a pat and head back into Central",
      "target": "central"
+    },
+    {
+     "label": "Hop on a ding-ding tram to Causeway Bay",
+     "target": "dingding"
     },
     {
      "label": "Follow the dog's nose to the Peak Tram",
@@ -2400,6 +2461,10 @@
     {
      "label": "Thank him and walk down to Central",
      "target": "central"
+    },
+    {
+     "label": "Hop on a ding-ding tram to Causeway Bay",
+     "target": "dingding"
     },
     {
      "label": "Walk along the hill to the Peak Tram",
@@ -2509,6 +2574,10 @@
      "target": "central"
     },
     {
+     "label": "Hop on a ding-ding tram to Causeway Bay",
+     "target": "dingding"
+    },
+    {
      "label": "Waddle round the corner to the Peak Tram",
      "target": "tram_monkey",
      "hideIf": {
@@ -2598,7 +2667,8 @@
    "text": [
     "You go back for round two. Forty baskets later you've won the prize (a golden chopstick!), and you're so full you can't move. Your eyes droop. Just a quick rest...",
     "You dream of dumplings. Dumplings dancing, dumplings singing, dumplings doing the cha-cha. When you wake up, it's long past midnight and the city is dark. Siu Mai is asleep in a steamer basket, snoring.",
-    "The parrot did warn you: NEVER, EVER EAT EVERYTHING."
+    "The parrot did warn you: NEVER, EVER EAT EVERYTHING.",
+    "You slept away your very last drop of Pixel Power. ★ 0."
    ],
    "illustration": {
     "src": "img/dimsum.svg",
@@ -2608,7 +2678,9 @@
    "ending": {
     "type": "fail",
     "title": "DUMPLING DREAMS",
-    "stars": 0
+    "stars": 0,
+    "style": "trapped",
+    "cause": "power"
    }
   },
   "causeway_bay": {
@@ -2701,7 +2773,7 @@
      "target": "dingding"
     },
     {
-     "label": "Catch a red minibus up to the Peak (tap Octopus card)",
+     "label": "Catch a red minibus to the Peak Tram (tap Octopus card)",
      "target": "minibus",
      "conditions": {
       "hasItem": "octopus"
@@ -2710,7 +2782,7 @@
      "hideIfLocked": true
     },
     {
-     "label": "Catch a red minibus up to the Peak (1 token)",
+     "label": "Catch a red minibus to the Peak Tram (1 token)",
      "target": "minibus",
      "conditions": {
       "stat": "tokens",
@@ -2757,7 +2829,7 @@
    "title": "Liv the Phoenix",
    "text": [
     "The fiery bird swoops down and lands on a railing with a soft WHUMPH of warm air. Her feathers ripple red, orange and gold, and her crest flickers like a candle.",
-    "\"I'm Liv the Phoenix,\" she says. \"I keep this street's neon glowing while the pearl is missing. I'll help you, but only if you can think on your feet. Three riddles! Get one wrong and it'll cost you. Or fly off now and try another path. No shame in that.\""
+    "\"I'm Liv the Phoenix,\" she says. \"I keep this street's neon glowing while the pearl is missing. I'll help you, but only if you can think on your feet. One riddle! Get it wrong and it'll cost you. Or fly off now and try another path. No shame in that.\""
    ],
    "illustration": {
     "src": "img/causeway.svg",
@@ -2774,35 +2846,7 @@
    },
    "riddle": {
     "character": "liv",
-    "questions": [
-     {
-      "question": "Feed me and I grow. Give me a drink of water and I die. What am I?",
-      "options": [
-       "A goldfish",
-       "Fire",
-       "A pot plant"
-      ],
-      "answer": 1
-     },
-     {
-      "question": "What has to be broken before you can use it?",
-      "options": [
-       "An egg",
-       "A spoon",
-       "A sock"
-      ],
-      "answer": 0
-     },
-     {
-      "question": "What gets wetter the more it dries?",
-      "options": [
-       "A cloud",
-       "A fish",
-       "A towel"
-      ],
-      "answer": 2
-     }
-    ],
+    "draw": 1,
     "onCorrect": [
      {
       "stat": "tokens",
@@ -2924,7 +2968,8 @@
    "title": "Shopping Forever",
    "text": [
     "You grab another box. ZAP! The shop door slams. The shelves stretch on and on, full of glowing boxes of air, and the gremlins hand you a shopping basket. \"Keep looking! The real one's here somewhere!\"",
-    "You're still looking at midnight, when the lights of Pixel Harbour go out. You're still looking now."
+    "You're still looking at midnight, when the lights of Pixel Harbour go out. You're still looking now.",
+    "Every glowing box of air was a gremlin trick: the gremlins drained your last pixel power into their shop tills. ★ 0."
    ],
    "illustration": {
     "src": "img/causeway.svg",
@@ -2934,7 +2979,9 @@
    "ending": {
     "type": "fail",
     "title": "SHOPPING FOREVER",
-    "stars": 0
+    "stars": 0,
+    "style": "trapped",
+    "cause": "power"
    }
   },
   "crossing": {
@@ -3005,7 +3052,7 @@
    "title": "Times Square",
    "text": [
     "Under the giant screen, a gremlin technician in a hard hat is fiddling with a tangle of cables. A brass key dangles from its tool belt, swinging back and forth like it's daring you.",
-    "From here you can catch a minibus up to the Peak, or a ding-ding tram west along the island."
+    "From here you can catch a minibus to the Peak Tram, or a ding-ding tram west along the island."
    ],
    "illustration": {
     "src": "img/causeway.svg",
@@ -3028,7 +3075,7 @@
      }
     },
     {
-     "label": "Catch a red minibus up to the Peak (tap Octopus card)",
+     "label": "Catch a red minibus to the Peak Tram (tap Octopus card)",
      "target": "minibus",
      "conditions": {
       "hasItem": "octopus"
@@ -3037,7 +3084,7 @@
      "hideIfLocked": true
     },
     {
-     "label": "Catch a red minibus up to the Peak (1 token)",
+     "label": "Catch a red minibus to the Peak Tram (1 token)",
      "target": "minibus",
      "conditions": {
       "stat": "tokens",
@@ -3210,7 +3257,7 @@
    "title": "Happy Valley",
    "text": [
     "The Happy Valley racecourse glows like a giant green bowl in the middle of the city. On the track, a horse in red-and-gold racing silks is doing warm-up stretches.",
-    "\"Fancy a race?\" the Horse neighs. \"One token to enter. Beat me and I'll pay you three! Lose, and you'll be puffed right out.\" Siu Mai whispers, \"Races are all about luck, you know.\""
+    "\"Fancy a race?\" the Horse neighs. \"One token to enter. Beat me and I'll pay you three! Lose, and your luck runs out of puff.\" Siu Mai whispers, \"Betting is a gamble. Most of the time, the horse wins, you know.\""
    ],
    "illustration": {
     "src": "img/racecourse.svg",
@@ -3283,16 +3330,14 @@
     "Ready... steady... NEIGH! You sprint down the track with the Horse thundering beside you and the crowd roaring."
    ],
    "test": {
-    "label": "TEST YOUR LUCK",
-    "prompt": "Roll two dice. Equal to or under your LUCK and you win by a nose! (Uses up 1 LUCK, pass or fail.)",
+    "type": "gamble",
+    "label": "BET ON THE RACE",
+    "prompt": "Roll two dice to see who crosses the line first.",
     "dice": "2d6",
-    "againstStat": "luck",
-    "costEffects": [
-     {
-      "stat": "luck",
-      "add": -1
-     }
-    ],
+    "winAt": 8,
+    "halfOn": 7,
+    "stat": "luck",
+    "loseBy": 2,
     "success": {
      "target": "causeway_bay",
      "text": "You win by a nose! The Horse pays up.",
@@ -3308,13 +3353,10 @@
     },
     "failure": {
      "target": "causeway_bay",
-     "text": "The Horse wins by a mile. You're totally puffed out.",
-     "effects": [
-      {
-       "stat": "energy",
-       "halve": true
-      }
-     ]
+     "text": "The Horse wins by a mile. Your token is gone, and so is some of your luck."
+    },
+    "seven": {
+     "text": "Photo finish... you trip over the line and land in a heap. Half your luck rolls away!"
     }
    }
   },
@@ -3419,7 +3461,7 @@
    "title": "The Red Minibus",
    "text": [
     "The red minibus has sixteen seats, one very fast driver and a speed display that only seems to show the number \"WHEEE\". A sign at the front says: PLEASE HOLD THE HANDRAIL.",
-    "The driver shouts \"Peak! Going up! HOLD ON!\" and stamps on the pedal before you've even sat down."
+    "The driver shouts \"Peak Tram! Next stop! HOLD ON!\" and stamps on the pedal before you've even sat down."
    ],
    "choices": [
     {
@@ -3435,13 +3477,26 @@
   "minibus_safe": {
    "title": "Hold On Tight",
    "text": [
-    "You grip the handrail with both hands. The minibus whizzes round hairpin bends, past waterfalls of fern and tiny temples, while you sit as steady as a statue.",
-    "\"Good passenger!\" the driver shouts. Moments later, the minibus screeches to a stop at the top of the Peak."
+    "You grip the handrail with both hands. The minibus whizzes round tight corners and roars up steep Garden Road, while you sit as steady as a statue.",
+    "\"Good passenger!\" the driver shouts, screeching to a stop outside the Peak Tram station. \"Only the tram goes to the top tonight. Good luck!\""
    ],
    "choices": [
     {
-     "label": "Climb out at the Peak",
-     "target": "peak_top"
+     "label": "Climb out at the Peak Tram station",
+     "target": "tram_monkey",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Climb out at the Peak Tram station",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
     }
    ]
   },
@@ -3449,7 +3504,7 @@
    "title": "WHEEEE!",
    "text": [
     "You let go to wave. The minibus takes the first bend. You slide left. The second bend. You slide right. The third bend. You end up upside down in the luggage rack with Siu Mai on your head.",
-    "You climb out at the Peak feeling like a sock that has been through the washing machine. Twice."
+    "You climb out at the Peak Tram station feeling like a sock that has been through the washing machine. Twice."
    ],
    "onEnter": [
     {
@@ -3459,15 +3514,28 @@
    ],
    "choices": [
     {
-     "label": "Stagger out at the Peak",
-     "target": "peak_top"
+     "label": "Stagger out at the Peak Tram station",
+     "target": "tram_monkey",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Stagger out at the Peak Tram station",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
     }
    ]
   },
   "tram_monkey": {
    "title": "The Monkey at the Tram",
    "text": [
-    "At the Peak Tram station, a cheeky monkey is swinging from the ticket barrier, munching a banana. \"Nobody rides MY tram,\" he chatters, \"unless they can answer my riddles! Two riddles! Get one wrong and you pay!\"",
+    "At the Peak Tram station, a cheeky monkey is swinging from the ticket barrier, munching a banana. \"Nobody rides MY tram,\" he chatters, \"unless they can answer my riddle! One riddle! Get it wrong and you pay!\"",
     "Behind you, the street leads back to Central. You could always find another way up the mountain..."
    ],
    "illustration": {
@@ -3485,26 +3553,7 @@
    },
    "riddle": {
     "character": "monkey",
-    "questions": [
-     {
-      "question": "What has a neck but no head, and wears a cap?",
-      "options": [
-       "A bottle",
-       "A banana",
-       "A snail"
-      ],
-      "answer": 0
-     },
-     {
-      "question": "What has a face and two hands, but no arms or legs?",
-      "options": [
-       "A starfish",
-       "A crab",
-       "A clock"
-      ],
-      "answer": 2
-     }
-    ],
+    "draw": 1,
     "onCorrect": [
      {
       "stat": "tokens",
@@ -3685,7 +3734,7 @@
    "title": "The Vault Guardian",
    "text": [
     "The key turns with a click. Inside, curled around a velvet cushion, is a long green snake with gold spots. On the cushion, glowing softly, is the Pearl of Light.",
-    "\"Ssso,\" hisses the Snake, not unkindly. \"The gremlins made me guard this. I don't even LIKE gremlinsss. Answer my two riddles and the pearl is yoursss. Or back out now, and nobody gets hurt.\""
+    "\"Ssso,\" hisses the Snake, not unkindly. \"The gremlins made me guard this. I don't even LIKE gremlinsss. Answer my riddle and the pearl is yoursss. Or back out now, and nobody gets hurt.\""
    ],
    "illustration": {
     "src": "img/vault.svg",
@@ -3702,26 +3751,7 @@
    },
    "riddle": {
     "character": "snake",
-    "questions": [
-     {
-      "question": "I have keys but open no locks. I have space but no room. You can enter, but you can't go inside. What am I?",
-      "options": [
-       "A hotel",
-       "A keyboard",
-       "A vault"
-      ],
-      "answer": 1
-     },
-     {
-      "question": "What comes once in a minute, twice in a moment, but never in a thousand years?",
-      "options": [
-       "The letter M",
-       "A blink",
-       "A shooting star"
-      ],
-      "answer": 0
-     }
-    ],
+    "draw": 1,
     "onCorrect": [
      {
       "stat": "tokens",
@@ -3905,8 +3935,32 @@
      }
     },
     {
+     "label": "Pop back down the lit tunnel to the dragon-claw door",
+     "target": "vault_snake",
+     "conditions": {
+      "all": [
+       {
+        "visited": "tunnel_lit"
+       },
+       {
+        "hasItem": "brass_key"
+       }
+      ]
+     },
+     "hideIfLocked": true
+    },
+    {
      "label": "Challenge Bolt-Bot to a duel!",
      "target": "bot_battle"
+    },
+    {
+     "label": "Back away and take the Peak Tram down",
+     "target": "central",
+     "effects": [
+      {
+       "message": "You tiptoe back to the tram and rattle down the hill. Phew!"
+      }
+     ]
     }
    ]
   },
@@ -3914,7 +3968,7 @@
    "title": "Loulou the GOAT",
    "text": [
     "The goat finishes a triple backflip off the railing, lands perfectly and bows. The tourists go wild. \"Loulou the GOAT,\" she says, adjusting her crown. \"Greatest Of All Time. Also, an actual goat. Zodiac goat, if you're counting.\"",
-    "\"Want to know how to get past that robot? I know a secret climbing route. GOATs climb anything. But first: three riddles. Mess one up and it'll cost you. Or wander off and try another path. Your call, champ.\""
+    "\"Want to know how to get past that robot? I know a secret climbing route. GOATs climb anything. But first: one riddle. Mess it up and it'll cost you. Or wander off and try another path. Your call, champ.\""
    ],
    "illustration": {
     "src": "img/peak.svg",
@@ -3931,35 +3985,7 @@
    },
    "riddle": {
     "character": "loulou",
-    "questions": [
-     {
-      "question": "I'm tall when I'm young and short when I'm old. What am I?",
-      "options": [
-       "A tree",
-       "A candle",
-       "A goat"
-      ],
-      "answer": 1
-     },
-     {
-      "question": "A goat climbs 3 steps up the Peak every minute, then slides 1 step back down. How many steps up is it after 4 minutes?",
-      "options": [
-       "12",
-       "4",
-       "8"
-      ],
-      "answer": 2
-     },
-     {
-      "question": "What can you catch but never throw?",
-      "options": [
-       "A cold",
-       "A ball",
-       "A ferry"
-      ],
-      "answer": 0
-     }
-    ],
+    "draw": 1,
     "onCorrect": [
      {
       "stat": "tokens",
@@ -4036,7 +4062,7 @@
        "message": "Loulou taught you her secret climbing route!"
       },
       {
-       "message": "Loulou winks: \"Need to get back DOWN the mountain? Pick a fight with Bolt-Bot and run for the tram. It's slower than it looks.\""
+       "message": "Loulou winks: \"Spotted a little dragon-claw door in the tunnel on the way up? It's only a hop back down. No need to ride all the way to the bottom!\""
       }
      ]
     }
@@ -4116,12 +4142,12 @@
     "\"BEEP BOOP. PREPARE. FOR. BOPPING.\""
    ],
    "combat": {
-    "intro": "Each round, you and Bolt-Bot both roll two dice and add your attack (your LUCK). Higher total lands a bop (the loser loses 2). Knock Bolt-Bot down to 0 to win! Careful: if your Energy hits 0, you're trapped in the game forever.",
+    "intro": "Each round, you and Bolt-Bot both roll two dice and add your attack (your LUCK). Higher total lands a bop (the loser loses 2). Knock Bolt-Bot down to 0 to win! Changed your mind? You can RUN AWAY at any point until the duel is decided. Careful: if your Energy hits 0, you're trapped in the game forever.",
     "enemies": [
      {
       "name": "Bolt-Bot",
       "attack": 5,
-      "health": 4,
+      "health": 6,
       "sprite": {
        "palette": {
         "g": "#c0c8d0",
@@ -4158,7 +4184,7 @@
      "text": "Bolt-Bot bops you!"
     },
     "flee": {
-     "label": "Run back to the tram",
+     "label": "RUN AWAY! (back to the tram, -1 Energy)",
      "target": "central",
      "effects": [
       {
@@ -4504,7 +4530,7 @@
     "The pearl leaps from your hands and spins into the dragon's chest. FWOOOSH! Light races through her body (red, gold, green, blue) and bursts out across the city. Every tower, every tram, every neon sign in Causeway Bay and every lantern on Temple Street blazes back to life.",
     "Then the harbour fireworks begin. BOOM! Gold chrysanthemums. BOOM! Pink peonies. The Star Ferry toots, the red minibus honks, the grumpy taxi driver almost smiles, and the sky spells out a word in giant pixel letters: {{name}}!",
     {
-     "text": "And then, one by one, eleven zodiac animals climb onto the roof beside you: Rat, Ox, Tiger, Rabbit, Snake, Horse, Loulou the Goat, Monkey, Rooster, Dog and Pig. High above, a jade-green shape loops around the moon and waves. It's the zodiac Dragon, finally done with the moon! The twelve of them light the biggest firework Pixel Harbour has ever seen, shaped exactly like you. ZODIAC MASTER!",
+     "text": "And then, one by one, eleven zodiac animals climb onto the roof beside you: Rat, Ox, Tiger, Rabbit, Snake, Horse, Loulou the Goat, Monkey, Rooster, Dog and Pig. High above, a jade-green shape loops around the moon and waves. It's the zodiac Dragon, finally done with the moon! She swoops down and joins them: that's ALL 12 ZODIAC ANIMALS! The twelve of them light the biggest firework Pixel Harbour has ever seen, shaped exactly like you. ZODIAC MASTER! You're a LEGEND!",
      "if": {
       "all": [
        {
@@ -4562,6 +4588,66 @@
     "alt": "Fireworks over a brightly lit pixel harbour with the Star Ferry",
     "pixelated": true
    },
+   "onEnter": [
+    {
+     "if": {
+      "all": [
+       {
+        "flag": "zodiac_rat",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_ox",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_tiger",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_rabbit",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_snake",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_horse",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_goat",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_monkey",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_rooster",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_dog",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_pig",
+        "equals": true
+       }
+      ]
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_dragon"
+      },
+      {
+       "message": "The zodiac Dragon joins you! ALL 12 ZODIAC!"
+      }
+     ]
+    }
+   ],
    "ending": {
     "type": "win",
     "title": "YOU SAVED PIXEL HARBOUR!",
@@ -4573,12 +4659,15 @@
    "text": [
     "\"WRONG!\" cackles the Gremlin King. BONG... BONG... BONG... The clock strikes midnight. One by one, the lights of Pixel Harbour blink out, until only the moon is left.",
     "Everything goes black, and you're back in the Golden Joystick. The screen says: GAME OVER. INSERT TOKEN TO TRY AGAIN.",
-    "Maybe next time, listen to the clock..."
+    "Maybe next time, listen to the clock...",
+    "The Gremlin King's cackle drains your very last drop of Pixel Power. ★ 0."
    ],
    "ending": {
     "type": "fail",
     "title": "LIGHTS OUT",
-    "stars": 1
+    "stars": 1,
+    "style": "trapped",
+    "cause": "power"
    }
   },
   "zapped": {
@@ -4586,12 +4675,15 @@
    "text": [
     "BOP! Bolt-Bot's giant rubber fist sends you spinning... and spinning... and you land on your bottom on the floor of the Golden Joystick.",
     "The machine flashes: GAME OVER. BOLT-BOT WINS THIS ROUND.",
-    "Next time, maybe try a different idea. Even robots have soft spots (and tummies)."
+    "Next time, maybe try a different idea. Even robots have soft spots (and tummies).",
+    "That last bop knocked out every drop of your Energy. ⚡ 0."
    ],
    "ending": {
     "type": "fail",
     "title": "BOPPED OUT",
-    "stars": 0
+    "stars": 0,
+    "style": "trapped",
+    "cause": "energy"
    }
   },
   "gremlin_prince": {
@@ -4599,7 +4691,8 @@
    "text": [
     "You put on the bottle-cap crown. It's a bit sticky. The gremlins cheer, and the Gremlin King pats you on the head. \"Welcome to the family!\"",
     "At midnight the lights of Pixel Harbour go out, and the gremlins throw the noisiest party in history. You stay up all night. And the next night. And the next. It turns out \"no bedtime EVER\" is actually quite tiring.",
-    "Siu Mai sends you a postcard: WISH YOU WEREN'T THERE."
+    "Siu Mai sends you a postcard: WISH YOU WEREN'T THERE.",
+    "All that partying drains your very last drop of Pixel Power. ★ 0."
    ],
    "illustration": {
     "src": "img/king.svg",
@@ -4609,7 +4702,9 @@
    "ending": {
     "type": "fail",
     "title": "GREMLIN PRINCE",
-    "stars": 0
+    "stars": 0,
+    "style": "trapped",
+    "cause": "power"
    }
   },
   "trapped": {

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://benrhamen.github.io/neon-dragon/schema/riddles.schema.json",
+  "title": "Riddle pool",
+  "description": "A pool of multiple-choice riddles. A gamebook links to it with its top-level \"riddlePool\"; riddle encounters with \"draw\" pick riddles from it at random (no repeats within one game).",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "riddles"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": "1.0" },
+    "metadata": {
+      "type": "object",
+      "required": ["title", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "version": { "type": "string" },
+        "ageRange": { "type": "string" },
+        "license": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "url": { "type": "string" } }, "additionalProperties": false },
+        "notes": { "type": "string" }
+      }
+    },
+    "riddles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "question", "options", "answer"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_-]+$", "description": "Unique id (kept in saves to avoid repeats)." },
+          "category": { "enum": ["wordplay", "logic", "nature", "culture", "maths"] },
+          "question": { "type": "string", "minLength": 1 },
+          "options": { "type": "array", "minItems": 3, "maxItems": 4, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "answer": { "type": "integer", "minimum": 0, "maximum": 3, "description": "Index of the correct option." },
+          "explain": { "type": "string", "description": "Shown after answering: why that answer is right." },
+          "correctText": { "type": "string" },
+          "wrongText": { "type": "string" }
+        }
+      }
+    }
+  }
+}

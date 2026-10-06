@@ -2,9 +2,14 @@ import * as E from './engine.js';
 import { drawAvatar, drawSprite, avatarGrid, SKINS, HAIR_COLORS, OUTFITS, HAIR_STYLES, ACCESSORIES, LABELS, defaultAvatar, randomAvatar } from './avatar.js';
 import { sfx, setSound, soundOn } from './sound.js';
 import * as LB from './leaderboard.js';
+import { makeVoucherCode, normalizeVoucher, VOUCHER_BONUS, VOUCHER_BONUS_TEXT } from './voucher.js';
 
 const BOOK_URL = 'data/neon-dragon.json';
 const SETTINGS_KEY = 'gb.settings.v1';
+const VOUCHERS_USED_KEY = 'gb.vouchers.used.v1'; // PLAY AGAIN voucher codes already redeemed on this device
+const usedVouchers = () => { try { return JSON.parse(localStorage.getItem(VOUCHERS_USED_KEY)) || []; } catch { return []; } };
+const VOUCHERS_ISSUED_KEY = 'gb.vouchers.issued.v1'; // tickets won on this device (so a reload can't lose one)
+const issuedVouchers = () => { try { return JSON.parse(localStorage.getItem(VOUCHERS_ISSUED_KEY)) || []; } catch { return []; } };
 const params = new URLSearchParams(location.search);
 const rng = E.makeRng(params.get('seed'));
 const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || params.has('nomotion');
@@ -43,6 +48,11 @@ async function boot() {
     const res = await fetch(BOOK_URL, { cache: 'no-cache' });
     if (!res.ok) throw new Error(res.status);
     book = await res.json();
+    if (book.riddlePool) {
+      const rp = await fetch(new URL(book.riddlePool, new URL(BOOK_URL, location.href)), { cache: 'no-cache' });
+      if (!rp.ok) throw new Error(rp.status);
+      E.attachRiddlePool(book, await rp.json());
+    }
   } catch (e) {
     $('#story').innerHTML = `<div class="loading">COULD NOT LOAD THE BOOK.<br><small>Open this site through a web server (see README), not as a file.</small></div>`;
     return;
@@ -67,7 +77,21 @@ async function boot() {
     newRun();
   }
   if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !params.has('nosw')) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
+      // check for a new version now and whenever the tab comes back to the front
+      reg.update().catch(() => {});
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+    }).catch(() => {});
+    // a new worker took over: offer a reload (the run is autosaved, so nothing is lost)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || document.querySelector('.update-banner')) return;
+      const b = document.createElement('button');
+      b.className = 'update-banner'; b.dataset.testid = 'update-banner';
+      b.textContent = 'NEW VERSION! TAP TO RELOAD';
+      b.addEventListener('click', () => location.reload());
+      document.body.appendChild(b);
+    });
   }
 }
 
@@ -214,25 +238,30 @@ function renderActions() {
 }
 
 // ---- riddles (an NPC asks multiple-choice questions) ----
+// After a wrong answer the right one is shown too, so every riddle teaches something.
+function explainHTML(q, showAnswer = false) {
+  const ans = showAnswer ? `The answer was <b>${esc(T(q.options[q.answer]))}</b>. ` : '';
+  return ans || q.explain ? `<p class="riddle-explain" data-testid="riddle-explain">${ans}${q.explain ? esc(T(q.explain)) : ''}</p>` : '';
+}
 function renderRiddle(box) {
   const r = E.currentRiddle(book, state);
   const p = state.pending;
   const rd = book.sections[state.current].riddle;
   const npc = book.characters?.[rd.character];
-  const total = rd.questions.length;
+  const total = r.total;
   let body = '';
   if (p.picked === null) {
     body = `
       <div class="riddle-q" data-testid="riddle-question">${esc(T(r.question.question))}</div>
-      <div class="riddle-options">${r.question.options.map((o, i) => `<button class="choice riddle-opt" data-opt="${i}" data-testid="riddle-option-${i}"><span class="cursor">${'ABC'[i] || i + 1}</span><span class="choice-label">${esc(T(o))}</span></button>`).join('')}</div>
+      <div class="riddle-options">${r.question.options.map((o, i) => `<button class="choice riddle-opt" data-opt="${i}" data-testid="riddle-option-${i}"><span class="cursor">${'ABCD'[i] || i + 1}</span><span class="choice-label">${esc(T(o))}</span></button>`).join('')}</div>
       <button class="btn btn-ghost riddle-retreat" data-testid="riddle-retreat">↩ ${esc(T(rd.retreat.label || 'Head back and take another path'))}</button>`;
   } else if (p.correct) {
-    body = `<div class="result ok" data-testid="riddle-result" data-correct="true">CORRECT!</div>${r.question.correctText ? `<p class="outcome">${esc(T(r.question.correctText))}</p>` : ''}
+    body = `<div class="result ok" data-testid="riddle-result" data-correct="true">CORRECT!</div>${r.question.correctText ? `<p class="outcome">${esc(T(r.question.correctText))}</p>` : ''}${explainHTML(r.question)}
       <button class="btn btn-big" data-testid="continue">CONTINUE ▶</button>`;
   } else if (p.penaltyDue) {
     const pens = E.riddlePenalties(book, state);
     body = `<div class="result bad" data-testid="riddle-result" data-correct="false">WRONG!</div>
-      <p class="outcome">${esc(T(r.question.wrongText || rd.wrong?.text || 'Wrong! Choose your penalty.'))}</p>
+      <p class="outcome">${esc(T(r.question.wrongText || rd.wrong?.text || 'Wrong! Choose your penalty.'))}</p>${explainHTML(r.question, true)}
       <div class="riddle-penalty" data-testid="riddle-penalty">${pens.map((o) => o.available
         ? `<button class="choice ${o.warning ? 'danger' : ''}" data-pen="${o.index}" data-testid="penalty-${o.index}"><span class="cursor">${o.warning ? '⚠' : '▶'}</span><span class="choice-label">${esc(T(o.label))}${warnText(o.warning)}</span></button>`
         : `<button class="choice locked" disabled data-testid="penalty-${o.index}"><span class="cursor">${LOCK}</span><span class="choice-label">${esc(T(o.label))}<span class="need">${esc(o.need)}</span></span></button>`).join('')}</div>`;
@@ -244,7 +273,7 @@ function renderRiddle(box) {
       <div class="riddle-head">
         <canvas class="pix riddle-npc" data-npc></canvas>
         <div><div class="riddle-name">${esc((npc?.name || rd.character).toUpperCase())}</div>
-        <div class="riddle-count">RIDDLE ${Math.min(r.index + 1, total)} OF ${total}</div></div>
+        <div class="riddle-count">${total > 1 ? `RIDDLE ${Math.min(r.index + 1, total)} OF ${total}` : `ONE RIDDLE${r.question.category ? ` · ${esc(r.question.category.toUpperCase())}` : ''}`}</div></div>
       </div>
       ${body}
     </div>`;
@@ -281,9 +310,9 @@ function renderTest(box) {
   const t = book.sections[state.current].test;
   const p = state.pending;
   const statName = t.againstStat ? book.stats[t.againstStat].name.toUpperCase() : '';
-  const { count } = E.parseDice(t.dice);
+  const { count } = E.parseDice(t.dice || '2d6');
   const goal = p.roll ? p.roll.goal : state.stats[t.againstStat];
-  const goalLine = t.againstStat
+  const goalLine = t.type === 'gamble' ? gambleLine(t) : t.againstStat
     ? `NEED ${goal} OR LESS <small>(YOUR ${statName})</small>${goal < count ? '<div class="warn" data-testid="luck-empty">YOUR ' + statName + ' IS TOO LOW: THIS CAN\'T SUCCEED</div>' : ''}`
     : `NEED ${t.target} OR MORE`;
   box.innerHTML = `
@@ -297,7 +326,8 @@ function renderTest(box) {
     </div>`;
   const btns = $('.dice-buttons', box);
   if (!p.roll) {
-    btns.innerHTML = `<button class="btn btn-big" data-testid="roll">ROLL DICE</button>`;
+    const costWarn = E.wouldDeplete(book, state, t.costEffects);
+    btns.innerHTML = `<button class="btn btn-big ${costWarn ? 'danger' : ''}" data-testid="roll">${costWarn ? '⚠ ' : ''}ROLL DICE${warnText(costWarn)}</button>`;
     $('button', btns).addEventListener('click', async (ev) => {
       if (busy) return; busy = true; ev.currentTarget.disabled = true;
       const { roll, messages, diverted } = E.rollTest(book, state, rng);
@@ -311,9 +341,25 @@ function renderTest(box) {
     });
   } else showTestResult(box, t, p);
 }
+// Dice gamble: always show the odds, so kids can see that gambling usually doesn't pay.
+const pct = (x) => `${Math.round(x * 100)}%`;
+function gambleLine(t) {
+  const g = E.gambleRules(book, t);
+  const o = E.gambleOdds(book, t);
+  const nm = (book.stats[g.stat]?.name || g.stat).toUpperCase();
+  const v = state.stats[g.stat];
+  const deadly = E.depletionRules(book).some((r) => r.stat === g.stat) && !state.pending?.roll;
+  const risk = !deadly ? '' : v <= 1 ? `⚠ YOUR ${esc(nm)} IS ${v}: LOSING OR A ${g.halfOn} WOULD TRAP YOU` : v <= g.loseBy ? `⚠ YOUR ${esc(nm)} IS ${v}: LOSING WOULD TRAP YOU` : '';
+  return `<div class="gamble-odds" data-testid="gamble-odds"><span class="g-win">WIN ${g.winAt}+ (${pct(o.win)})</span> · <span class="g-half">${g.halfOn} = HALF ${esc(nm)} (${pct(o.half)})</span> · <span class="g-lose">${g.halfOn - 1} OR LESS LOSE -${g.loseBy} ${esc(nm)} (${pct(o.lose)})</span></div>
+    <div class="gamble-note">YOU LOSE MORE OFTEN THAN YOU WIN: ${pct(o.half + o.lose)} OF ROLLS ARE BAD NEWS!</div>${risk ? `<div class="warn" data-testid="gamble-risk">${risk}</div>` : ''}`;
+}
 function showTestResult(box, t, p) {
-  const out = p.success ? t.success : t.failure;
-  $('#diceResult', box).innerHTML = `<div class="result ${p.success ? 'ok' : 'bad'}" data-testid="test-result">ROLLED ${p.roll.total} · ${p.success ? 'SUCCESS!' : 'FAILED!'}</div>${out.text ? `<p class="outcome">${esc(T(out.text))}</p>` : ''}`;
+  const gamble = t.type === 'gamble';
+  const half = gamble && p.outcome === 'half';
+  const out = half ? E.sevenOutcome(t) : p.success ? t.success : t.failure;
+  const gs = gamble ? (book.stats[E.gambleRules(book, t).stat]?.name || '').toUpperCase() : '';
+  const verdict = gamble ? (p.success ? 'YOU WIN!' : half ? `${p.roll.total}: LOSE HALF YOUR ${gs}!` : `YOU LOSE! -${E.gambleRules(book, t).loseBy} ${gs}`) : p.success ? 'SUCCESS!' : 'FAILED!';
+  $('#diceResult', box).innerHTML = `<div class="result ${p.success ? 'ok' : 'bad'}" data-testid="test-result">ROLLED ${p.roll.total} · ${verdict}</div>${out.text ? `<p class="outcome">${esc(T(out.text))}</p>` : ''}`;
   $('.dice-buttons', box).innerHTML = `<button class="btn btn-big" data-testid="continue">CONTINUE ▶</button>`;
   $('.dice-buttons button', box).addEventListener('click', () => act(() => E.continueAfterTest(book, state, rng)));
 }
@@ -364,21 +410,31 @@ function renderCombat(box) {
     $('button', btns).addEventListener('click', () => act(() => E.continueAfterCombat(book, state, rng)));
     return;
   }
-  btns.innerHTML = `<button class="btn btn-big btn-attack" data-testid="attack">ATTACK! <small>(ROLL)</small></button>${c.flee ? `<button class="btn btn-ghost" data-testid="flee">${esc(c.flee.label || 'RUN AWAY')}</button>` : ''}`;
+  // RUN AWAY is offered every round until the duel is decided, as a big button next to ATTACK
+  // (it used to be a dim ghost button that was easy to miss, and below the fold on phones).
+  const fleeWarn = c.flee ? E.wouldDeplete(book, state, c.flee.effects, c.flee.target) : null;
+  btns.innerHTML = `<button class="btn btn-big btn-attack" data-testid="attack">ATTACK! <small>(ROLL)</small></button>${c.flee
+    ? `<button class="btn btn-big btn-flee ${fleeWarn ? 'danger' : ''}" data-testid="flee">${fleeWarn ? '⚠ ' : '🏃 '}${esc(T(c.flee.label || 'RUN AWAY!'))}${warnText(fleeWarn)}</button>
+       <div class="flee-hint" data-testid="flee-hint">${p.round ? `ROUND ${p.round + 1}: ` : ''}YOU CAN STILL RUN AWAY UNTIL THE DUEL IS DECIDED</div>` : ''}`;
+  if (p.round) btns.scrollIntoView({ block: 'nearest' });
   $('[data-testid=attack]', btns).addEventListener('click', async () => {
     if (busy) return; busy = true;
     $$('button', btns).forEach((b) => (b.disabled = true));
-    const { round, messages, diverted } = E.combatRound(book, state, rng);
-    persist();
-    await animateDice([...$$('[data-pd] .die', box), ...$$('[data-ed] .die', box)], [...round.playerRolls, ...round.enemyRolls]);
-    busy = false;
+    let res;
+    try {
+      res = E.combatRound(book, state, rng);
+      persist();
+      await animateDice([...$$('[data-pd] .die', box), ...$$('[data-ed] .die', box)], [...res.round.playerRolls, ...res.round.enemyRolls]);
+    } catch (e) { console.error(e); } finally { busy = false; }
+    if (!res) return renderCombat(box);
+    const { round, messages, diverted } = res;
     if (round.winner === 'enemy') sfx.hurt(); else if (round.winner === 'player') sfx.coin();
     if (diverted) return afterAction(messages);
     showMessages(messages, { silent: true });
     renderStats();
     renderCombat(box);
   });
-  if (c.flee) $('[data-testid=flee]', btns).addEventListener('click', () => act(() => E.flee(book, state, rng)));
+  if (c.flee) $('[data-testid=flee]', btns).addEventListener('click', () => { busy = false; act(() => E.flee(book, state, rng)); });
 }
 function roundText(r, nm, cs) {
   const you = `${esc(nm)}: ${r.playerRolls.join('+')}+${r.playerTotal - r.playerRolls.reduce((a, b) => a + b, 0)} = <b>${r.playerTotal}</b>`;
@@ -388,10 +444,12 @@ function roundText(r, nm, cs) {
 }
 
 // ---- endings ----
+const zodiacTotal = () => book?.trackers?.find((t) => t.id === 'zodiac')?.entries.length || 12;
 function zodiacInfo() { return E.trackerProgress(book, state).find((t) => t.id === 'zodiac') || null; }
 
 function renderEnding(box) {
   const end = state.ended;
+  $('#toasts').innerHTML = ''; // clear pop-ups so they never cover the ending buttons
   if (end.style === 'trapped') return renderTrapped(box);
   const kind = end.type === 'win' ? 'win' : end.type === 'neutral' ? 'neutral' : 'lose';
   const banner = { win: 'YOU WIN!', neutral: 'THE END', lose: 'GAME OVER' }[kind];
@@ -404,6 +462,7 @@ function renderEnding(box) {
       <div class="ending-title">${esc(T(end.title))}</div>
       <div class="stars" aria-label="${stars} of 3 stars">${[0, 1, 2].map((i) => `<span class="star ${i < stars ? 'on' : ''}">★</span>`).join('')}</div>
       ${z?.complete ? `<div class="badge-master" data-testid="zodiac-master">★ ${esc(z.badge || 'COMPLETE')} ★</div>` : ''}
+      ${kind === 'win' && z?.complete ? legendHTML(z) : ''}
       <div class="ending-stats">
         <div><b>${state.moves || 0}</b><span>MOVES</span></div>
         <div><b data-testid="end-zodiac">${z ? `${z.met.length}/${z.total}` : '-'}</b><span>ZODIAC</span></div>
@@ -417,6 +476,37 @@ function renderEnding(box) {
     </div>`;
   wireEndingButtons(box);
   if (score) finishScore(box, score);
+  if (kind === 'win' && z?.complete) { $('[data-testid=print-voucher]', box)?.addEventListener('click', () => window.print()); sfx.win(); }
+}
+
+// The hidden all-12-zodiac route: LEGEND! with fireworks, and a PLAY AGAIN VOUCHER ticket. The code
+// is made once and kept with the finished run, so reloading shows the same ticket.
+function legendHTML(z) {
+  if (!state.voucher) {
+    const d = new Date();
+    state.voucher = { code: makeVoucherCode(), name: player.name, date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` };
+    persist();
+    try { localStorage.setItem(VOUCHERS_ISSUED_KEY, JSON.stringify([...issuedVouchers(), state.voucher].slice(-20))); } catch { /* storage full: the ticket is still on screen */ }
+  }
+  const v = state.voucher;
+  const fw = Array.from({ length: 7 }, (_, i) => `<i class="fw fw${i}"></i>`).join('');
+  return `
+    <div class="legend" data-testid="legend">
+      <div class="fireworks" aria-hidden="true">${fw}</div>
+      <div class="legend-word" data-text="LEGEND!">LEGEND!</div>
+      <div class="legend-sub">ALL ${z.total} ZODIAC ANIMALS · ${z.met.length}/${z.total}</div>
+    </div>
+    <div class="voucher" data-testid="voucher">
+      <div class="v-holes" aria-hidden="true"></div>
+      <div class="v-head">★ PLAY AGAIN VOUCHER ★</div>
+      <div class="v-game">NEON DRAGON OF PIXEL HARBOUR</div>
+      <div class="v-row"><span>HERO</span><b data-testid="voucher-name">${esc(v.name)}</b></div>
+      <div class="v-row"><span>DATE</span><b data-testid="voucher-date">${esc(v.date)}</b></div>
+      <div class="v-row"><span>FOR</span><b>ALL ${z.total} ZODIAC · LEGEND!</b></div>
+      <div class="v-code" data-testid="voucher-code">${esc(v.code)}</div>
+      <div class="v-small">TYPE THIS CODE IN THE HERO CREATOR BEFORE YOUR NEXT GAME FOR ${VOUCHER_BONUS_TEXT}. ONE USE ONLY.</div>
+    </div>
+    <div class="voucher-actions"><button class="btn btn-small" data-testid="print-voucher">🖨 PRINT VOUCHER</button><span class="dim">OR TAKE A SCREENSHOT!</span></div>`;
 }
 
 function scoreBoardHTML(score) {
@@ -670,6 +760,8 @@ function showMessages(msgs, { silent = false } = {}) {
 }
 
 function toast(text, kind = 'info') {
+  // no pop-ups over the GAME OVER / ending screens (they covered the buttons)
+  if (state?.ended) return;
   const t = document.createElement('div');
   t.className = `toast ${kind}`;
   t.textContent = text;
@@ -733,6 +825,10 @@ function openCreator() {
         <input id="cName" class="name-input" maxlength="${LB.NICK_MAX}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NICKNAME" data-testid="name-input" value="">
         <div class="nick-tip" data-testid="nick-tip">Use a nickname, not your real name. Max ${LB.NICK_MAX} letters.</div>
         <div class="nick-problem" id="cProblem" data-testid="nick-problem"></div>
+        <label class="ctl-label" for="cVoucher">GOT A PLAY AGAIN VOUCHER? <small>(OPTIONAL)</small></label>
+        <div class="voucher-row"><input id="cVoucher" class="name-input voucher-input" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ND-XXXX-XXXX" data-testid="voucher-input"><button class="btn btn-small" id="cRedeem" data-testid="voucher-redeem">REDEEM</button></div>
+        <div class="voucher-msg" id="cVMsg" data-testid="voucher-msg"></div>
+        ${(() => { const v = issuedVouchers().reverse().find((x) => !usedVouchers().includes(x.code)); return v ? `<button class="link-btn" id="cSavedV" data-code="${esc(v.code)}" data-testid="voucher-saved">USE YOUR SAVED VOUCHER ${esc(v.code)} (${esc(v.name)})</button>` : ''; })()}
       </div>
     </div>
     <div class="creator-foot">
@@ -764,16 +860,35 @@ function openCreator() {
   nameIn.addEventListener('input', () => { const c = nameIn.value.toUpperCase(); if (c !== nameIn.value) nameIn.value = c; refresh(); });
   nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !startBtn.disabled) startBtn.click(); });
   $('#cScores', m).addEventListener('click', () => openScores({ back: openCreator }));
+  // PLAY AGAIN voucher (earned on the LEGEND! finale): checked here, used up when the game starts
+  let voucher = null;
+  const vIn = $('#cVoucher', m), vMsg = $('#cVMsg', m);
+  const redeem = () => {
+    const code = normalizeVoucher(vIn.value);
+    voucher = null;
+    vMsg.className = 'voucher-msg bad';
+    if (!vIn.value.trim()) vMsg.textContent = '';
+    else if (!code) vMsg.textContent = 'THAT CODE ISN\'T VALID. CHECK THE TICKET!';
+    else if (usedVouchers().includes(code)) vMsg.textContent = 'THAT VOUCHER HAS ALREADY BEEN USED.';
+    else { voucher = code; vIn.value = code; vMsg.className = 'voucher-msg ok'; vMsg.textContent = `✓ VOUCHER OK! ${VOUCHER_BONUS_TEXT} WHEN YOU PRESS START`; sfx.coin(); }
+  };
+  $('#cRedeem', m).addEventListener('click', redeem);
+  $('#cSavedV', m)?.addEventListener('click', (ev) => { vIn.value = ev.currentTarget.dataset.code; redeem(); });
+  vIn.addEventListener('input', () => { voucher = null; vMsg.textContent = ''; });
+  vIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') redeem(); });
   startBtn.addEventListener('click', () => {
     const name = LB.cleanNickname(nameIn.value);
     if (!name || LB.nicknameProblem(name)) return;
     player = { name, avatar: { skin: av.skin, hairStyle: av.hairStyle, hairColor: av.hairColor, outfit: av.outfit, accessory: av.accessory } };
-    state = E.newGame(book, { rng, playerName: name }).state;
+    const useVoucher = voucher && !usedVouchers().includes(voucher);
+    state = E.newGame(book, { rng, playerName: name, riddleSeed: params.get('riddleSeed') ? +params.get('riddleSeed') : null, ...(useVoucher ? { bonusEffects: VOUCHER_BONUS, bonusLabel: `voucher ${voucher}` } : {}) }).state;
+    if (useVoucher) localStorage.setItem(VOUCHERS_USED_KEY, JSON.stringify([...usedVouchers(), voucher]));
     closeModal();
     persist();
     beginRender();
     sfx.start();
     toast(`GET READY, ${name}!`, 'good');
+    if (useVoucher) toast(`VOUCHER REDEEMED: ${VOUCHER_BONUS_TEXT}!`, 'good');
   });
   refresh();
   setTimeout(() => nameIn.focus({ preventScroll: true }), 50);
@@ -783,7 +898,7 @@ function openCreator() {
 function scoreRowsHTML(rows) {
   if (!rows.length) return '<div class="empty" data-testid="scores-empty">NO SCORES YET. BE THE FIRST!</div>';
   return `<table class="scores-table" data-testid="scores-table"><thead><tr><th>#</th><th></th><th>NAME</th><th>SCORE</th><th>RANK</th><th>ZODIAC</th><th>DATE</th></tr></thead><tbody>${rows.map((r, i) => `
-    <tr class="${i === 0 ? 'top' : ''}" data-testid="score-row"><td>${i + 1}</td><td><canvas class="pix score-av" data-av="${i}"></canvas></td><td class="nm">${esc(r.nickname)}</td><td class="pct">${r.score_pct}%</td><td class="rk">${esc(r.rank || '')}</td><td>${r.zodiac_count ?? 0}/11</td><td class="dt">${esc(String(r.created_at || '').slice(0, 10))}</td></tr>`).join('')}</tbody></table>`;
+    <tr class="${i === 0 ? 'top' : ''}" data-testid="score-row"><td>${i + 1}</td><td><canvas class="pix score-av" data-av="${i}"></canvas></td><td class="nm">${esc(r.nickname)}</td><td class="pct">${r.score_pct}%</td><td class="rk">${esc(r.rank || '')}</td><td>${r.zodiac_count ?? 0}/${zodiacTotal()}</td><td class="dt">${esc(String(r.created_at || '').slice(0, 10))}</td></tr>`).join('')}</tbody></table>`;
 }
 
 function openScores({ back = null } = {}) {

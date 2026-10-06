@@ -110,6 +110,16 @@ export function explorer(book, { eatBelow = 4 } = {}) {
     const p = st.pending;
     const sec = book.sections[st.current];
     const out = [];
+    if (p.kind === 'test' && sec.test.type === 'gamble') {
+      // dice gamble: any of win / exactly-7 (half Energy) / lose can come up
+      for (const outcome of ['win', 'half', 'lose']) {
+        const s2 = clone(st);
+        E.rollTest(book, s2, calmRng);
+        if (!s2.ended) { s2.pending.outcome = outcome; s2.pending.success = outcome === 'win'; E.continueAfterTest(book, s2, calmRng); }
+        out.push(...settle(s2, `${label} → ${outcome === 'win' ? 'win the bet' : outcome === 'half' ? 'roll 7' : 'lose the bet'}`));
+      }
+      return out;
+    }
     if (p.kind === 'test') {
       const t = sec.test;
       const goal = t.againstStat ? st.stats[t.againstStat] ?? 0 : null;
@@ -186,12 +196,20 @@ const effTargets = (sec) => {
   const out = [];
   (sec.choices || []).forEach((c) => out.push({ to: c.target, eff: c.effects || [], guard: c.hideIf || null }));
   const outc = (o, extra = []) => o && o.target && out.push({ to: o.target, eff: [...extra, ...(o.effects || [])], guard: null });
-  if (sec.test) { outc(sec.test.success, sec.test.costEffects || []); outc(sec.test.failure, sec.test.costEffects || []); }
+  if (sec.test) {
+    outc(sec.test.success, sec.test.costEffects || []); outc(sec.test.failure, sec.test.costEffects || []);
+    if (sec.test.type === 'gamble') {
+      const gb = { stats: { luck: {} } };
+      out.pop(); // replace the plain failure edge: a lost gamble also costs Luck
+      outc(sec.test.failure, [...(sec.test.costEffects || []), ...E.gambleEffects(gb, sec.test, 'lose')]);
+      outc(E.sevenOutcome(sec.test), [...(sec.test.costEffects || []), ...E.gambleEffects(gb, sec.test, 'half')]);
+    }
+  }
   if (sec.combat) { outc(sec.combat.win); outc(sec.combat.lose); outc(sec.combat.flee); }
   if (sec.riddle) {
     const r = sec.riddle;
     const per = [...(r.onCorrect || [])];
-    const corr = r.questions.flatMap(() => per);
+    const corr = Array.from({ length: r.draw ?? r.questions.length }).flatMap(() => per);
     outc(r.success, corr); outc(r.retreat);
   }
   return out;
