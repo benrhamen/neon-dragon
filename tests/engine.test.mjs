@@ -1213,7 +1213,15 @@ test('Gremlin Goggles (found on the MTR): every gremlin path is locked and flagg
   assert.equal(door.length, 1);
   assert.match(door[0].need, /Brass Key/);
 });
-const forkLabel = (gid) => { const f = JSON.parse(readFileSync('/workspace/gamebook-tools/forks.json', 'utf8')); return Object.values(f).find((x) => x.gremlin === gid)?.right; };
+// the real (right-path) choice that sits next to each gremlin path
+const RIGHT_PATH = {
+ "gremlin_rabbit": "Visit the lantern stall of the rabbit whose nose twitches as she nibbles a carrot",
+ "gremlin_pig": "Find Pig's cha chaan teng: the green-tiled café that smells of sweet milk tea",
+ "gremlin_dog": "Blow the Silver Whistle at the end of the pier, where wet paw prints come up from the water",
+ "gremlin_horse": "Go and meet the horse whose hooves go clip-clop",
+ "gremlin_snake": "Unlock the door with the shed snake skin in front of it"
+};
+const forkLabel = (gid) => RIGHT_PATH[gid];
 
 test('Lucky Horseshoe (from the real Horse) is a duel boost; Egg Waffle (Times Square, 1 token) is +3 Energy', () => {
   const s = at(fresh(), 'horse_track');
