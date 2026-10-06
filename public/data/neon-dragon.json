@@ -1,1064 +1,4667 @@
 {
-  "$schema": "../../schema/gamebook.schema.json",
-  "schemaVersion": "1.0",
-  "metadata": {
-    "id": "neon-dragon",
-    "title": "The Neon Dragon of Pixel Harbour",
-    "subtitle": "A pocket gamebook",
-    "author": "Original story",
-    "version": "1.0.0",
-    "language": "en",
-    "ageRange": "8-12",
-    "original": true,
-    "description": "ORIGINAL CONTENT. Not taken or adapted from any published gamebook. A short choose-your-path adventure set in a pixel-art version of Hong Kong.",
-    "license": {
-      "name": "All rights reserved (family prototype)",
-      "holder": "Neon Dragon project",
-      "notes": "Original text created for this prototype. Change this to an open licence (e.g. CC BY 4.0) if you want others to reuse it."
-    }
-  },
-  "start": "intro",
-  "rules": {
-    "healthStat": "energy",
-    "onHealthDepleted": "out_of_energy",
-    "combat": {
-      "attackStat": "power",
-      "dice": "2d6",
-      "damage": 2
-    }
-  },
-  "stats": {
-    "energy": {
-      "name": "Energy",
-      "short": "NRG",
-      "description": "If it runs out, it's game over!",
-      "initial": 12,
-      "min": 0,
-      "max": 12,
-      "color": "#3dff6e",
-      "icon": "⚡",
-      "display": "bar"
-    },
-    "power": {
-      "name": "Pixel Power",
-      "short": "PWR",
-      "description": "Added to your dice roll in a duel. Rolled at the start: 1 die + 6.",
-      "initial": {
-        "dice": "1d6+6"
-      },
-      "min": 0,
-      "max": "initial",
-      "color": "#29e7ff",
-      "icon": "★",
-      "display": "bar"
-    },
-    "luck": {
-      "name": "Luck",
-      "short": "LCK",
-      "description": "Roll this or less on two dice to pass a luck test. Each test uses 1. Rolled at the start: 1 die + 6.",
-      "initial": {
-        "dice": "1d6+6"
-      },
-      "min": 0,
-      "max": "initial",
-      "color": "#ffd23f",
-      "icon": "♣",
-      "display": "bar"
-    }
-  },
-  "flags": {
-    "met_auntie": {
-      "description": "Talked to Auntie Lam"
-    },
-    "robot_friend": {
-      "description": "Fed Bolt-Bot"
-    },
-    "secret_route": {
-      "description": "Found the pearl in the Gremlin Vault"
-    }
-  },
-  "items": {
-    "token": {
-      "name": "Arcade Token",
-      "description": "Shiny brass tokens. Some things in Pixel Harbour cost one or two.",
-      "stackable": true,
-      "icon": "🪙",
-      "sprite": {
-        "palette": {
-          "o": "#b8860b",
-          "y": "#ffd23f",
-          "w": "#fff6c8"
-        },
-        "rows": [
-          "..oooo..",
-          ".oyyyyo.",
-          "oywyyyyo",
-          "oyyoooyo",
-          "oyoyyyyo",
-          "oyyoooyo",
-          ".oyyyyo.",
-          "..oooo.."
-        ]
-      }
-    },
-    "egg_tart": {
-      "name": "Egg Tart",
-      "description": "Warm, wobbly and delicious. Eat it for +4 Energy, or maybe someone else is hungry...",
-      "icon": "🥧",
-      "sprite": {
-        "palette": {
-          "b": "#c47a2c",
-          "y": "#ffd84a",
-          "Y": "#fff3a0"
-        },
-        "rows": [
-          "........",
-          "........",
-          ".bbbbbb.",
-          "byyyyyyb",
-          "byYyyyyb",
-          "bbyyyybb",
-          ".bbbbbb.",
-          "........"
-        ]
-      },
-      "use": {
-        "label": "Eat",
-        "effects": [
-          {
-            "stat": "energy",
-            "add": 4
-          },
-          {
-            "message": "Yum! +4 Energy"
-          }
-        ],
-        "consumable": true
-      }
-    },
-    "lantern": {
-      "name": "Rabbit Lantern",
-      "description": "A glowing paper rabbit lantern. Light shows hidden things.",
-      "icon": "🏮",
-      "sprite": {
-        "palette": {
-          "w": "#fff1c1",
-          "k": "#1b1b3a",
-          "p": "#ff7eb6",
-          "s": "#ffb02e"
-        },
-        "rows": [
-          "..w..w..",
-          "..w..w..",
-          ".wwwwww.",
-          "wwkwwkww",
-          "wwwppwww",
-          "wwwwwwww",
-          ".wwwwww.",
-          "...ss..."
-        ]
-      }
-    },
-    "brass_key": {
-      "name": "Brass Key",
-      "description": "A tiny key shaped like a dragon's claw. The tag says VAULT.",
-      "icon": "🔑",
-      "sprite": {
-        "palette": {
-          "o": "#e0a526",
-          "O": "#fff0a8"
-        },
-        "rows": [
-          "........",
-          ".ooo....",
-          "oO.oo...",
-          "o...oooo",
-          "oo.oo.o.",
-          ".ooo..o.",
-          "........",
-          "........"
-        ]
-      }
-    },
-    "whistle": {
-      "name": "Silver Whistle",
-      "description": "One note makes any machine dance.",
-      "icon": "🎵",
-      "sprite": {
-        "palette": {
-          "s": "#9aa7b8",
-          "W": "#e8eef5"
-        },
-        "rows": [
-          "........",
-          "........",
-          "ssssss..",
-          "sWWWWss.",
-          "sWWWWsss",
-          "ssssss.s",
-          "........",
-          "........"
-        ]
-      }
-    },
-    "pearl": {
-      "name": "Pearl of Light",
-      "description": "Warm as a tiny sun. The Neon Dragon needs it back!",
-      "icon": "⚪",
-      "sprite": {
-        "palette": {
-          "w": "#9fd8ff",
-          "W": "#ffffff",
-          "b": "#cdeeff"
-        },
-        "rows": [
-          "..wwww..",
-          ".wWWWWw.",
-          "wWWbWWWw",
-          "wWbWWWWw",
-          "wWWWWWWw",
-          "wWWWWWbw",
-          ".wWWWWw.",
-          "..wwww.."
-        ]
-      }
-    }
-  },
-  "startingInventory": [
-    {
-      "item": "token",
-      "quantity": 3
-    }
-  ],
-  "sections": {
-    "intro": {
-      "title": "Insert Coin",
-      "text": [
-        "Rain drums on the windows of the Golden Joystick, the tiniest arcade in Mong Kok. Neon signs buzz outside, painting the puddles pink and blue.",
-        "You, {{name}}, have three arcade tokens left in your pocket, and there's one machine you have never seen before. It sits in the back corner, humming softly. On its screen, a dragon made of glowing lights is curled around the words NEON DRAGON. Underneath, letters flash: THE PEARL IS LOST. PLAYER ONE, PLEASE HELP.",
-        "Funny. You're sure it wasn't there yesterday."
-      ],
-      "illustration": {
-        "src": "img/arcade.svg",
-        "alt": "A glowing arcade machine in a rainy Mong Kok arcade",
-        "pixelated": true
-      },
-      "choices": [
-        {
-          "label": "Drop a token into the slot",
-          "target": "portal",
-          "effects": [
-            {
-              "removeItem": "token"
-            }
-          ]
-        },
-        {
-          "label": "Ask Auntie Lam about the strange machine",
-          "target": "auntie"
-        }
-      ]
-    },
-    "auntie": {
-      "title": "Auntie Lam",
-      "text": [
-        "Auntie Lam runs the arcade. She is small and quick and never stops snacking. Today she is guarding a box of warm egg tarts behind the counter.",
-        "\"That old thing?\" she says, squinting. \"It only switches on when someone brave walks in. Last time was... hmm, 1986?\" She pushes an egg tart into your hand. \"Take this. Heroes need snacks. And if you meet a robot, remember: everybody gets grumpy when they're hungry.\""
-      ],
-      "onEnter": [
-        {
-          "addItem": "egg_tart"
-        },
-        {
-          "setFlag": "met_auntie"
-        }
-      ],
-      "choices": [
-        {
-          "label": "Drop a token into the Neon Dragon machine",
-          "target": "portal",
-          "effects": [
-            {
-              "removeItem": "token"
-            }
-          ]
-        }
-      ]
-    },
-    "portal": {
-      "title": "Pixel Harbour",
-      "text": [
-        "The token clinks. The screen flares so brightly you have to shut your eyes, and the floor drops away like the first second of a rollercoaster.",
-        "When you open your eyes, you're standing on a pier made of chunky square pixels. In front of you is Hong Kong... but not quite. The skyscrapers are built from glowing blocks, the harbour sparkles in eight colours, and the moon is a perfect pixel circle.",
-        "A plump orange cat with a dumpling-shaped face sits beside you. \"Finally! Player One!\" it says. \"I'm Siu Mai. The Neon Dragon keeps the lights of Pixel Harbour shining with her Pearl of Light, but the Glitch Gremlins stole it! If the pearl isn't back by midnight, every light here goes out. For good.\"",
-        "Siu Mai points two ways with its tail: towards a noisy night market, and towards the ferry pier."
-      ],
-      "illustration": {
-        "src": "img/harbour.svg",
-        "alt": "A pixel-art harbour skyline at night with an orange cat",
-        "pixelated": true
-      },
-      "choices": [
-        {
-          "label": "Explore the night market",
-          "target": "market"
-        },
-        {
-          "label": "Head to the ferry pier",
-          "target": "pier"
-        }
-      ]
-    },
-    "market": {
-      "title": "Night Market",
-      "text": [
-        "Paper lanterns sway above a street packed with stalls. A pixel fish-ball seller flips sizzling snacks, and a robot grandma sells socks that change colour every few seconds.",
-        "At one stall, rows of glowing rabbit lanterns bob on strings. A sign says: ONE TOKEN. NEVER RUNS OUT. Next to it is a claw machine stuffed with prizes, and right at the bottom something small and brass glints.",
-        "At the end of the street, the Peak Tram rattles, ready to climb the hill."
-      ],
-      "illustration": {
-        "src": "img/market.svg",
-        "alt": "A pixel night market with lanterns",
-        "pixelated": true
-      },
-      "choices": [
-        {
-          "label": "Buy a rabbit lantern (1 token)",
-          "target": "lantern_stall",
-          "conditions": {
-            "hasItem": "token"
-          },
-          "lockedHint": "Needs 1 Arcade Token",
-          "hideIf": {
-            "hasItem": "lantern"
-          },
-          "effects": [
-            {
-              "removeItem": "token"
-            }
-          ]
-        },
-        {
-          "label": "Try the claw machine (1 token)",
-          "target": "claw",
-          "conditions": {
-            "hasItem": "token"
-          },
-          "lockedHint": "Needs 1 Arcade Token",
-          "hideIf": {
-            "hasItem": "brass_key"
-          },
-          "effects": [
-            {
-              "removeItem": "token"
-            }
-          ]
-        },
-        {
-          "label": "Ride the Peak Tram up the hill",
-          "target": "tram"
-        },
-        {
-          "label": "Walk to the ferry pier",
-          "target": "pier"
-        },
-        {
-          "label": "This is too spooky. Find a way home",
-          "target": "go_home"
-        }
-      ]
-    },
-    "lantern_stall": {
-      "title": "The Lantern Seller",
-      "text": [
-        "The lantern seller is a tall, gentle crane wearing reading glasses. She picks out the brightest rabbit lantern of all and hands it to you. Its paper ears glow warm and gold.",
-        "\"Light shows the hidden things,\" she says. \"Keep it close in dark places.\""
-      ],
-      "onEnter": [
-        {
-          "addItem": "lantern"
-        }
-      ],
-      "choices": [
-        {
-          "label": "Look around the market again",
-          "target": "market"
-        },
-        {
-          "label": "Ride the Peak Tram up the hill",
-          "target": "tram"
-        }
-      ]
-    },
-    "claw": {
-      "title": "The Claw Machine",
-      "text": [
-        "You drop in a token. Music plays. The claw whirrs down... down... down... towards the tiny brass glint.",
-        "This one is all about luck!"
-      ],
-      "test": {
-        "label": "TEST YOUR LUCK",
-        "prompt": "Roll two dice. If the total is equal to or less than your LUCK, the claw grabs the prize. (Each try uses up 1 LUCK.)",
-        "dice": "2d6",
-        "againstStat": "luck",
-        "costEffects": [
-          {
-            "stat": "luck",
-            "add": -1
-          }
-        ],
-        "success": {
-          "target": "claw_win",
-          "text": "The claw grips tight!"
-        },
-        "failure": {
-          "target": "claw_lose",
-          "text": "The claw wobbles..."
-        }
-      }
-    },
-    "claw_win": {
-      "title": "Got It!",
-      "text": [
-        "The claw closes with a CLUNK and lifts out a little brass key shaped like a dragon's claw. A paper tag hangs from it: VAULT. KEEP AWAY FROM GREMLINS.",
-        "The lantern seller whistles. \"Lucky! Nobody has won that in a hundred years.\""
-      ],
-      "onEnter": [
-        {
-          "addItem": "brass_key"
-        }
-      ],
-      "choices": [
-        {
-          "label": "Look around the market again",
-          "target": "market"
-        },
-        {
-          "label": "Ride the Peak Tram up the hill",
-          "target": "tram"
-        }
-      ]
-    },
-    "claw_lose": {
-      "title": "So Close!",
-      "text": [
-        "The claw grabs a rubber duck, wobbles, and drops it. Then it slowly drops nothing at all, as if it's laughing at you.",
-        "Never mind. It's only a game. Probably."
-      ],
-      "choices": [
-        {
-          "label": "Try again (1 token)",
-          "target": "claw",
-          "conditions": {
-            "hasItem": "token"
-          },
-          "lockedHint": "Needs 1 Arcade Token",
-          "effects": [
-            {
-              "removeItem": "token"
-            }
-          ]
-        },
-        {
-          "label": "Back to the market",
-          "target": "market"
-        }
-      ]
-    },
-    "pier": {
-      "title": "Ferry Pier",
-      "text": [
-        "A green-and-white ferry bobs at the pier, its paddle wheels made of spinning pixels. The captain is a large, sleepy toad in a captain's hat.",
-        "\"Crossing to Lighthouse Island costs two tokens,\" he croaks. \"No tokens, no boat. Them's the rules.\"",
-        "Out on the dark water, the lighthouse blinks: on... off... on. It looks like it's trying to tell you something."
-      ],
-      "illustration": {
-        "src": "img/ferry.svg",
-        "alt": "A pixel ferry at a pier with a lighthouse in the distance",
-        "pixelated": true
-      },
-      "choices": [
-        {
-          "label": "Pay two tokens and climb aboard",
-          "target": "ferry",
-          "conditions": {
-            "hasItem": "token",
-            "quantity": 2
-          },
-          "lockedHint": "Needs 2 Arcade Tokens",
-          "effects": [
-            {
-              "removeItem": "token",
-              "quantity": 2
-            }
-          ]
-        },
-        {
-          "label": "Sneak aboard while the captain yawns",
-          "target": "sneak",
-          "hideIf": {
-            "visited": "sneak"
-          }
-        },
-        {
-          "label": "Go to the night market",
-          "target": "market"
-        }
-      ]
-    },
-    "sneak": {
-      "title": "Ribbit!",
-      "text": [
-        "You tiptoe up the gangplank... and step right on the captain's foot.",
-        "\"RIBBIT!\" he bellows. He scoops you up and plops you back on the pier with a soggy SPLOSH. You're dripping wet and a little embarrassed."
-      ],
-      "onEnter": [
-        {
-          "stat": "energy",
-          "add": -2
-        }
-      ],
-      "choices": [
-        {
-          "label": "Pay two tokens after all",
-          "target": "ferry",
-          "conditions": {
-            "hasItem": "token",
-            "quantity": 2
-          },
-          "lockedHint": "Needs 2 Arcade Tokens",
-          "effects": [
-            {
-              "removeItem": "token",
-              "quantity": 2
-            }
-          ]
-        },
-        {
-          "label": "Squelch back to the night market",
-          "target": "market"
-        }
-      ]
-    },
-    "ferry": {
-      "title": "Across the Harbour",
-      "text": [
-        "The ferry chugs across the sparkling harbour. Pixel fish leap alongside, and the city lights twinkle on the waves, though some of them flicker and go dark as you watch.",
-        "Halfway across, three small purple creatures pop out of the water, giggling. Glitch Gremlins! They tug at the ropes and blow raspberries. The captain flicks out his long tongue (THWIP!) and the gremlins tumble back into the waves.",
-        "\"Pests,\" he grumbles. \"They carried a shiny pearl up to the Sky Tower on the Peak. Saw them myself.\""
-      ],
-      "choices": [
-        {
-          "label": "Hop off at Lighthouse Island",
-          "target": "lighthouse"
-        }
-      ]
-    },
-    "lighthouse": {
-      "title": "Lighthouse Island",
-      "text": [
-        "Lighthouse Island is tiny: rocks, a bench and a tall stripy lighthouse. The keeper is an old pixel tortoise who has been waiting for company for a very, very long time.",
-        "She pours you a cup of hot lemon tea, then presses something cold and shiny into your hand. \"The Silver Whistle. One note makes any machine dance, whether it wants to or not.\" She chuckles. \"Very useful around robots.\"",
-        "From the top of the lighthouse you can see the Peak, with the Sky Tower glowing angrily on top. A cable car swings down to fetch you."
-      ],
-      "onEnter": [
-        {
-          "stat": "energy",
-          "add": 3
-        },
-        {
-          "addItem": "whistle"
-        }
-      ],
-      "choices": [
-        {
-          "label": "Ride the cable car to the Peak",
-          "target": "peak_top"
-        }
-      ]
-    },
-    "tram": {
-      "title": "The Peak Tram",
-      "text": [
-        "The little red tram clanks and begins to climb. The hill is so steep that the buildings outside seem to lean sideways.",
-        "Halfway up, the tram rattles into a long tunnel, and every light goes out. The tram stops with a jolt. Somewhere in the dark, something giggles."
-      ],
-      "illustration": {
-        "src": "img/tunnel.svg",
-        "alt": "A dark tunnel with a small tram",
-        "pixelated": true
-      },
-      "choices": [
-        {
-          "label": "Hold up your rabbit lantern",
-          "target": "tunnel_lit",
-          "conditions": {
-            "hasItem": "lantern"
-          },
-          "lockedHint": "Needs a Rabbit Lantern"
-        },
-        {
-          "label": "Feel your way through the dark",
-          "target": "tunnel_dark"
-        }
-      ]
-    },
-    "tunnel_dark": {
-      "title": "Bonk!",
-      "text": [
-        "You climb out and shuffle forward with your hands stretched out. BONK! A wall. BONK! Another wall. A gremlin stamps on your toe and runs away cackling.",
-        "By the time you find the end of the tunnel you're bruised and grumpy, but you've reached the top of the Peak."
-      ],
-      "onEnter": [
-        {
-          "stat": "energy",
-          "add": -3
-        }
-      ],
-      "choices": [
-        {
-          "label": "Climb out onto the Peak",
-          "target": "peak_top"
-        }
-      ]
-    },
-    "tunnel_lit": {
-      "title": "Hidden Door",
-      "text": [
-        "Golden light spills from your lantern. The giggling stops (gremlins hate light!) and you spot something the dark was hiding: a small round door in the tunnel wall, painted with a dragon's claw.",
-        "Underneath, someone has scratched: GREMLIN VAULT. KEEP OUT. (THIS MEANS YOU.)"
-      ],
-      "choices": [
-        {
-          "label": "Unlock the door with the brass key",
-          "target": "vault",
-          "conditions": {
-            "hasItem": "brass_key"
-          },
-          "lockedHint": "Needs a Brass Key"
-        },
-        {
-          "label": "Rattle the door handle",
-          "target": "door_locked",
-          "hideIf": {
-            "hasItem": "brass_key"
-          }
-        },
-        {
-          "label": "Leave the door and walk up to the Peak",
-          "target": "peak_top"
-        }
-      ]
-    },
-    "door_locked": {
-      "title": "Locked",
-      "text": [
-        "The handle won't budge. The keyhole is shaped like a tiny claw. Somewhere in Pixel Harbour there must be a key that fits..."
-      ],
-      "choices": [
-        {
-          "label": "Walk on up to the Peak",
-          "target": "peak_top"
-        },
-        {
-          "label": "Ride the tram back down to the market",
-          "target": "market"
-        }
-      ]
-    },
-    "vault": {
-      "title": "The Gremlin Vault",
-      "text": [
-        "The key turns with a satisfying click. Inside is a cosy little room piled high with everything the gremlins have ever stolen: odd socks, TV remotes, a thousand lost umbrellas... and, on a velvet cushion, a pearl as big as an orange, glowing with soft white light.",
-        "The Pearl of Light! You scoop it up. It feels warm, like holding a tiny sun. The gremlins were so busy guarding the Sky Tower that they forgot to guard their own vault."
-      ],
-      "onEnter": [
-        {
-          "addItem": "pearl"
-        },
-        {
-          "setFlag": "secret_route"
-        },
-        {
-          "message": "Secret route found!"
-        }
-      ],
-      "choices": [
-        {
-          "label": "Race up to the Neon Dragon",
-          "target": "dragon_summit"
-        }
-      ]
-    },
-    "peak_top": {
-      "title": "The Peak",
-      "text": [
-        "The top of the Peak is windy and wild. Far below, Pixel Harbour twinkles, but whole streets have already gone dark. The Sky Tower looms above you, and the Neon Dragon is coiled weakly around it, her lights dim and flickering.",
-        "Blocking the tower door stands BOLT-BOT, the gremlins' guard: a rusty robot as tall as a bus, with a saucepan for a head. \"HALT,\" it booms. \"NO. PLAYERS. ALLOWED.\"",
-        "Its tummy makes a long, sad rumble."
-      ],
-      "illustration": {
-        "src": "img/robot.svg",
-        "alt": "A big rusty robot guarding a tower door",
-        "pixelated": true
-      },
-      "choices": [
-        {
-          "label": "Blow the Silver Whistle",
-          "target": "bot_dance",
-          "conditions": {
-            "hasItem": "whistle"
-          },
-          "lockedHint": "Needs a Silver Whistle"
-        },
-        {
-          "label": "Offer Bolt-Bot your egg tart",
-          "target": "bot_snack",
-          "conditions": {
-            "hasItem": "egg_tart"
-          },
-          "lockedHint": "Needs an Egg Tart",
-          "effects": [
-            {
-              "removeItem": "egg_tart"
-            }
-          ]
-        },
-        {
-          "label": "Challenge Bolt-Bot to a duel!",
-          "target": "bot_battle"
-        },
-        {
-          "label": "Retreat down the hill",
-          "target": "market"
-        }
-      ]
-    },
-    "bot_dance": {
-      "title": "Robot Boogie",
-      "text": [
-        "You blow one bright silver note. Bolt-Bot freezes. Then its feet start tapping. Its arms start swinging. In seconds it is doing the robot (badly) and it boogies right out of the doorway and away down the hill.",
-        "\"I. CANNOT. STOP,\" it wails happily."
-      ],
-      "choices": [
-        {
-          "label": "Dash into the Sky Tower",
-          "target": "tower_top"
-        }
-      ]
-    },
-    "bot_snack": {
-      "title": "Snack Attack",
-      "text": [
-        "Bolt-Bot sniffs. Its saucepan head tilts. Then it gobbles the egg tart in one bite, and its eyes turn into two pink hearts.",
-        "\"DELICIOUS,\" it says. \"NOBODY. EVER. FEEDS. BOLT-BOT.\" It steps aside and gives you a creaky thumbs-up. Auntie Lam was right!"
-      ],
-      "onEnter": [
-        {
-          "setFlag": "robot_friend"
-        }
-      ],
-      "choices": [
-        {
-          "label": "Dash into the Sky Tower",
-          "target": "tower_top"
-        }
-      ]
-    },
-    "bot_battle": {
-      "title": "Duel!",
-      "text": [
-        "You raise your fists. Bolt-Bot raises its huge rubber-glove fists.",
-        "\"BEEP BOOP. PREPARE. FOR. BOPPING.\""
-      ],
-      "combat": {
-        "intro": "Each round, you and Bolt-Bot both roll two dice and add your attack. Higher total lands a bop (the loser loses 2). Knock Bolt-Bot down to 0 to win!",
-        "enemies": [
-          {
-            "name": "Bolt-Bot",
-            "attack": 5,
-            "health": 6,
-            "sprite": {
-              "palette": {
-                "g": "#c0c8d0",
-                "c": "#37406b",
-                "R": "#ff3355",
-                "m": "#b06b3a",
-                "r": "#ff5d8f",
-                "k": "#7a4a26"
-              },
-              "rows": [
-                "...gggggg...",
-                "..g......g..",
-                "..gccccccg..",
-                "..gcRccRcg..",
-                "..gccccccg..",
-                "...gggggg...",
-                "....kkkk....",
-                ".mmmmmmmmmm.",
-                "rm.mmmmmm.mr",
-                "rr.mmmmmm.rr",
-                "...mm..mm...",
-                "..mmm..mmm.."
-              ]
-            }
-          }
-        ],
-        "win": {
-          "target": "bot_beaten",
-          "text": "Bolt-Bot topples over!"
-        },
-        "lose": {
-          "target": "zapped",
-          "text": "Bolt-Bot bops you!"
-        },
-        "flee": {
-          "label": "Run away down the hill",
-          "target": "market",
-          "effects": [
-            {
-              "stat": "energy",
-              "add": -1
-            }
-          ]
-        }
-      }
-    },
-    "bot_beaten": {
-      "title": "Clang!",
-      "text": [
-        "With one last bop, Bolt-Bot topples over with a mighty CLANG, its saucepan head spinning like a top.",
-        "\"OKAY. OKAY. YOU. WIN,\" it says, and sits down for a little rest. The tower door swings open."
-      ],
-      "choices": [
-        {
-          "label": "Dash into the Sky Tower",
-          "target": "tower_top"
-        }
-      ]
-    },
-    "tower_top": {
-      "title": "The Gremlin King",
-      "text": [
-        "At the very top of the tower, in a room full of tangled wires and flashing screens, sits the Gremlin King. He is the size of a cat, wears a bottle-cap crown, and is juggling the Pearl of Light from hand to hand.",
-        "\"Ooh, a Player!\" he squeaks. \"I suppose you want my lovely shiny pearl? Well, you can't have it. Unless...\" He grins a wide, pointy grin. \"Unless you can answer my riddle! Get it wrong and I keep the pearl forever, and midnight turns your little city dark!\"",
-        "A clock on the wall ticks towards twelve."
-      ],
-      "illustration": {
-        "src": "img/king.svg",
-        "alt": "A small purple gremlin king with a bottle-cap crown holding a glowing pearl",
-        "pixelated": true
-      },
-      "choices": [
-        {
-          "label": "Accept the riddle challenge",
-          "target": "riddle"
-        },
-        {
-          "label": "Grab the pearl and run!",
-          "target": "grab"
-        }
-      ]
-    },
-    "grab": {
-      "title": "Grab It!",
-      "text": [
-        "You lunge for the pearl just as the Gremlin King tosses it into the air..."
-      ],
-      "test": {
-        "label": "TEST YOUR LUCK",
-        "prompt": "Roll two dice. Equal to or under your LUCK and you snatch it! (Uses up 1 LUCK.)",
-        "dice": "2d6",
-        "againstStat": "luck",
-        "costEffects": [
-          {
-            "stat": "luck",
-            "add": -1
-          }
-        ],
-        "success": {
-          "target": "grab_win",
-          "text": "Got it!"
-        },
-        "failure": {
-          "target": "grab_fail",
-          "text": "Whoops!"
-        }
-      }
-    },
-    "grab_win": {
-      "title": "Snatched!",
-      "text": [
-        "Your fingers close around the warm, glowing pearl. \"Hey! No fair!\" squeals the Gremlin King, but you're already racing up the stairs to the roof."
-      ],
-      "onEnter": [
-        {
-          "addItem": "pearl"
-        }
-      ],
-      "choices": [
-        {
-          "label": "Run up to the roof",
-          "target": "dragon_summit"
-        }
-      ]
-    },
-    "grab_fail": {
-      "title": "Fizz!",
-      "text": [
-        "The Gremlin King hops aside and you crash into a pile of wires. Sparks fizz. Ouch!",
-        "\"Tsk, tsk,\" he says, wagging a finger. \"No grabbing. Riddle time!\""
-      ],
-      "onEnter": [
-        {
-          "stat": "energy",
-          "add": -2
-        }
-      ],
-      "choices": [
-        {
-          "label": "Listen to the riddle",
-          "target": "riddle"
-        }
-      ]
-    },
-    "riddle": {
-      "title": "The Riddle",
-      "text": [
-        "The Gremlin King clears his throat.",
-        "\"I have hands, but I cannot clap. I have a face, but I cannot smile. I run all day, but I never leave the wall. What am I?\"",
-        "Behind him, the clock ticks loudly. Tick. Tock. Tick..."
-      ],
-      "choices": [
-        {
-          "label": "\"A monkey!\"",
-          "target": "riddle_wrong"
-        },
-        {
-          "label": "\"A clock!\"",
-          "target": "riddle_right"
-        },
-        {
-          "label": "\"A tree!\"",
-          "target": "riddle_wrong"
-        }
-      ]
-    },
-    "riddle_right": {
-      "title": "Correct!",
-      "text": [
-        "The Gremlin King's mouth falls open. \"How did you... nobody ever... oh, FINE.\"",
-        "He sulks and tosses you the pearl. \"Rules are rules, even for gremlins.\""
-      ],
-      "onEnter": [
-        {
-          "addItem": "pearl"
-        }
-      ],
-      "choices": [
-        {
-          "label": "Run up to the roof",
-          "target": "dragon_summit"
-        }
-      ]
-    },
-    "dragon_summit": {
-      "title": "The Neon Dragon",
-      "text": [
-        "You burst out onto the tower roof. The wind howls. The Neon Dragon lifts her great head. She is enormous, made of a million tiny lights, but almost all of them have gone dim.",
-        "\"Player One,\" she whispers, in a voice like distant thunder. \"Do you have it?\"",
-        "Below you, the clock begins to chime midnight."
-      ],
-      "illustration": {
-        "src": "img/dragon.svg",
-        "alt": "A huge dragon made of dim lights coiled around a tower",
-        "pixelated": true
-      },
-      "choices": [
-        {
-          "label": "Hold up the Pearl of Light",
-          "target": "victory",
-          "conditions": {
-            "hasItem": "pearl"
-          },
-          "lockedHint": "Needs the Pearl of Light",
-          "effects": [
-            {
-              "removeItem": "pearl"
-            }
-          ]
-        }
-      ]
-    },
-    "victory": {
-      "title": "Lights On!",
-      "text": [
-        "The pearl leaps from your hands and spins into the dragon's chest. FWOOOSH! Light races through her body (red, gold, green, blue) and bursts out across the city. Every building, every boat and every lantern blazes back to life.",
-        "Fireworks bloom over the harbour, spelling out a word in giant pixel letters: {{name}}!",
-        "The dragon bows her head. \"Thank you, hero.\" Siu Mai purrs so loudly the whole roof vibrates.",
-        "Then, with a blink, you're back in the Golden Joystick. The machine's screen shows a brand-new HIGH SCORE with your name next to it. Auntie Lam winks and hands you another egg tart."
-      ],
-      "illustration": {
-        "src": "img/victory.svg",
-        "alt": "Fireworks over a brightly lit pixel harbour",
-        "pixelated": true
-      },
-      "ending": {
-        "type": "win",
-        "title": "YOU SAVED PIXEL HARBOUR!",
-        "stars": 3
-      }
-    },
-    "riddle_wrong": {
-      "title": "Lights Out",
-      "text": [
-        "\"WRONG!\" cackles the Gremlin King. BONG... BONG... BONG... The clock strikes midnight. One by one, the lights of Pixel Harbour blink out, until only the moon is left.",
-        "Everything goes black, and then you're back in the Golden Joystick, standing in front of the machine. The screen says: GAME OVER. INSERT TOKEN TO TRY AGAIN.",
-        "Maybe next time, listen to the clock..."
-      ],
-      "ending": {
-        "type": "fail",
-        "title": "GAME OVER",
-        "stars": 1
-      }
-    },
-    "zapped": {
-      "title": "Bopped!",
-      "text": [
-        "BOP! Bolt-Bot's giant rubber fist sends you spinning... and spinning... and you land on your bottom on the floor of the Golden Joystick.",
-        "The machine flashes: GAME OVER. BOLT-BOT WINS THIS ROUND.",
-        "Next time, maybe try a different idea. Even robots have soft spots."
-      ],
-      "ending": {
-        "type": "death",
-        "title": "GAME OVER",
-        "stars": 0
-      }
-    },
-    "out_of_energy": {
-      "title": "Out of Energy",
-      "text": [
-        "Your pixels go fuzzy... then fizzy... then fade away completely.",
-        "You blink and find yourself sitting on a stool in the Golden Joystick, completely worn out. Rest up, have a snack, and try again!"
-      ],
-      "ending": {
-        "type": "death",
-        "title": "GAME OVER",
-        "stars": 0
-      }
-    },
-    "go_home": {
-      "title": "Home Safe",
-      "text": [
-        "You decide that's enough adventure for one night. Siu Mai sighs, but shows you a glowing exit door.",
-        "You step through and you're back in the arcade, warm and dry. The Neon Dragon machine flickers... then switches off.",
-        "Somewhere, a pixel city is getting darker. Maybe tomorrow you'll feel braver?"
-      ],
-      "ending": {
-        "type": "neutral",
-        "title": "THE END?",
-        "stars": 0
-      }
-    }
+ "$schema": "../../schema/gamebook.schema.json",
+ "schemaVersion": "1.0",
+ "metadata": {
+  "id": "neon-dragon",
+  "title": "The Neon Dragon of Pixel Harbour",
+  "subtitle": "A pocket gamebook adventure across Hong Kong",
+  "author": "Original story",
+  "version": "2.0.0",
+  "language": "en",
+  "ageRange": "9-11",
+  "original": true,
+  "description": "ORIGINAL CONTENT. Not taken or adapted from any published gamebook. A choose-your-path adventure across a pixel-art Hong Kong: Temple Street, the Star Ferry, the MTR, a grumpy red taxi, Causeway Bay, Man Mo Temple, dim sum, a cha chaan teng, the Peak Tram and harbour fireworks, with eleven zodiac animals to meet.",
+  "license": {
+   "name": "All rights reserved",
+   "holder": "Neon Dragon project",
+   "notes": "Original text created for this prototype. Change this to an open licence (e.g. CC BY 4.0) if you want others to reuse it."
   }
+ },
+ "start": "intro",
+ "rules": {
+  "healthStat": "energy",
+  "depletion": [
+   {
+    "stat": "energy",
+    "target": "trapped"
+   },
+   {
+    "stat": "power",
+    "target": "trapped"
+   },
+   {
+    "stat": "tokens",
+    "target": "out_of_tokens"
+   }
+  ],
+  "combat": {
+   "attackStat": "luck",
+   "dice": "2d6",
+   "damage": 2
+  },
+  "perMoveEffects": [
+   {
+    "stat": "power",
+    "add": -1
+   }
+  ]
+ },
+ "stats": {
+  "energy": {
+   "name": "Energy",
+   "short": "NRG",
+   "description": "If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
+   "initial": 12,
+   "min": 0,
+   "max": 12,
+   "color": "#3dff6e",
+   "icon": "⚡",
+   "display": "bar"
+  },
+  "power": {
+   "name": "Pixel Power",
+   "short": "PWR",
+   "description": "Your move timer: every move uses 1. Halving traps drain it, each zodiac friend you meet adds +2. If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
+   "initial": 40,
+   "min": 0,
+   "color": "#29e7ff",
+   "icon": "★",
+   "display": "timer"
+  },
+  "luck": {
+   "name": "Luck",
+   "short": "LCK",
+   "description": "Roll this or less on two dice to pass a luck test. Every test uses up 1 Luck, pass or fail, and some bad choices cost Luck too. At 0 or 1 Luck you can't pass any more luck tests (it isn't game over, though). Also your attack in a duel. Rolled at the start: 1 die + 6. Rare ways to win a little back: temple incense, a lucky Rooster.",
+   "initial": {
+    "dice": "1d6+6"
+   },
+   "min": 0,
+   "max": "initial",
+   "color": "#ffd23f",
+   "icon": "♣",
+   "display": "bar"
+  },
+  "tokens": {
+   "name": "Tokens",
+   "short": "TOK",
+   "description": "Arcade tokens pay for rides, snacks and riddle mistakes. If you run out, you're OUT! Never spend your last one.",
+   "initial": 6,
+   "min": 0,
+   "color": "#ffd23f",
+   "icon": "🪙",
+   "display": "number",
+   "sprite": {
+    "palette": {
+     "o": "#b8860b",
+     "y": "#ffd23f",
+     "w": "#fff6c8"
+    },
+    "rows": [
+     "..oooo..",
+     ".oyyyyo.",
+     "oywyyyyo",
+     "oyyoooyo",
+     "oyoyyyyo",
+     "oyyoooyo",
+     ".oyyyyo.",
+     "..oooo.."
+    ]
+   }
+  }
+ },
+ "flags": {
+  "met_auntie": {
+   "description": "Talked to Auntie Lam (unlocks Pig's cha chaan teng)"
+  },
+  "warned": {
+   "description": "Heard the fortune parrot's warnings"
+  },
+  "captain_friend": {
+   "description": "Had tea with the ferry captain"
+  },
+  "calm": {
+   "description": "Learned the calm breath at Man Mo Temple"
+  },
+  "tram_rest": {
+   "description": "Already rested on the ding-ding tram"
+  },
+  "king_miss": {
+   "description": "Already got the Gremlin King's riddle wrong once"
+  },
+  "tunnel_known": {
+   "description": "Already bonked through the dark tram tunnel once"
+  },
+  "got_mooncake": {
+   "description": "Got the rabbit's mooncake"
+  },
+  "liv_passed": {
+   "description": "Answered Liv the Phoenix's riddles"
+  },
+  "monkey_passed": {
+   "description": "Answered the monkey's riddles (Peak Tram open)"
+  },
+  "loulou_passed": {
+   "description": "Answered Loulou's riddles"
+  },
+  "goat_tips": {
+   "description": "Loulou taught you the secret climbing route"
+  },
+  "robot_friend": {
+   "description": "Fed Bolt-Bot"
+  },
+  "secret_route": {
+   "description": "Found the pearl in the Gremlin Vault"
+  },
+  "zodiac_rat": {
+   "description": "Met the zodiac Rat"
+  },
+  "zodiac_ox": {
+   "description": "Met the zodiac Ox"
+  },
+  "zodiac_tiger": {
+   "description": "Met the zodiac Tiger"
+  },
+  "zodiac_rabbit": {
+   "description": "Met the zodiac Rabbit"
+  },
+  "zodiac_snake": {
+   "description": "Met the zodiac Snake"
+  },
+  "zodiac_horse": {
+   "description": "Met the zodiac Horse"
+  },
+  "zodiac_goat": {
+   "description": "Met the zodiac Goat"
+  },
+  "zodiac_monkey": {
+   "description": "Met the zodiac Monkey"
+  },
+  "zodiac_rooster": {
+   "description": "Met the zodiac Rooster"
+  },
+  "zodiac_dog": {
+   "description": "Met the zodiac Dog"
+  },
+  "zodiac_pig": {
+   "description": "Met the zodiac Pig"
+  }
+ },
+ "items": {
+  "octopus": {
+   "name": "Octopus Card",
+   "description": "Beep! Pays for the MTR, the Star Ferry, minibuses, bubble tea and dim sum. (Not taxis. Never taxis.)",
+   "icon": "💳",
+   "sprite": {
+    "palette": {
+     "b": "#2a6fdb",
+     "B": "#7fb2ff",
+     "y": "#ffd23f",
+     "w": "#ffffff"
+    },
+    "rows": [
+     "........",
+     "bbbbbbbb",
+     "bBBBBBBb",
+     "bByywBBb",
+     "bByywBBb",
+     "bBBBBBBb",
+     "bbbbbbbb",
+     "........"
+    ]
+   }
+  },
+  "egg_tart": {
+   "name": "Egg Tart",
+   "description": "Warm, wobbly and delicious. Eat it for +3 Energy, or maybe someone else is hungry...",
+   "icon": "🥧",
+   "sprite": {
+    "palette": {
+     "b": "#c47a2c",
+     "y": "#ffd84a",
+     "Y": "#fff3a0"
+    },
+    "rows": [
+     "........",
+     "........",
+     ".bbbbbb.",
+     "byyyyyyb",
+     "byYyyyyb",
+     "bbyyyybb",
+     ".bbbbbb.",
+     "........"
+    ]
+   },
+   "use": {
+    "label": "Eat",
+    "effects": [
+     {
+      "stat": "energy",
+      "add": 3
+     },
+     {
+      "message": "Yum! +3 Energy"
+     }
+    ],
+    "consumable": true
+   }
+  },
+  "mooncake": {
+   "name": "Mooncake",
+   "description": "A gift from the Rabbit, stamped with a rabbit and the moon. Eat it for +2 Energy.",
+   "icon": "🥮",
+   "sprite": {
+    "palette": {
+     "b": "#c47a2c",
+     "B": "#e8a65a",
+     "y": "#ffd23f"
+    },
+    "rows": [
+     "........",
+     "..bbbb..",
+     ".bBBBBb.",
+     "bBByyBBb",
+     "bByBByBb",
+     "bBByyBBb",
+     ".bBBBBb.",
+     "..bbbb.."
+    ]
+   },
+   "use": {
+    "label": "Eat",
+    "effects": [
+     {
+      "stat": "energy",
+      "add": 2
+     },
+     {
+      "message": "Mooncake! +2 Energy"
+     }
+    ],
+    "consumable": true
+   }
+  },
+  "pineapple_bun": {
+   "name": "Pineapple Bun",
+   "description": "Pig's famous pineapple bun with butter (no pineapple inside!). Eat it for +3 Energy.",
+   "icon": "🍞",
+   "sprite": {
+    "palette": {
+     "y": "#f2b84b",
+     "Y": "#ffe08a",
+     "w": "#fff6d8",
+     "b": "#b8792a"
+    },
+    "rows": [
+     "........",
+     "..yyyy..",
+     ".yYyYyy.",
+     "yYyYyYyy",
+     "yyYyYyYy",
+     "bwwwwwwb",
+     ".bbbbbb.",
+     "........"
+    ]
+   },
+   "use": {
+    "label": "Eat",
+    "effects": [
+     {
+      "stat": "energy",
+      "add": 3
+     },
+     {
+      "message": "Buttery! +3 Energy"
+     }
+    ],
+    "consumable": true
+   }
+  },
+  "bubble_tea": {
+   "name": "Bubble Tea",
+   "description": "Milk tea with extra chewy pearls. Drink it for +3 Energy. Robots love it too.",
+   "icon": "🧋",
+   "sprite": {
+    "palette": {
+     "r": "#ff5d8f",
+     "c": "#e8c9a0",
+     "k": "#3a2418",
+     "w": "#ffffff"
+    },
+    "rows": [
+     "....r...",
+     "...r....",
+     ".wwrwww.",
+     ".wcccw..",
+     ".wcccw..",
+     ".wkckw..",
+     "..kkk...",
+     "..www..."
+    ]
+   },
+   "use": {
+    "label": "Drink",
+    "effects": [
+     {
+      "stat": "energy",
+      "add": 3
+     },
+     {
+      "message": "Slurp! +3 Energy"
+     }
+    ],
+    "consumable": true
+   }
+  },
+  "lantern": {
+   "name": "Rabbit Lantern",
+   "description": "A glowing paper rabbit lantern. Light shows hidden things.",
+   "icon": "🏮",
+   "sprite": {
+    "palette": {
+     "w": "#fff1c1",
+     "k": "#1b1b3a",
+     "p": "#ff7eb6",
+     "s": "#ffb02e"
+    },
+    "rows": [
+     "..w..w..",
+     "..w..w..",
+     ".wwwwww.",
+     "wwkwwkww",
+     "wwwppwww",
+     "wwwwwwww",
+     ".wwwwww.",
+     "...ss..."
+    ]
+   }
+  },
+  "feather": {
+   "name": "Phoenix Feather",
+   "description": "A gift from Liv the Phoenix. It glows warm and bright, perfect for dark places.",
+   "icon": "🪶",
+   "sprite": {
+    "palette": {
+     "r": "#ff3b2f",
+     "o": "#ff8a1f",
+     "y": "#ffd23f",
+     "w": "#fff3b0"
+    },
+    "rows": [
+     ".....yy.",
+     "....yoy.",
+     "...yory.",
+     "..yorry.",
+     ".yorrwy.",
+     ".orrwy..",
+     "orwy....",
+     "y......."
+    ]
+   }
+  },
+  "umbrella": {
+   "name": "Umbrella",
+   "description": "A huge umbrella with a duck-shaped handle, a gift from the grumpy taxi driver. Keeps off any rainstorm, even a pixel one.",
+   "icon": "☂️",
+   "sprite": {
+    "palette": {
+     "r": "#ff3355",
+     "y": "#ffd23f",
+     "k": "#8a8a9a"
+    },
+    "rows": [
+     "..rrrr..",
+     ".rryrrr.",
+     "rrrrrrrr",
+     "...k....",
+     "...k....",
+     "...k....",
+     "...kk...",
+     "....y..."
+    ]
+   }
+  },
+  "brass_key": {
+   "name": "Brass Key",
+   "description": "A tiny key shaped like a dragon's claw. The tag says VAULT.",
+   "icon": "🔑",
+   "sprite": {
+    "palette": {
+     "o": "#e0a526",
+     "O": "#fff0a8"
+    },
+    "rows": [
+     "........",
+     ".ooo....",
+     "oO.oo...",
+     "o...oooo",
+     "oo.oo.o.",
+     ".ooo..o.",
+     "........",
+     "........"
+    ]
+   }
+  },
+  "whistle": {
+   "name": "Silver Whistle",
+   "description": "The ferry captain's whistle. One note makes any machine dance, and a good dog come running.",
+   "icon": "🎵",
+   "sprite": {
+    "palette": {
+     "s": "#9aa7b8",
+     "W": "#e8eef5"
+    },
+    "rows": [
+     "........",
+     "........",
+     "ssssss..",
+     "sWWWWss.",
+     "sWWWWsss",
+     "ssssss.s",
+     "........",
+     "........"
+    ]
+   }
+  },
+  "pearl": {
+   "name": "Pearl of Light",
+   "description": "Warm as a tiny sun. The Neon Dragon needs it back!",
+   "icon": "⚪",
+   "sprite": {
+    "palette": {
+     "w": "#9fd8ff",
+     "W": "#ffffff",
+     "b": "#cdeeff"
+    },
+    "rows": [
+     "..wwww..",
+     ".wWWWWw.",
+     "wWWbWWWw",
+     "wWbWWWWw",
+     "wWWWWWWw",
+     "wWWWWWbw",
+     ".wWWWWw.",
+     "..wwww.."
+    ]
+   }
+  }
+ },
+ "characters": {
+  "liv": {
+   "name": "Liv the Phoenix",
+   "sprite": {
+    "palette": {
+     "R": "#ff3b2f",
+     "r": "#c41f2a",
+     "O": "#ff8a1f",
+     "Y": "#ffd23f",
+     "W": "#fff3b0",
+     "K": "#1b1b2a",
+     "E": "#ffffff",
+     "B": "#ffb000",
+     "b": "#d9822b"
+    },
+    "rows": [
+     "....Y..Y...Y....",
+     "....YO.YO.YO....",
+     ".....OYOOYO.....",
+     ".....RRRRRRO....",
+     "....RRRRRRRR....",
+     "....REKRREKR....",
+     "....RRRBBRRR....",
+     ".Y..ORRbbRRO..Y.",
+     "YO...ORRRRO...OY",
+     "YOOrRRRWWRRRrOOY",
+     "YORRRRWYYWRRRROY",
+     ".YORrRWYYWRrROY.",
+     "..YOrRRWWRRrOY..",
+     "....rRRRRRRr....",
+     ".....B.OYO.B....",
+     "....BB..Y..BB..."
+    ]
+   }
+  },
+  "loulou": {
+   "name": "Loulou the GOAT",
+   "sprite": {
+    "palette": {
+     "F": "#f4f1e8",
+     "f": "#c9c1ae",
+     "H": "#d8b47a",
+     "h": "#9a7440",
+     "Y": "#ffd23f",
+     "R": "#ff3355",
+     "S": "#14142a",
+     "G": "#29e7ff",
+     "N": "#ff9eb0",
+     "n": "#d97b8f",
+     "J": "#8a3ffc",
+     "j": "#6a2bd0",
+     "W": "#ffffff",
+     "E": "#e8d9c4"
+    },
+    "rows": [
+     "....Y.YYYY.Y....",
+     ".hh.YYYRRYYY.hh.",
+     "hHH.FFFFFFFF.HHh",
+     "hH..FFFFFFFF..Hh",
+     ".h..FFFFFFFF..h.",
+     "EEESSSSSSSSSSEEE",
+     ".EESGSSSSGSSSEE.",
+     "....SSSFFSSS....",
+     "....FFFFFFFF....",
+     ".....fNNNNf.....",
+     ".....FnFFnF.....",
+     "....JJJWWJJJ....",
+     "...FJYJJJJYJF...",
+     "...FjJYJJYJjF...",
+     "....ff.YY.ff....",
+     "..WRRR....RRRW.."
+    ]
+   }
+  },
+  "rat": {
+   "name": "Rat",
+   "sprite": {
+    "palette": {
+     "G": "#a3abbd",
+     "g": "#6b7387",
+     "P": "#ff9eb0",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "N": "#ff5d8f",
+     "Y": "#ffd23f",
+     "y": "#b8860b",
+     "w": "#e6e9f0"
+    },
+    "rows": [
+     "................",
+     "..ggg......ggg..",
+     ".gPPPg....gPPPg.",
+     ".gPPPgGGGGgPPPg.",
+     "..ggGGGGGGGGgg..",
+     "...GGGGGGGGGG...",
+     "...GWKGGGGWKG...",
+     "...GGGGGGGGGG...",
+     "..w.GGGNNGGG.w..",
+     "...w.gGGGGg.w...",
+     "....gGwwwwGg....",
+     "...yGGwwwwGG..g.",
+     "..yYYGwwwwGG..g.",
+     "..yYYGGGGGGG.g..",
+     "....GGG..GGGg...",
+     "...PPP....PPP..."
+    ]
+   }
+  },
+  "ox": {
+   "name": "Ox",
+   "sprite": {
+    "palette": {
+     "B": "#8a5a34",
+     "b": "#5e3a1f",
+     "W": "#f4ead2",
+     "w": "#c9b98f",
+     "S": "#e8b08a",
+     "s": "#b9785a",
+     "K": "#1b1b2a",
+     "Y": "#ffd23f",
+     "H": "#2b1a0e"
+    },
+    "rows": [
+     "................",
+     "WW............WW",
+     ".WW..........WW.",
+     "..WWbBBBBBBbWW..",
+     "..bBBBHHHHBBBb..",
+     "bbBBBBBBBBBBBBbb",
+     ".bBBKWBBBBKWBBb.",
+     "...BBBBBBBBBB...",
+     "...BSSSSSSSSB...",
+     "...SsSSSSSSsS...",
+     "...SSSSYYSSSS...",
+     "....bSSSSSSb....",
+     "...BBBBBBBBBB...",
+     "..BBBBwwwwBBBB..",
+     "...BBB....BBB...",
+     "...HHH....HHH..."
+    ]
+   }
+  },
+  "tiger": {
+   "name": "Tiger",
+   "sprite": {
+    "palette": {
+     "O": "#ff8a1f",
+     "o": "#d9661a",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "w": "#ffe9cc",
+     "P": "#ff9eb0",
+     "G": "#3dff6e",
+     "g": "#1f9a4c"
+    },
+    "rows": [
+     "................",
+     "..oo........oo..",
+     ".oPPo......oPPo.",
+     ".oOOOOKOOKOOOOo.",
+     "..OKOOOKKOOOKO..",
+     "..OOOOOOOOOOOO..",
+     "..OOGKOOOOGKOO..",
+     "..KOOOOOOOOOOK..",
+     "..OwwwwPPwwwwO..",
+     "...wwwwKKwwww...",
+     "....wwwwwwww....",
+     "...KOOOOOOOOK...",
+     "..WOOKOwwOKOOW..",
+     "..WOOOOwwOOOOW..",
+     "...OOK....KOO...",
+     "...www....www..."
+    ]
+   }
+  },
+  "rabbit": {
+   "name": "Rabbit",
+   "sprite": {
+    "palette": {
+     "W": "#ffffff",
+     "w": "#dfe3f0",
+     "P": "#ff9eb0",
+     "K": "#1b1b2a",
+     "R": "#ff3d5a",
+     "Y": "#ffd23f"
+    },
+    "rows": [
+     "....ww....ww....",
+     "....WP....PW....",
+     "....WP....PW....",
+     "....WP....PW....",
+     "....WW....WW....",
+     "...WWWWWWWWWW...",
+     "..WWWWWWWWWWWW..",
+     "..WWKWWWWWWKWW..",
+     "..WPWWWWWWWWPW..",
+     "...WWWWPPWWWW...",
+     "....wWWWWWWw....",
+     "...RRRRRRRRRR...",
+     "..WRRYRRRRYRRW..",
+     "..WRRRRRRRRRRW..",
+     "...wWW....WWw...",
+     "...WWW....WWW..."
+    ]
+   }
+  },
+  "snake": {
+   "name": "Snake",
+   "sprite": {
+    "palette": {
+     "G": "#3dcf6e",
+     "g": "#1f8a4c",
+     "Y": "#ffd23f",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "R": "#ff3355",
+     "B": "#c47a2c",
+     "b": "#8a5320"
+    },
+    "rows": [
+     "................",
+     ".....GGGGGG.....",
+     "....GGGGGGGG....",
+     "...GGWKGGWKGG...",
+     "...GGGGGGGGGG...",
+     "....GGGGGGGG....",
+     ".....GGGGGG.....",
+     "......GGGG......",
+     "......GRRg......",
+     ".......RRGg.....",
+     "...gGGGGGGGg....",
+     "..gGYGGYGGYGGg..",
+     ".gGGGGGGGGGGGGg.",
+     ".gGYGGYGGYGGYGg.",
+     "..ggGGGGGGGGgg..",
+     "................"
+    ]
+   }
+  },
+  "horse": {
+   "name": "Horse",
+   "sprite": {
+    "palette": {
+     "B": "#c47a2c",
+     "b": "#8a5320",
+     "M": "#3a2418",
+     "W": "#ffffff",
+     "K": "#1b1b2a",
+     "N": "#e8a07a",
+     "R": "#ff3355",
+     "Y": "#ffd23f",
+     "w": "#ffffff"
+    },
+    "rows": [
+     "................",
+     ".....b....b.....",
+     "....bBM..MBb....",
+     "....BBMMMMBB....",
+     "....BBBMMBBB....",
+     "...BBBBMMBBBB...",
+     "...BWKBBBBWKB...",
+     "...BBBBBBBBBB...",
+     "....BBBBBBBB....",
+     "....BNNNNNNB....",
+     "....NKNNNNKN....",
+     ".....NNNNNN.....",
+     "...RRRRYYRRRR...",
+     "..BRRRRYYRRRRB..",
+     "...BBB....BBB...",
+     "...KKK....KKK..."
+    ]
+   }
+  },
+  "monkey": {
+   "name": "Monkey",
+   "sprite": {
+    "palette": {
+     "B": "#9a6236",
+     "b": "#6b4022",
+     "F": "#f2c79a",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "P": "#ff9eb0",
+     "Y": "#ffd23f",
+     "y": "#c9a32a"
+    },
+    "rows": [
+     "................",
+     ".....BBBBBB.....",
+     "....BBBBBBBB....",
+     "..FBBFFFFFFBBF..",
+     "..FBFWKFFWKFBF..",
+     "..FBFFFFFFFFBF..",
+     "...BFFFFFFFFB...",
+     "....FFPPPPFF....",
+     ".....FFFFFF.....",
+     "....BBBBBBBB....",
+     "...BBBFFFFBBBYy.",
+     "..FBBBFFFFBBBYy.",
+     "..F.BBBBBBBB.F..",
+     "....BBB..BBB..b.",
+     "...FFF....FFFb..",
+     "..............b."
+    ]
+   }
+  },
+  "rooster": {
+   "name": "Rooster",
+   "sprite": {
+    "palette": {
+     "R": "#ff3355",
+     "r": "#c41f2a",
+     "W": "#ffffff",
+     "w": "#dcdcdc",
+     "Y": "#ffd23f",
+     "K": "#1b1b2a",
+     "O": "#ff8a1f",
+     "G": "#3dcf6e",
+     "B": "#2a6fdb",
+     "N": "#1f3a8a"
+    },
+    "rows": [
+     ".......R.R......",
+     "......RRRRR.....",
+     ".....NNNNNNN....",
+     "....NNNNNNNNN...",
+     ".....WWWWWW.....",
+     "....WKWWWWKW....",
+     "....WWWYYWWW....",
+     "....WWWYYOWW....",
+     ".....WRRWWW.....",
+     "....NNNNNNNNG...",
+     "...NNNNYNNNNGG..",
+     "...NNNNNNNNNGB..",
+     "....NNNNNNNN.G..",
+     ".....WW..WW.....",
+     ".....YY..YY.....",
+     "....YYY..YYY...."
+    ]
+   }
+  },
+  "dog": {
+   "name": "Rescue Dog",
+   "sprite": {
+    "palette": {
+     "T": "#d9a066",
+     "t": "#a8723e",
+     "W": "#ffffff",
+     "K": "#1b1b2a",
+     "P": "#ff5d8f",
+     "B": "#2a6fdb",
+     "Y": "#ffd23f",
+     "w": "#f4e6cf"
+    },
+    "rows": [
+     "................",
+     "..tt........tt..",
+     ".tTTt......tTTt.",
+     ".tTTtTTTTTTtTTt.",
+     ".tTTTTTTTTTTTTt.",
+     "..tTTTTTTTTTTt..",
+     "...TWKTTTTWKT...",
+     "...TTTTTTTTTT...",
+     "....TwwKKwwT....",
+     "....wwwwwwww....",
+     ".....wwPPww.....",
+     "...BBBBYBBBB....",
+     "...TTwwwwwTTT.t.",
+     "...TTwwwwwTTTt..",
+     "....TTT.TTT.....",
+     "...www...www...."
+    ]
+   }
+  },
+  "pig": {
+   "name": "Pig",
+   "sprite": {
+    "palette": {
+     "P": "#ffb3c7",
+     "p": "#e8849e",
+     "K": "#1b1b2a",
+     "W": "#ffffff",
+     "N": "#ff8fae",
+     "n": "#c45a78",
+     "A": "#f5f5f5",
+     "a": "#cfd6e6",
+     "R": "#ff3355"
+    },
+    "rows": [
+     "................",
+     "...pp......pp...",
+     "...pPp....pPp...",
+     "...PPPPPPPPPP...",
+     "..PPPPPPPPPPPP..",
+     "..PPWKPPPPWKPP..",
+     "..PPPPPPPPPPPP..",
+     "..PPPPNNNNPPPP..",
+     "..PpPNnNNnNPpP..",
+     "...PPPNNNNPPP...",
+     "....PPPPPPPP....",
+     "...AAAAAAAAAA...",
+     "..PAAARAARAAAP..",
+     "..PAAAAAAAAAAP..",
+     "...PPP....PPP...",
+     "...ppp....ppp..."
+    ]
+   }
+  }
+ },
+ "trackers": [
+  {
+   "id": "zodiac",
+   "label": "ZODIAC COLLECTION",
+   "completeBadge": "ZODIAC MASTER",
+   "description": "Meet the eleven zodiac animals out tonight (the Dragon is busy with the moon). Only one route through the book meets them all.",
+   "entries": [
+    {
+     "id": "rat",
+     "name": "Rat",
+     "flag": "zodiac_rat",
+     "character": "rat"
+    },
+    {
+     "id": "ox",
+     "name": "Ox",
+     "flag": "zodiac_ox",
+     "character": "ox"
+    },
+    {
+     "id": "tiger",
+     "name": "Tiger",
+     "flag": "zodiac_tiger",
+     "character": "tiger"
+    },
+    {
+     "id": "rabbit",
+     "name": "Rabbit",
+     "flag": "zodiac_rabbit",
+     "character": "rabbit"
+    },
+    {
+     "id": "snake",
+     "name": "Snake",
+     "flag": "zodiac_snake",
+     "character": "snake"
+    },
+    {
+     "id": "horse",
+     "name": "Horse",
+     "flag": "zodiac_horse",
+     "character": "horse"
+    },
+    {
+     "id": "goat",
+     "name": "Goat (Loulou)",
+     "flag": "zodiac_goat",
+     "character": "loulou"
+    },
+    {
+     "id": "monkey",
+     "name": "Monkey",
+     "flag": "zodiac_monkey",
+     "character": "monkey"
+    },
+    {
+     "id": "rooster",
+     "name": "Rooster",
+     "flag": "zodiac_rooster",
+     "character": "rooster"
+    },
+    {
+     "id": "dog",
+     "name": "Dog",
+     "flag": "zodiac_dog",
+     "character": "dog"
+    },
+    {
+     "id": "pig",
+     "name": "Pig",
+     "flag": "zodiac_pig",
+     "character": "pig"
+    }
+   ]
+  }
+ ],
+ "scoring": {
+  "components": [
+   {
+    "id": "energy",
+    "label": "ENERGY LEFT",
+    "stat": "energy",
+    "points": 10
+   },
+   {
+    "id": "power",
+    "label": "PIXEL POWER LEFT",
+    "stat": "power",
+    "points": 5
+   },
+   {
+    "id": "luck",
+    "label": "LUCK LEFT",
+    "stat": "luck",
+    "points": 10
+   },
+   {
+    "id": "zodiac",
+    "label": "ZODIAC ANIMALS",
+    "tracker": "zodiac",
+    "points": 30
+   },
+   {
+    "id": "found",
+    "label": "ITEMS FOUND",
+    "items": "found",
+    "points": 10
+   },
+   {
+    "id": "used",
+    "label": "ITEMS USED",
+    "items": "used",
+    "points": 10
+   }
+  ],
+  "reference": {
+   "byStartStat": "luck",
+   "values": {
+    "7": 760,
+    "8": 770,
+    "9": 780,
+    "10": 790,
+    "11": 800,
+    "12": 810
+   }
+  },
+  "ranks": [
+   {
+    "min": 100,
+    "title": "PIXEL LEGEND"
+   },
+   {
+    "min": 90,
+    "title": "NEON HERO"
+   },
+   {
+    "min": 75,
+    "title": "HARBOUR CHAMPION"
+   },
+   {
+    "min": 50,
+    "title": "DING-DING DASHER"
+   },
+   {
+    "min": 25,
+    "title": "DIM SUM ROOKIE"
+   },
+   {
+    "min": 0,
+    "title": "NEW PLAYER"
+   }
+  ]
+ },
+ "sections": {
+  "intro": {
+   "title": "Insert Coin",
+   "text": [
+    "Rain drums on the windows of the Golden Joystick, the tiniest arcade in Mong Kok. Neon signs buzz outside, painting the puddles pink and blue, and somewhere a minibus horn plays a tune that is definitely not a real tune.",
+    "You, {{name}}, have six arcade tokens jingling in your pocket, and there's one machine you have never seen before. It sits in the back corner, humming softly. On its screen, a dragon made of glowing lights is curled around the words NEON DRAGON. Underneath, letters flash: THE PEARL IS LOST. PLAYER ONE, PLEASE HELP.",
+    "Funny. You're sure it wasn't there yesterday. You're also sure it just winked at you."
+   ],
+   "illustration": {
+    "src": "img/arcade.svg",
+    "alt": "A glowing arcade machine in a rainy Mong Kok arcade",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Drop a token into the slot",
+     "target": "portal",
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Ask Auntie Lam about the strange machine first",
+     "target": "auntie"
+    }
+   ]
+  },
+  "auntie": {
+   "title": "Auntie Lam",
+   "text": [
+    "Auntie Lam runs the arcade. She is small and quick and never stops snacking. Today she is guarding a box of warm egg tarts behind the counter like a dragon guarding gold.",
+    "\"That old thing?\" she says, squinting. \"It only switches on when someone brave walks in. Last time was... hmm, 1986?\" She pushes an egg tart into your hand, then digs in her handbag and pulls out a battered blue card. \"Take my spare Octopus card. Beep in, beep out, never queue for change.\"",
+    "\"Three tips,\" she says, counting on her fingers. \"One: never spend your LAST token. No tokens, no game. Two: if you meet a robot, remember everybody gets grumpy when they're hungry. Three: if you're ever in Central, my old friend Pig runs the best cha chaan teng on the island. Tell Pig that Auntie Lam sent you.\""
+   ],
+   "onEnter": [
+    {
+     "addItem": "egg_tart"
+    },
+    {
+     "addItem": "octopus"
+    },
+    {
+     "setFlag": "met_auntie"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Drop a token into the Neon Dragon machine",
+     "target": "portal",
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    }
+   ]
+  },
+  "portal": {
+   "title": "Pixel Harbour",
+   "text": [
+    "The token clinks. The screen flares so brightly you have to shut your eyes, and the floor drops away like the first second of a rollercoaster.",
+    "When you open your eyes, you're standing on a waterfront made of chunky square pixels. In front of you is Hong Kong... but not quite. The skyscrapers are built from glowing blocks, the harbour sparkles in eight colours, and the moon is a perfect pixel circle.",
+    "A plump orange cat with a dumpling-shaped face sits beside you. \"Finally! Player One!\" it says. \"I'm Siu Mai. Yes, like the dumpling. No, you may not eat me. The Glitch Gremlins stole the Neon Dragon's Pearl of Light and took it to the Sky Tower on the Peak, across the harbour. If it isn't back by midnight, every light here goes out. For good.\"",
+    "\"Rules of this game,\" Siu Mai adds. \"Your Pixel Power is your timer: every move uses one, so don't dawdle. If it, or your Energy, hits zero, you're trapped in the game forever. Run out of tokens and you're OUT. Oh, and the zodiac animals are all out tonight, except the Dragon, who's busy helping the moon. Each one you meet gives you a bit of Pixel Power. Meet all eleven and something special happens. Nobody's ever managed it.\"",
+    "\"So,\" says Siu Mai, \"how are we crossing the harbour?\""
+   ],
+   "illustration": {
+    "src": "img/harbour.svg",
+    "alt": "A pixel-art harbour skyline at night with an orange cat",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Explore the Temple Street night market",
+     "target": "market"
+    },
+    {
+     "label": "Head to the Star Ferry pier",
+     "target": "pier"
+    },
+    {
+     "label": "Go down into the MTR station",
+     "target": "mtr_station"
+    },
+    {
+     "label": "Wave down a red taxi",
+     "target": "taxi_rank"
+    }
+   ]
+  },
+  "market": {
+   "title": "Temple Street Night Market",
+   "text": [
+    "Paper lanterns sway above a street packed with stalls. A pixel fish-ball seller flips sizzling snacks, a robot grandma sells socks that change colour every few seconds, and a fortune-telling parrot shouts \"NEXT!\" at nobody in particular.",
+    "A rabbit is selling glowing lanterns. A rat in a tiny waistcoat is counting coins under a stall. And a claw machine stuffed with prizes has something small and brass glinting at the bottom.",
+    "In a dark alley, a grinning gremlin beckons. \"Psst! Shortcut to the Peak! Totally safe!\" Siu Mai's fur stands on end."
+   ],
+   "illustration": {
+    "src": "img/market.svg",
+    "alt": "A pixel night market with lanterns",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Visit the rabbit's lantern stall",
+     "target": "lantern_stall"
+    },
+    {
+     "label": "Say hello to the rat in the waistcoat",
+     "target": "rat",
+     "hideIf": {
+      "flag": "zodiac_rat",
+      "equals": true
+     }
+    },
+    {
+     "label": "Try the claw machine (1 token)",
+     "target": "claw",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token",
+     "hideIf": {
+      "hasItem": "brass_key"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Visit the fortune-telling parrot",
+     "target": "fortune_bird",
+     "hideIf": {
+      "flag": "warned",
+      "equals": true
+     }
+    },
+    {
+     "label": "Follow the grinning gremlin's shortcut",
+     "target": "gremlin_alley",
+     "hideIf": {
+      "visited": "gremlin_alley"
+     }
+    },
+    {
+     "label": "Follow the gremlin AGAIN. This time it'll work!",
+     "target": "lost_alleys",
+     "conditions": {
+      "visited": "gremlin_alley"
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Walk to the MTR station",
+     "target": "mtr_station"
+    },
+    {
+     "label": "Walk to the Star Ferry pier",
+     "target": "pier"
+    }
+   ]
+  },
+  "lantern_stall": {
+   "title": "The Rabbit's Lanterns",
+   "text": [
+    "The lantern seller is a white rabbit in a red jacket, with ears so tall they keep bumping the lanterns. Every lantern on her stall is shaped like a rabbit too. \"Family business,\" she says proudly.",
+    "\"Looking for the zodiac Dragon?\" she asks. \"Ha! She's off helping the moon get perfectly round for Mid-Autumn. Busiest week of her year. She leaves the Neon Dragon in charge of the city lights.\" She presses a mooncake into your paws. \"For energy. Heroes forget to eat.\"",
+    "\"Light shows the hidden things,\" she adds, tapping a lantern. \"Keep one close in dark places. Tunnels, especially.\""
+   ],
+   "illustration": {
+    "src": "img/market.svg",
+    "alt": "A rabbit selling glowing rabbit lanterns at the night market",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "rabbit",
+      "x": 60,
+      "y": 20,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "zodiac_rabbit",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_rabbit"
+      },
+      {
+       "stat": "power",
+       "add": 2
+      },
+      {
+       "message": "Zodiac friend found: RABBIT! +2 Pixel Power"
+      }
+     ]
+    },
+    {
+     "if": {
+      "not": {
+       "flag": "got_mooncake",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "addItem": "mooncake"
+      },
+      {
+       "setFlag": "got_mooncake"
+      }
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "label": "Buy a rabbit lantern (1 token)",
+     "target": "market",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token",
+     "hideIf": {
+      "hasItem": "lantern"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      },
+      {
+       "addItem": "lantern"
+      }
+     ]
+    },
+    {
+     "label": "Thank her and look around the market",
+     "target": "market"
+    }
+   ]
+  },
+  "rat": {
+   "title": "The Rat's Counting House",
+   "text": [
+    "The rat is surrounded by towers of coins and fish balls. \"One, two, three... oh, bother. I've lost count AGAIN.\" She pushes her tiny glasses up her nose. \"Clever-looking hero! Count these for me?\"",
+    "You count: forty-two fish balls and seven coins. The rat beams and pays you two tokens. \"The Rat always pays her debts. First in the zodiac, first to pay!\"",
+    "\"Oh, and I found this in a puddle,\" she says, holding up a slightly soggy Octopus card. \"Yours for two tokens, if you need one.\""
+   ],
+   "illustration": {
+    "src": "img/market.svg",
+    "alt": "A rat in a waistcoat counting coins",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "rat",
+      "x": 8,
+      "y": 20,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "zodiac_rat",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_rat"
+      },
+      {
+       "stat": "power",
+       "add": 2
+      },
+      {
+       "message": "Zodiac friend found: RAT! +2 Pixel Power"
+      }
+     ]
+    },
+    {
+     "stat": "tokens",
+     "add": 2
+    },
+    {
+     "message": "Earned 2 tokens!"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Buy the soggy Octopus card (2 tokens)",
+     "target": "market",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 2
+     },
+     "lockedHint": "Needs 2 tokens",
+     "hideIf": {
+      "hasItem": "octopus"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -2
+      },
+      {
+       "addItem": "octopus"
+      }
+     ]
+    },
+    {
+     "label": "Thank her and go back to the market",
+     "target": "market"
+    }
+   ]
+  },
+  "claw": {
+   "title": "The Claw Machine",
+   "text": [
+    "You drop in a token. Music plays. The claw whirrs down... down... down... towards the tiny brass glint.",
+    "This one is all about luck!"
+   ],
+   "test": {
+    "label": "TEST YOUR LUCK",
+    "prompt": "Roll two dice. If the total is equal to or less than your LUCK, the claw grabs the prize. (Each try uses up 1 LUCK, win or lose.)",
+    "dice": "2d6",
+    "againstStat": "luck",
+    "costEffects": [
+     {
+      "stat": "luck",
+      "add": -1
+     }
+    ],
+    "success": {
+     "target": "claw_win",
+     "text": "The claw grips tight!"
+    },
+    "failure": {
+     "target": "claw_lose",
+     "text": "The claw wobbles..."
+    }
+   }
+  },
+  "claw_win": {
+   "title": "Got It!",
+   "text": [
+    "The claw closes with a CLUNK and lifts out a little brass key shaped like a dragon's claw. A paper tag hangs from it: VAULT. KEEP AWAY FROM GREMLINS.",
+    "The rabbit whistles. \"Lucky! Nobody has won that in a hundred years.\""
+   ],
+   "onEnter": [
+    {
+     "addItem": "brass_key"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Back to the market",
+     "target": "market"
+    }
+   ]
+  },
+  "claw_lose": {
+   "title": "So Close!",
+   "text": [
+    "The claw grabs a rubber duck, wobbles, and drops it. Then it slowly drops nothing at all, as if it's laughing at you.",
+    "Careful. Those tokens don't grow on trees."
+   ],
+   "choices": [
+    {
+     "label": "Try again (1 token)",
+     "target": "claw",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token",
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Back to the market",
+     "target": "market"
+    }
+   ]
+  },
+  "fortune_bird": {
+   "title": "The Fortune Parrot",
+   "text": [
+    "The parrot wears tiny round sunglasses. It looks you up and down, sighs dramatically, and pulls three cards out of a box with its beak.",
+    "BEWARE THE SALE THAT IS TOO GOOD TO BE TRUE. KEEP CALM AND MIND THE GAP. NEVER, EVER EAT EVERYTHING.",
+    "\"That'll be one sunflower seed,\" says the parrot. You don't have one. \"Fine. First one's free. NEXT!\""
+   ],
+   "onEnter": [
+    {
+     "setFlag": "warned"
+    },
+    {
+     "message": "You'll remember the parrot's warnings."
+    }
+   ],
+   "choices": [
+    {
+     "label": "Thank the parrot and look around",
+     "target": "market"
+    }
+   ]
+  },
+  "gremlin_alley": {
+   "title": "Shortcut? Short CUT!",
+   "text": [
+    "The gremlin leads you down an alley, round a corner, round another corner and round a third corner, which somehow brings you back to the first corner. Then it giggles, picks your pocket and vanishes.",
+    "You stagger back into the market, tired and a token lighter. Siu Mai says nothing. Loudly."
+   ],
+   "onEnter": [
+    {
+     "stat": "tokens",
+     "add": -1
+    },
+    {
+     "stat": "energy",
+     "add": -2
+    }
+   ],
+   "choices": [
+    {
+     "label": "Back to the market (and NEVER trust a gremlin)",
+     "target": "market"
+    },
+    {
+     "label": "Follow the smell of the sea down to the pier",
+     "target": "pier"
+    },
+    {
+     "label": "That's it. This is too spooky. Find a way home",
+     "target": "go_home"
+    }
+   ]
+  },
+  "lost_alleys": {
+   "title": "Lost in the Alleys",
+   "text": [
+    "You follow the gremlin again. It giggles again. Corners again. More corners. So many corners.",
+    "By the time you find your way out, the clock has struck midnight and every light in Pixel Harbour has gone out. Somewhere a gremlin is laughing so hard it falls off a roof.",
+    "Fool me once, shame on the gremlin. Fool me twice..."
+   ],
+   "illustration": {
+    "src": "img/trapped.svg",
+    "alt": "An arcade machine flashing INSERT COIN with a tiny hero trapped inside",
+    "pixelated": true
+   },
+   "ending": {
+    "type": "fail",
+    "title": "LOST IN THE ALLEYS",
+    "stars": 0
+   }
+  },
+  "pier": {
+   "title": "Star Ferry Pier",
+   "text": [
+    "A green-and-white Star Ferry bobs at the pier, its paddle wheels made of spinning pixels. The captain is a large, sleepy toad in a captain's hat. \"Crossing to Central,\" he croaks. \"Tap your card or pay two tokens. Them's the rules.\"",
+    "At the next pier, a rusty purple ferry is tooting its horn. A sign says FREE RIDES!!! The crew are very short, very purple, and giggling."
+   ],
+   "illustration": {
+    "src": "img/ferry.svg",
+    "alt": "A pixel Star Ferry at a pier with the island skyline behind",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Board the green Star Ferry to Central (tap Octopus card)",
+     "target": "ferry",
+     "conditions": {
+      "hasItem": "octopus"
+     },
+     "lockedHint": "Needs an Octopus Card",
+     "hideIfLocked": true
+    },
+    {
+     "label": "Board the green Star Ferry to Central (2 tokens)",
+     "target": "ferry",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 2
+     },
+     "lockedHint": "Needs 2 tokens or an Octopus Card",
+     "hideIf": {
+      "hasItem": "octopus"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -2
+      }
+     ]
+    },
+    {
+     "label": "Sneak aboard the Star Ferry while the captain yawns",
+     "target": "sneak",
+     "hideIf": {
+      "visited": "sneak"
+     }
+    },
+    {
+     "label": "Hop on the FREE purple ferry",
+     "target": "wrong_ferry",
+     "hideIf": {
+      "visited": "wrong_ferry"
+     }
+    },
+    {
+     "label": "Take the free purple ferry again. Free is free!",
+     "target": "all_at_sea",
+     "conditions": {
+      "visited": "wrong_ferry"
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Go to the night market",
+     "target": "market"
+    },
+    {
+     "label": "Try the MTR instead",
+     "target": "mtr_station"
+    }
+   ]
+  },
+  "sneak": {
+   "title": "Ribbit!",
+   "text": [
+    "You tiptoe up the gangplank... and step right on the captain's foot.",
+    "\"RIBBIT!\" he bellows. He scoops you up and plops you back on the pier with a soggy SPLOSH. Siu Mai pretends not to know you."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -2
+    }
+   ],
+   "choices": [
+    {
+     "label": "Pay properly this time (tap Octopus card)",
+     "target": "ferry",
+     "conditions": {
+      "hasItem": "octopus"
+     },
+     "lockedHint": "Needs an Octopus Card",
+     "hideIfLocked": true
+    },
+    {
+     "label": "Pay properly this time (2 tokens)",
+     "target": "ferry",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 2
+     },
+     "lockedHint": "Needs 2 tokens or an Octopus Card",
+     "hideIf": {
+      "hasItem": "octopus"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -2
+      }
+     ]
+    },
+    {
+     "label": "Squelch back to the night market",
+     "target": "market"
+    },
+    {
+     "label": "Squelch over to the MTR station",
+     "target": "mtr_station"
+    }
+   ]
+  },
+  "wrong_ferry": {
+   "title": "The Gremlin Ferry",
+   "text": [
+    "The purple ferry chugs out into the harbour... and goes round in a circle. Then another circle. The gremlin crew sing sea shanties very badly and charge you a token for \"fuel\".",
+    "Twenty dizzy circles later, they dump you back on the Kowloon pier. You're green, you're giddy, and you're exactly where you started."
+   ],
+   "illustration": {
+    "src": "img/ferry.svg",
+    "alt": "A purple ferry spinning in circles",
+    "pixelated": true
+   },
+   "onEnter": [
+    {
+     "stat": "tokens",
+     "add": -1
+    },
+    {
+     "stat": "power",
+     "add": -2
+    }
+   ],
+   "choices": [
+    {
+     "label": "Wobble back to the pier",
+     "target": "pier"
+    }
+   ]
+  },
+  "all_at_sea": {
+   "title": "All at Sea",
+   "text": [
+    "The purple ferry chugs out again, but this time it doesn't come back. It sails right out past the islands, with the gremlins singing all the way.",
+    "Behind you, at the stroke of midnight, the lights of Pixel Harbour blink out one by one. \"Free,\" sighs Siu Mai, \"is never free.\""
+   ],
+   "illustration": {
+    "src": "img/ferry.svg",
+    "alt": "A tiny ferry far out at sea",
+    "pixelated": true
+   },
+   "ending": {
+    "type": "fail",
+    "title": "ALL AT SEA",
+    "stars": 0
+   }
+  },
+  "ferry": {
+   "title": "Across the Harbour",
+   "text": [
+    "The Star Ferry chugs across the sparkling harbour. Pixel fish leap alongside, and the city lights twinkle on the waves, though some of them flicker and go dark as you watch.",
+    "Halfway across, three small purple gremlins pop out of the water, giggling. The captain flicks out his long tongue (THWIP!) and they tumble back into the waves. \"Pests,\" he grumbles from the wheelhouse. \"Come in for a cup of something hot.\""
+   ],
+   "illustration": {
+    "src": "img/ferry.svg",
+    "alt": "A pixel Star Ferry crossing the harbour",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Join the captain in the wheelhouse",
+     "target": "ferry_captain"
+    },
+    {
+     "label": "Lean over the rail to watch the gremlins",
+     "target": "ferry_splash"
+    }
+   ]
+  },
+  "ferry_captain": {
+   "title": "The Wheelhouse",
+   "text": [
+    "The wheelhouse smells of lemon tea and old maps. Down below, a huge, gentle ox in overalls keeps the engines running, shovelling pixels into the boiler without ever hurrying. \"Slow and steady,\" the Ox rumbles, handing you a warm cup of soy milk. \"Gets you there every time.\"",
+    "The captain slurps his tea like a drain. \"Those gremlins took a shiny pearl up to the Sky Tower. Here.\" He presses something cold and shiny into your hand. \"The Silver Whistle. One note makes any machine dance. And blow it on a pier, and a good dog will come running from a mile away.\""
+   ],
+   "illustration": {
+    "src": "img/ferry.svg",
+    "alt": "A friendly ox in overalls in the ferry's engine room",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "ox",
+      "x": 62,
+      "y": 20,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "zodiac_ox",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_ox"
+      },
+      {
+       "stat": "power",
+       "add": 2
+      },
+      {
+       "message": "Zodiac friend found: OX! +2 Pixel Power"
+      }
+     ]
+    },
+    {
+     "stat": "energy",
+     "add": 2
+    },
+    {
+     "addItem": "whistle"
+    },
+    {
+     "setFlag": "captain_friend"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Hop off at Central Pier",
+     "target": "central"
+    }
+   ]
+  },
+  "ferry_splash": {
+   "title": "Splosh!",
+   "text": [
+    "You lean over the rail. A gremlin leans out of the water. You look at each other.",
+    "It blows a raspberry and flicks a whole wave over you. SPLOSH! By the time you've wrung out your socks, the ferry is bumping into Central Pier."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -2
+    }
+   ],
+   "choices": [
+    {
+     "label": "Squelch off at Central Pier",
+     "target": "central"
+    }
+   ]
+  },
+  "taxi_rank": {
+   "title": "The Red Taxi",
+   "text": [
+    "A red taxi screeches to a stop so close that its bumper kisses your shoes. The driver is a round man with a toothpick, a flat cap and eyebrows that have clearly been grumpy since 1979.",
+    "\"Where to?\" he barks. \"Cross-harbour? Aiya. Cross-harbour means I have to come all the way BACK. Two tokens. Cash only. And don't wave your Octopus card at me. This taxi is older than your parents.\""
+   ],
+   "illustration": {
+    "src": "img/taxi.svg",
+    "alt": "A red Hong Kong taxi with a grumpy driver at night",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "\"Causeway Bay, please!\" (2 tokens)",
+     "target": "taxi_ride",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 2
+     },
+     "lockedHint": "Needs 2 tokens (cash only!)",
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -2
+      }
+     ]
+    },
+    {
+     "label": "Back away slowly and find another way",
+     "target": "portal"
+    }
+   ]
+  },
+  "taxi_ride": {
+   "title": "Cross-Harbour Grumbles",
+   "text": [
+    "The taxi lurches off. The driver complains the whole way: about the traffic, the gremlins, the price of fish balls, his knees, and a pigeon that looked at him funny in 2003.",
+    "The tunnel lights flicker green and purple; gremlins are messing with them. \"See?\" he grumbles. \"Nobody fixes anything any more.\""
+   ],
+   "illustration": {
+    "src": "img/taxi.svg",
+    "alt": "A red taxi racing through the cross-harbour tunnel",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Agree with absolutely everything he says",
+     "target": "taxi_agree"
+    },
+    {
+     "label": "Ask him to drive faster",
+     "target": "taxi_faster"
+    },
+    {
+     "label": "Tell him he's the grumpiest driver in Hong Kong",
+     "target": "taxi_rude"
+    }
+   ]
+  },
+  "taxi_agree": {
+   "title": "A Soft Centre",
+   "text": [
+    "\"Yes, terrible traffic.\" \"Yes, fish balls are too expensive.\" \"Yes, that pigeon was very rude.\"",
+    "Slowly, the driver's eyebrows un-grump. At the kerb in Causeway Bay he hands you a milk sweet and an umbrella from under his seat. \"Somebody left it. Rain's coming, I feel it in my knees. Don't tell anyone I was nice.\""
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": 2
+    },
+    {
+     "addItem": "umbrella"
+    },
+    {
+     "message": "The driver has a heart of gold (don't tell him)."
+    }
+   ],
+   "choices": [
+    {
+     "label": "Climb out into Causeway Bay",
+     "target": "causeway_bay"
+    }
+   ]
+  },
+  "taxi_faster": {
+   "title": "Racing Game Mode",
+   "text": [
+    "\"FASTER? Finally, someone who understands!\" He drives like he's in a racing game: left, right, VROOM, screech, round a double-decker bus, past a very surprised gremlin.",
+    "He drops you at Causeway Bay in record time, looking happier than he has in years. You look green."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -3
+    }
+   ],
+   "choices": [
+    {
+     "label": "Wobble out into Causeway Bay",
+     "target": "causeway_bay"
+    }
+   ]
+  },
+  "taxi_rude": {
+   "title": "The Long Way Round",
+   "text": [
+    "The driver's eyebrows shoot up into his cap. \"GRUMPY? ME?\" He takes the long way. The very long way. Past the airport. Twice.",
+    "Finally he drops you in Causeway Bay and taps the meter. \"Extra charge. For the scenic route.\" Being rude, it turns out, is expensive."
+   ],
+   "onEnter": [
+    {
+     "stat": "tokens",
+     "add": -2
+    },
+    {
+     "stat": "energy",
+     "add": -1
+    },
+    {
+     "stat": "luck",
+     "add": -1
+    },
+    {
+     "message": "Rudeness is bad luck. -1 Luck"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Climb out into Causeway Bay, a bit poorer",
+     "target": "causeway_bay"
+    }
+   ]
+  },
+  "mtr_station": {
+   "title": "The MTR",
+   "text": [
+    "You ride the escalator down, down, down into the MTR station. Everything is shiny and smells faintly of floor polish. A sign says: NO EATING. NO DRINKING. NO GREMLINS.",
+    "At the ticket gates, people beep through without slowing down. Siu Mai just walks underneath. \"Cats ride free,\" it says smugly."
+   ],
+   "illustration": {
+    "src": "img/mtr.svg",
+    "alt": "A bright pixel MTR station",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Beep through the gates (tap Octopus card)",
+     "target": "mtr_platform",
+     "conditions": {
+      "hasItem": "octopus"
+     },
+     "lockedHint": "Needs an Octopus Card",
+     "hideIfLocked": true
+    },
+    {
+     "label": "Beep through the gates (1 token)",
+     "target": "mtr_platform",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token or an Octopus Card",
+     "hideIf": {
+      "hasItem": "octopus"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Go back up to the street",
+     "target": "portal"
+    }
+   ]
+  },
+  "mtr_platform": {
+   "title": "Rush Hour",
+   "text": [
+    "The platform is PACKED. Office workers, students, a grandma with a trolley full of oranges and a man carrying an entire fish tank all stand in neat queues behind the yellow line. Someone's elbow bumps you right in the ear.",
+    "A train whooshes in, stuffed so full that people are pressed against the glass like dumplings in a steamer. Ding-dong! \"Please mind the gap.\" Siu Mai mutters, \"Another one will be along in two minutes, you know.\""
+   ],
+   "illustration": {
+    "src": "img/mtr.svg",
+    "alt": "A crowded pixel MTR platform at rush hour",
+    "pixelated": true
+   },
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -1
+    }
+   ],
+   "choices": [
+    {
+     "label": "Squeeze into the packed train",
+     "target": "mtr_crush"
+    },
+    {
+     "label": "Let it go and wait for the next train",
+     "target": "mtr_wait"
+    }
+   ]
+  },
+  "mtr_crush": {
+   "title": "Squashed!",
+   "text": [
+    "You squeeze in. About forty more people squeeze in behind you. You're squashed between a backpack, a briefcase and the fish tank, with your face pressed against a poster about polite behaviour.",
+    "\"Next station: Causeway Bay,\" says the voice. Oh no. You're stuck at the very back..."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "halve": true
+    }
+   ],
+   "choices": [
+    {
+     "label": "Wriggle and DIVE for the doors as they close!",
+     "target": "mtr_gap"
+    },
+    {
+     "label": "Stay put, ride on to Central and step out calmly",
+     "target": "central"
+    }
+   ]
+  },
+  "mtr_wait": {
+   "title": "The Next Train",
+   "text": [
+    "Two minutes later, the next train glides in, almost empty. You get a seat! Siu Mai curls up on your lap and purrs.",
+    "Opposite you, an auntie with twelve shopping bags bonks a giggling bag with her umbrella. The giggling stops. \"Next station: Causeway Bay. Please mind the gap.\" The seat is very comfy. Very, very comfy..."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": 1
+    }
+   ],
+   "choices": [
+    {
+     "label": "Step off at Causeway Bay, minding the gap",
+     "target": "causeway_bay"
+    },
+    {
+     "label": "Stay on until Central",
+     "target": "central"
+    },
+    {
+     "label": "Close your eyes for just a teeny little nap",
+     "target": "mtr_depot"
+    }
+   ]
+  },
+  "mtr_depot": {
+   "title": "End of the Line",
+   "text": [
+    "You wake up with a snort. The train is empty, parked in a depot full of sleeping trains. A station worker in a hard hat shines a torch on you. \"Missed your stop? Happens every night.\"",
+    "She walks you back along the platform and puts you on the right train, but it costs you a token for the extra journey, and Siu Mai will be telling this story for weeks."
+   ],
+   "illustration": {
+    "src": "img/mtr.svg",
+    "alt": "An empty MTR train in a depot",
+    "pixelated": true
+   },
+   "onEnter": [
+    {
+     "stat": "tokens",
+     "add": -1
+    }
+   ],
+   "choices": [
+    {
+     "label": "Ride the right train to Central",
+     "target": "central"
+    }
+   ]
+  },
+  "mtr_gap": {
+   "title": "MIND THE GAP!",
+   "text": [
+    "You dive. The doors snap shut behind you, but your foot slips into the gap between the train and the platform, and in Pixel Harbour, the gap is a glitch.",
+    "BZZZT! Half your pixels drain away into the gap like water down a plughole. The station voice says, very calmly, \"Please mind the gap.\" Thanks, voice."
+   ],
+   "onEnter": [
+    {
+     "stat": "power",
+     "halve": true
+    }
+   ],
+   "choices": [
+    {
+     "label": "Stumble up the stairs into Causeway Bay",
+     "target": "causeway_bay"
+    }
+   ]
+  },
+  "central": {
+   "title": "Central",
+   "text": [
+    "Central is a canyon of glittering towers. Walkways float between buildings like ribbons, people hurry everywhere at once, and an escalator climbs right up the side of the hill.",
+    "Up the steep old streets is Man Mo Temple. A dim sum restaurant clatters with trolleys. Ding-ding trams rattle past. And just up the road, the little red Peak Tram waits to climb the mountain."
+   ],
+   "illustration": {
+    "src": "img/harbour.svg",
+    "alt": "The pixel towers of Central at night",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Climb the steep streets to Man Mo Temple",
+     "target": "man_mo"
+    },
+    {
+     "label": "Follow the smell of dim sum",
+     "target": "dim_sum",
+     "hideIf": {
+      "visited": "dim_sum_feast"
+     }
+    },
+    {
+     "label": "Find Pig's cha chaan teng, like Auntie Lam said",
+     "target": "cha_chaan_teng",
+     "conditions": {
+      "flag": "met_auntie",
+      "equals": true
+     },
+     "hideIf": {
+      "flag": "zodiac_pig",
+      "equals": true
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Blow the Silver Whistle on Central Pier",
+     "target": "dog",
+     "conditions": {
+      "hasItem": "whistle"
+     },
+     "hideIf": {
+      "flag": "zodiac_dog",
+      "equals": true
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Ride the Peak Tram up the mountain",
+     "target": "tram_monkey",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Ride the Peak Tram up the mountain",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Hop on a ding-ding tram",
+     "target": "dingding"
+    }
+   ]
+  },
+  "cha_chaan_teng": {
+   "title": "Pig's Cha Chaan Teng",
+   "text": [
+    "The cha chaan teng is a cosy café with green tiles, ceiling fans and booths with squeaky seats. Behind the counter, a round pink pig in a white apron is pulling milk tea from one pot to another in a long, sweet stream.",
+    "\"Auntie Lam sent you? Then it's on the house!\" Pig sets down a milk tea and a pineapple bun with a fat slice of butter melting in the middle. (There's no pineapple in a pineapple bun. Pig says that's the best part.) \"And one for the road.\""
+   ],
+   "illustration": {
+    "src": "img/dimsum.svg",
+    "alt": "A pig in an apron pouring milk tea in a cha chaan teng",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "pig",
+      "x": 62,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "zodiac_pig",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_pig"
+      },
+      {
+       "stat": "power",
+       "add": 2
+      },
+      {
+       "message": "Zodiac friend found: PIG! +2 Pixel Power"
+      }
+     ]
+    },
+    {
+     "stat": "energy",
+     "add": 3
+    },
+    {
+     "addItem": "pineapple_bun"
+    },
+    {
+     "message": "Milk tea power! +3 Energy"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Thank Pig and head back out",
+     "target": "central"
+    },
+    {
+     "label": "Ask Pig the way to the Peak Tram, and go",
+     "target": "tram_monkey",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Ask Pig the way to the Peak Tram, and go",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
+    }
+   ]
+  },
+  "dog": {
+   "title": "Woof!",
+   "text": [
+    "You blow one bright note on the Silver Whistle. Far down the pier, ears prick up. Then a sandy dog in a little red rescue vest comes galloping along, skids to a stop and drops something at your feet: two shiny tokens, fished out of the harbour.",
+    "\"Rescue Dog, reporting for duty!\" she barks. \"Tip for you: the monkey at the Peak Tram loves riddles, and so does the snake in the gremlin vault. If you don't know an answer, it's okay to walk away and try another path.\""
+   ],
+   "illustration": {
+    "src": "img/harbour.svg",
+    "alt": "A sandy rescue dog on the pier",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "dog",
+      "x": 40,
+      "y": 30,
+      "scale": 1
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "zodiac_dog",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_dog"
+      },
+      {
+       "stat": "power",
+       "add": 2
+      },
+      {
+       "message": "Zodiac friend found: DOG! +2 Pixel Power"
+      }
+     ]
+    },
+    {
+     "stat": "tokens",
+     "add": 2
+    },
+    {
+     "message": "The dog fetched 2 tokens!"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Give her a pat and head back into Central",
+     "target": "central"
+    },
+    {
+     "label": "Follow the dog's nose to the Peak Tram",
+     "target": "tram_monkey",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Follow the dog's nose to the Peak Tram",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
+    }
+   ]
+  },
+  "man_mo": {
+   "title": "Man Mo Temple",
+   "text": [
+    "Man Mo Temple is quiet. After the noise of the city, the quiet feels like a warm blanket. Giant spirals of incense hang from the ceiling like upside-down cones, slowly turning, and soft smoke drifts through the red-and-gold light.",
+    "People come here to wish for good studies and for courage. An elderly keeper is sweeping the floor with slow, careful strokes. He looks up and nods to you."
+   ],
+   "illustration": {
+    "src": "img/manmo.svg",
+    "alt": "A quiet temple with hanging incense coils and soft smoke",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Bow, walk softly and look around",
+     "target": "man_mo_calm",
+     "hideIf": {
+      "flag": "calm",
+      "equals": true
+     }
+    },
+    {
+     "label": "Run around shouting \"GREMLINS! COME OUT!\"",
+     "target": "man_mo_shush",
+     "hideIf": {
+      "any": [
+       {
+        "flag": "calm",
+        "equals": true
+       },
+       {
+        "visited": "man_mo_shush"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Walk quietly back down to Central",
+     "target": "central"
+    }
+   ]
+  },
+  "man_mo_shush": {
+   "title": "Shhh...",
+   "text": [
+    "Your voice echoes round the temple. Everyone turns to look. Even Siu Mai flattens its ears and hides behind your legs.",
+    "The keeper doesn't get cross. He just puts a finger to his lips and smiles kindly, and somehow that makes you feel even sillier. This is a place for quiet."
+   ],
+   "choices": [
+    {
+     "label": "Say sorry, and sit quietly for a moment",
+     "target": "man_mo_calm"
+    },
+    {
+     "label": "Tiptoe back out to Central",
+     "target": "central"
+    }
+   ]
+  },
+  "man_mo_calm": {
+   "title": "The Calm Breath",
+   "text": [
+    "You sit on a little wooden stool and watch the incense smoke curl upwards. The keeper sits beside you and shows you how to breathe: in slowly while the smoke rises, out slowly while it drifts. In... and out...",
+    "Your heart stops racing. Time seems to slow down, and your pixels glow a little brighter.",
+    "\"A noisy mind loses its power,\" the keeper says softly. \"A calm mind keeps it. Remember this when someone shouts at you.\"",
+    "Before you go, he hands you one thin stick of incense. You light it carefully, place it in the big bronze burner with both hands, and make a quiet wish for courage. The smoke curls up to join the spirals above."
+   ],
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": 3
+    },
+    {
+     "stat": "luck",
+     "add": 1
+    },
+    {
+     "setFlag": "calm"
+    },
+    {
+     "message": "You feel calm. +3 Pixel Power, +1 Luck"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Thank him and walk down to Central",
+     "target": "central"
+    },
+    {
+     "label": "Walk along the hill to the Peak Tram",
+     "target": "tram_monkey",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Walk along the hill to the Peak Tram",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
+    }
+   ]
+  },
+  "dim_sum": {
+   "title": "Dim Sum Palace",
+   "text": [
+    "The dim sum restaurant is a whirlwind of clattering teacups and chatting families. Trolley aunties zoom between tables with towers of bamboo baskets, calling out: \"Har gow! Char siu bao! Siu mai!\" Siu Mai the cat looks deeply offended.",
+    "A waiter with a suspiciously swishy tail offers a free glowing bun. And one trolley auntie shouts: \"ALL-YOU-CAN-EAT CHALLENGE! Eat everything, win a prize!\" Siu Mai tugs your sleeve. \"Don't. Heroes who eat everything fall asleep. We have till MIDNIGHT.\""
+   ],
+   "illustration": {
+    "src": "img/dimsum.svg",
+    "alt": "Bamboo steamer baskets of dim sum on a busy table",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Order a sensible feast (tap Octopus card)",
+     "target": "dim_sum_feast",
+     "conditions": {
+      "hasItem": "octopus"
+     },
+     "lockedHint": "Needs an Octopus Card",
+     "hideIfLocked": true
+    },
+    {
+     "label": "Order a sensible feast (1 token)",
+     "target": "dim_sum_feast",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token or an Octopus Card",
+     "hideIf": {
+      "hasItem": "octopus"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Eat the free glowing bun",
+     "target": "glitch_bun",
+     "hideIf": {
+      "visited": "glitch_bun"
+     }
+    },
+    {
+     "label": "Take the ALL-YOU-CAN-EAT challenge",
+     "target": "dim_sum_challenge",
+     "hideIf": {
+      "visited": "dim_sum_challenge"
+     }
+    },
+    {
+     "label": "Try the ALL-YOU-CAN-EAT challenge AGAIN. You were so close!",
+     "target": "food_coma",
+     "conditions": {
+      "visited": "dim_sum_challenge"
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Leave and go back to Central",
+     "target": "central"
+    }
+   ]
+  },
+  "dim_sum_feast": {
+   "title": "Dim Sum Feast",
+   "text": [
+    "Basket after basket arrives: prawn dumplings like little moons, fluffy char siu bao, crispy spring rolls, and mango pudding shaped like a fish. Siu Mai refuses to eat the siu mai, on principle. Then eats four.",
+    "You feel warm, full and ready for anything."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": 4
+    },
+    {
+     "message": "Full of dumplings! +4 Energy"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Roll back out to Central",
+     "target": "central"
+    },
+    {
+     "label": "Waddle round the corner to the Peak Tram",
+     "target": "tram_monkey",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Waddle round the corner to the Peak Tram",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
+    }
+   ]
+  },
+  "glitch_bun": {
+   "title": "Static Bun",
+   "text": [
+    "You bite. The bun is filled with static. It tastes like the fuzzy screen on an old TV and makes your teeth buzz.",
+    "BZZZ! Half your pixel power fizzes away. A trolley auntie tuts and hands you a cup of tea. \"Never eat the glowing ones. Everyone knows that.\""
+   ],
+   "onEnter": [
+    {
+     "stat": "power",
+     "halve": true
+    }
+   ],
+   "choices": [
+    {
+     "label": "Go back to Central",
+     "target": "central"
+    },
+    {
+     "label": "Order a proper meal to get over it (tap Octopus card)",
+     "target": "dim_sum_feast",
+     "conditions": {
+      "hasItem": "octopus"
+     },
+     "lockedHint": "Needs an Octopus Card",
+     "hideIfLocked": true
+    },
+    {
+     "label": "Order a proper meal to get over it (1 token)",
+     "target": "dim_sum_feast",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token or an Octopus Card",
+     "hideIf": {
+      "hasItem": "octopus"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    }
+   ]
+  },
+  "dim_sum_challenge": {
+   "title": "Too Many Dumplings",
+   "text": [
+    "Basket... after basket... after basket. Twenty-nine baskets in, your tummy makes a noise like a sad trombone and your eyelids start to droop.",
+    "Siu Mai grabs your collar and drags you out into the fresh air before you fall asleep face-first in the custard buns. \"I TOLD you. Heroes who eat everything fall asleep. Don't you dare do that again.\""
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -3
+    }
+   ],
+   "choices": [
+    {
+     "label": "Stagger back to Central",
+     "target": "central"
+    }
+   ]
+  },
+  "food_coma": {
+   "title": "Dumpling Dreams",
+   "text": [
+    "You go back for round two. Forty baskets later you've won the prize (a golden chopstick!), and you're so full you can't move. Your eyes droop. Just a quick rest...",
+    "You dream of dumplings. Dumplings dancing, dumplings singing, dumplings doing the cha-cha. When you wake up, it's long past midnight and the city is dark. Siu Mai is asleep in a steamer basket, snoring.",
+    "The parrot did warn you: NEVER, EVER EAT EVERYTHING."
+   ],
+   "illustration": {
+    "src": "img/dimsum.svg",
+    "alt": "Empty steamer baskets piled high",
+    "pixelated": true
+   },
+   "ending": {
+    "type": "fail",
+    "title": "DUMPLING DREAMS",
+    "stars": 0
+   }
+  },
+  "causeway_bay": {
+   "title": "Causeway Bay",
+   "text": [
+    "You pop out into Causeway Bay and the noise hits you like a wave: beeping crossings, chattering crowds, music from twenty shops at once. Neon signs stack up the buildings like a giant, glowing bookshelf, though some are flickering and going dark.",
+    "On top of the tallest sign sits a bird made of fire, keeping it alight with her own glow. Over the road, the giant screen at Times Square shows the Gremlin King's face: \"MIDNIGHT SALE! ALL LIGHTS 100% OFF!\" And next to a bubble tea shop, a new shop flashes: GLITCH MEGA SALE. EVERYTHING FREE!!!"
+   ],
+   "illustration": {
+    "src": "img/causeway.svg",
+    "alt": "Pixel Causeway Bay with neon signs, crowds and a giant screen",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "liv",
+      "x": 6,
+      "y": 1,
+      "scale": 1
+     }
+    ]
+   },
+   "choices": [
+    {
+     "label": "Get a bubble tea (tap Octopus card)",
+     "target": "bubble_tea_shop",
+     "conditions": {
+      "hasItem": "octopus"
+     },
+     "lockedHint": "Needs an Octopus Card",
+     "hideIf": {
+      "visited": "bubble_tea_shop"
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Get a bubble tea (1 token)",
+     "target": "bubble_tea_shop",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token or an Octopus Card",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "bubble_tea_shop"
+       },
+       {
+        "hasItem": "octopus"
+       }
+      ]
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Call up to the fiery bird on the neon sign",
+     "target": "liv",
+     "hideIf": {
+      "flag": "liv_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Check out the GLITCH MEGA SALE",
+     "target": "glitch_sale",
+     "hideIf": {
+      "visited": "sale_trap"
+     }
+    },
+    {
+     "label": "Cross the giant crossing to Times Square",
+     "target": "crossing"
+    },
+    {
+     "label": "Walk to Victoria Park",
+     "target": "victoria_park"
+    },
+    {
+     "label": "Walk to the Happy Valley racecourse",
+     "target": "happy_valley"
+    },
+    {
+     "label": "Hop on a ding-ding tram",
+     "target": "dingding"
+    },
+    {
+     "label": "Catch a red minibus up to the Peak (tap Octopus card)",
+     "target": "minibus",
+     "conditions": {
+      "hasItem": "octopus"
+     },
+     "lockedHint": "Needs an Octopus Card",
+     "hideIfLocked": true
+    },
+    {
+     "label": "Catch a red minibus up to the Peak (1 token)",
+     "target": "minibus",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token or an Octopus Card",
+     "hideIf": {
+      "hasItem": "octopus"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    }
+   ]
+  },
+  "bubble_tea_shop": {
+   "title": "Bubble Tea!",
+   "text": [
+    "The bubble tea shop has two hundred flavours. You stare at the menu for so long that the queue behind you starts telling each other their life stories.",
+    "In the end you choose milk tea with extra pearls. Siu Mai sniffs the cup. \"Those pearls aren't THE pearl, you know.\" Then it steals one anyway."
+   ],
+   "illustration": {
+    "src": "img/bubbletea.svg",
+    "alt": "A pixel bubble tea shop with a giant cup sign",
+    "pixelated": true
+   },
+   "onEnter": [
+    {
+     "addItem": "bubble_tea"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Back into the crowds",
+     "target": "causeway_bay"
+    }
+   ]
+  },
+  "liv": {
+   "title": "Liv the Phoenix",
+   "text": [
+    "The fiery bird swoops down and lands on a railing with a soft WHUMPH of warm air. Her feathers ripple red, orange and gold, and her crest flickers like a candle.",
+    "\"I'm Liv the Phoenix,\" she says. \"I keep this street's neon glowing while the pearl is missing. I'll help you, but only if you can think on your feet. Three riddles! Get one wrong and it'll cost you. Or fly off now and try another path. No shame in that.\""
+   ],
+   "illustration": {
+    "src": "img/causeway.svg",
+    "alt": "Liv the Phoenix perched on a glowing railing",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "liv",
+      "x": 58,
+      "y": 18,
+      "scale": 2
+     }
+    ]
+   },
+   "riddle": {
+    "character": "liv",
+    "questions": [
+     {
+      "question": "Feed me and I grow. Give me a drink of water and I die. What am I?",
+      "options": [
+       "A goldfish",
+       "Fire",
+       "A pot plant"
+      ],
+      "answer": 1
+     },
+     {
+      "question": "What has to be broken before you can use it?",
+      "options": [
+       "An egg",
+       "A spoon",
+       "A sock"
+      ],
+      "answer": 0
+     },
+     {
+      "question": "What gets wetter the more it dries?",
+      "options": [
+       "A cloud",
+       "A fish",
+       "A towel"
+      ],
+      "answer": 2
+     }
+    ],
+    "onCorrect": [
+     {
+      "stat": "tokens",
+      "add": 1
+     },
+     {
+      "message": "Correct! +1 token"
+     }
+    ],
+    "wrong": {
+     "text": "Wrong! Pay up: 2 tokens, or half your Energy.",
+     "options": [
+      {
+       "label": "Pay 2 tokens",
+       "effects": [
+        {
+         "stat": "tokens",
+         "add": -2
+        }
+       ],
+       "conditions": {
+        "stat": "tokens",
+        "op": "gte",
+        "value": 2
+       },
+       "lockedHint": "You need at least 2 tokens"
+      },
+      {
+       "label": "Lose half your Energy",
+       "effects": [
+        {
+         "stat": "energy",
+         "halve": true
+        }
+       ]
+      }
+     ]
+    },
+    "retreat": {
+     "label": "Head back and take another path",
+     "target": "causeway_bay"
+    },
+    "success": {
+     "target": "causeway_bay",
+     "text": "Liv bursts into happy flames.",
+     "effects": [
+      {
+       "setFlag": "liv_passed"
+      },
+      {
+       "addItem": "feather"
+      },
+      {
+       "message": "Liv gave you a Phoenix Feather! It glows in the dark."
+      }
+     ]
+    }
+   }
+  },
+  "glitch_sale": {
+   "title": "GLITCH MEGA SALE",
+   "text": [
+    "Inside, the shop is full of glowing gadgets: phones that hum, headphones that sparkle, a watch that shows every time at once. The shop assistants are suspiciously short, suspiciously purple, and wearing suspiciously long trousers to hide their tails.",
+    "\"EVERYTHING FREE!\" they squeal. \"Just pick it up! Go on!\""
+   ],
+   "choices": [
+    {
+     "label": "Grab the shiniest free gadget",
+     "target": "sale_trap"
+    },
+    {
+     "label": "Remember the parrot: TOO GOOD TO BE TRUE. Back away!",
+     "target": "causeway_bay",
+     "conditions": {
+      "flag": "warned",
+      "equals": true
+     },
+     "lockedHint": "If only someone had warned you...",
+     "effects": [
+      {
+       "message": "Smart! A gremlin tail swishes as you leave."
+      }
+     ]
+    },
+    {
+     "label": "Say \"no thank you\" and leave",
+     "target": "causeway_bay"
+    }
+   ]
+  },
+  "sale_trap": {
+   "title": "Too Good to Be True",
+   "text": [
+    "The moment you touch it, the gadget goes BZZZRT and slurps up half your pixel power like a milkshake through a straw.",
+    "The gadget turns out to be a cardboard box with a bow on it. Inside is... air. Very nicely wrapped air. \"Try another!\" squeal the gremlins. \"THIS one's real!\""
+   ],
+   "onEnter": [
+    {
+     "stat": "power",
+     "halve": true
+    },
+    {
+     "stat": "luck",
+     "add": -1
+    }
+   ],
+   "choices": [
+    {
+     "label": "Stomp back out into Causeway Bay",
+     "target": "causeway_bay"
+    },
+    {
+     "label": "Grab another one. This one MUST be real!",
+     "target": "shopping_forever"
+    }
+   ]
+  },
+  "shopping_forever": {
+   "title": "Shopping Forever",
+   "text": [
+    "You grab another box. ZAP! The shop door slams. The shelves stretch on and on, full of glowing boxes of air, and the gremlins hand you a shopping basket. \"Keep looking! The real one's here somewhere!\"",
+    "You're still looking at midnight, when the lights of Pixel Harbour go out. You're still looking now."
+   ],
+   "illustration": {
+    "src": "img/causeway.svg",
+    "alt": "Endless glowing shop shelves",
+    "pixelated": true
+   },
+   "ending": {
+    "type": "fail",
+    "title": "SHOPPING FOREVER",
+    "stars": 0
+   }
+  },
+  "crossing": {
+   "title": "The Big Crossing",
+   "text": [
+    "The green man flashes and the whole crowd surges across at once, in every direction, like a hundred pinballs. A shopping bag bonks you on the nose. You're halfway over when the sky goes dark purple...",
+    "PLIP. PLOP. BLOOSH! A sudden pixel rainstorm, with raindrops as big as dice. Gremlins on a rooftop are emptying buckets."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -1
+    }
+   ],
+   "choices": [
+    {
+     "label": "Open your umbrella",
+     "target": "times_square",
+     "conditions": {
+      "hasItem": "umbrella"
+     },
+     "lockedHint": "Needs an Umbrella",
+     "effects": [
+      {
+       "message": "FWUMP! Five strangers and a damp gremlin shelter under your giant duck umbrella."
+      }
+     ]
+    },
+    {
+     "label": "Shelter under a shop awning until it stops",
+     "target": "times_square",
+     "effects": [
+      {
+       "stat": "power",
+       "add": -3
+      },
+      {
+       "message": "You wait... and wait... The rain stops, but the clock kept ticking. -3 Pixel Power"
+      }
+     ]
+    },
+    {
+     "label": "Run for it!",
+     "target": "crossing_soaked"
+    }
+   ]
+  },
+  "crossing_soaked": {
+   "title": "Soaked!",
+   "text": [
+    "You run. The rain runs faster. By the time you reach Times Square you're so wet that your shoes go squelch-squelch-squelch and water drips off your nose in little pixel squares.",
+    "Being cold and soggy is exhausting."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -4
+    }
+   ],
+   "choices": [
+    {
+     "label": "Squelch over to the giant screen",
+     "target": "times_square"
+    }
+   ]
+  },
+  "times_square": {
+   "title": "Times Square",
+   "text": [
+    "Under the giant screen, a gremlin technician in a hard hat is fiddling with a tangle of cables. A brass key dangles from its tool belt, swinging back and forth like it's daring you.",
+    "From here you can catch a minibus up to the Peak, or a ding-ding tram west along the island."
+   ],
+   "illustration": {
+    "src": "img/causeway.svg",
+    "alt": "A giant screen at Times Square showing the Gremlin King",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Sneak up and pocket the brass key",
+     "target": "ts_key",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "ts_key"
+       },
+       {
+        "hasItem": "brass_key"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Catch a red minibus up to the Peak (tap Octopus card)",
+     "target": "minibus",
+     "conditions": {
+      "hasItem": "octopus"
+     },
+     "lockedHint": "Needs an Octopus Card",
+     "hideIfLocked": true
+    },
+    {
+     "label": "Catch a red minibus up to the Peak (1 token)",
+     "target": "minibus",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token or an Octopus Card",
+     "hideIf": {
+      "hasItem": "octopus"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Hop on a ding-ding tram",
+     "target": "dingding"
+    }
+   ]
+  },
+  "ts_key": {
+   "title": "Sneaky Fingers",
+   "text": [
+    "You tiptoe up behind the gremlin. It's humming to itself. Your fingers reach for the key..."
+   ],
+   "test": {
+    "label": "TEST YOUR LUCK",
+    "prompt": "Roll two dice. Equal to or under your LUCK and you get the key without being noticed. (Uses up 1 LUCK, pass or fail.)",
+    "dice": "2d6",
+    "againstStat": "luck",
+    "costEffects": [
+     {
+      "stat": "luck",
+      "add": -1
+     }
+    ],
+    "success": {
+     "target": "times_square",
+     "text": "Got it! The gremlin keeps humming.",
+     "effects": [
+      {
+       "addItem": "brass_key"
+      },
+      {
+       "message": "A brass key! The tag says VAULT."
+      }
+     ]
+    },
+    "failure": {
+     "target": "times_square",
+     "text": "The gremlin spins round and zaps you with a cable! BZZT!",
+     "effects": [
+      {
+       "stat": "power",
+       "add": -3
+      }
+     ]
+    }
+   }
+  },
+  "victoria_park": {
+   "title": "Victoria Park",
+   "text": [
+    "Victoria Park is full of people doing slow, flowing tai chi under the trees. At the front, leading the class, is a stripy tiger in silk pyjamas, moving as smoothly as water.",
+    "\"Join us!\" the Tiger purrs. \"Copy my moves. But only if you're feeling lucky, little one. Wobbly heroes fall in the flower beds.\""
+   ],
+   "illustration": {
+    "src": "img/park.svg",
+    "alt": "A tiger doing tai chi in Victoria Park",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "tiger",
+      "x": 60,
+      "y": 22,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "zodiac_tiger",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_tiger"
+      },
+      {
+       "stat": "power",
+       "add": 2
+      },
+      {
+       "message": "Zodiac friend found: TIGER! +2 Pixel Power"
+      }
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "label": "Copy the Tiger's tai chi",
+     "target": "tiger_taichi",
+     "hideIf": {
+      "visited": "tiger_taichi"
+     }
+    },
+    {
+     "label": "Bow politely and head back to Causeway Bay",
+     "target": "causeway_bay"
+    },
+    {
+     "label": "Catch the red minibus at the park gate",
+     "target": "minibus"
+    }
+   ]
+  },
+  "tiger_taichi": {
+   "title": "Tiger Tai Chi",
+   "text": [
+    "Arms up like a crane. Step like a cat. Push the clouds away...",
+    "The Tiger watches you closely."
+   ],
+   "test": {
+    "label": "BALANCE TEST",
+    "prompt": "Roll two dice. Equal to or under your LUCK and you flow like water. Over, and you wobble... (Uses up 1 LUCK, pass or fail.)",
+    "dice": "2d6",
+    "againstStat": "luck",
+    "costEffects": [
+     {
+      "stat": "luck",
+      "add": -1
+     }
+    ],
+    "success": {
+     "target": "causeway_bay",
+     "text": "Perfect! The Tiger roars with approval.",
+     "effects": [
+      {
+       "stat": "energy",
+       "add": 3
+      },
+      {
+       "stat": "power",
+       "add": 3
+      },
+      {
+       "message": "Tiger power! +3 Energy, +3 Pixel Power"
+      }
+     ]
+    },
+    "failure": {
+     "target": "causeway_bay",
+     "text": "You wobble, topple and land face-first in the marigolds.",
+     "effects": [
+      {
+       "stat": "energy",
+       "halve": true
+      }
+     ]
+    }
+   }
+  },
+  "happy_valley": {
+   "title": "Happy Valley",
+   "text": [
+    "The Happy Valley racecourse glows like a giant green bowl in the middle of the city. On the track, a horse in red-and-gold racing silks is doing warm-up stretches.",
+    "\"Fancy a race?\" the Horse neighs. \"One token to enter. Beat me and I'll pay you three! Lose, and you'll be puffed right out.\" Siu Mai whispers, \"Races are all about luck, you know.\""
+   ],
+   "illustration": {
+    "src": "img/racecourse.svg",
+    "alt": "A horse in racing silks at the Happy Valley racecourse",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "horse",
+      "x": 60,
+      "y": 22,
+      "scale": 2
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "zodiac_horse",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_horse"
+      },
+      {
+       "stat": "power",
+       "add": 2
+      },
+      {
+       "message": "Zodiac friend found: HORSE! +2 Pixel Power"
+      }
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "label": "Race the Horse (1 token)",
+     "target": "horse_race",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token",
+     "hideIf": {
+      "visited": "horse_race"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Cheer from the stands, then head back",
+     "target": "causeway_bay"
+    },
+    {
+     "label": "Catch the red minibus outside the racecourse",
+     "target": "minibus"
+    }
+   ]
+  },
+  "horse_race": {
+   "title": "And They're Off!",
+   "text": [
+    "Ready... steady... NEIGH! You sprint down the track with the Horse thundering beside you and the crowd roaring."
+   ],
+   "test": {
+    "label": "TEST YOUR LUCK",
+    "prompt": "Roll two dice. Equal to or under your LUCK and you win by a nose! (Uses up 1 LUCK, pass or fail.)",
+    "dice": "2d6",
+    "againstStat": "luck",
+    "costEffects": [
+     {
+      "stat": "luck",
+      "add": -1
+     }
+    ],
+    "success": {
+     "target": "causeway_bay",
+     "text": "You win by a nose! The Horse pays up.",
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": 3
+      },
+      {
+       "message": "Won 3 tokens!"
+      }
+     ]
+    },
+    "failure": {
+     "target": "causeway_bay",
+     "text": "The Horse wins by a mile. You're totally puffed out.",
+     "effects": [
+      {
+       "stat": "energy",
+       "halve": true
+      }
+     ]
+    }
+   }
+  },
+  "dingding": {
+   "title": "Ding-Ding!",
+   "text": [
+    "The old double-decker tram rattles along the middle of the road: ding-ding! You climb to the top deck and grab the front seat, the best seat in the whole of Hong Kong.",
+    "The conductor is a rooster in a smart blue cap. \"Cock-a-doodle-DING!\" he crows, ringing the bell. \"Early bird gets the luck, little hero!\" Shop signs slide past close enough to touch. Where to?"
+   ],
+   "illustration": {
+    "src": "img/tram.svg",
+    "alt": "A double-decker ding-ding tram with a rooster conductor",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "rooster",
+      "x": 66,
+      "y": 24,
+      "scale": 1
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "zodiac_rooster",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "setFlag": "zodiac_rooster"
+      },
+      {
+       "stat": "power",
+       "add": 2
+      },
+      {
+       "message": "Zodiac friend found: ROOSTER! +2 Pixel Power"
+      }
+     ]
+    },
+    {
+     "if": {
+      "not": {
+       "flag": "tram_rest",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "stat": "energy",
+       "add": 2
+      },
+      {
+       "stat": "luck",
+       "add": 1
+      },
+      {
+       "message": "Front seat, top deck! The Rooster's lucky crow: +2 Energy, +1 Luck"
+      },
+      {
+       "setFlag": "tram_rest"
+      }
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "label": "Hop off in Sheung Wan, near Man Mo Temple",
+     "target": "man_mo"
+    },
+    {
+     "label": "Hop off in Central",
+     "target": "central"
+    },
+    {
+     "label": "Ride east to Causeway Bay",
+     "target": "causeway_bay"
+    },
+    {
+     "label": "Hop off at the Peak Tram stop",
+     "target": "tram_monkey",
+     "hideIf": {
+      "flag": "monkey_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Hop off at the Peak Tram stop",
+     "target": "tram",
+     "conditions": {
+      "flag": "monkey_passed",
+      "equals": true
+     },
+     "hideIfLocked": true
+    }
+   ]
+  },
+  "minibus": {
+   "title": "The Red Minibus",
+   "text": [
+    "The red minibus has sixteen seats, one very fast driver and a speed display that only seems to show the number \"WHEEE\". A sign at the front says: PLEASE HOLD THE HANDRAIL.",
+    "The driver shouts \"Peak! Going up! HOLD ON!\" and stamps on the pedal before you've even sat down."
+   ],
+   "choices": [
+    {
+     "label": "Grip the handrail tight, like the sign says",
+     "target": "minibus_safe"
+    },
+    {
+     "label": "Ignore the sign and wave at everyone out of the window",
+     "target": "minibus_wild"
+    }
+   ]
+  },
+  "minibus_safe": {
+   "title": "Hold On Tight",
+   "text": [
+    "You grip the handrail with both hands. The minibus whizzes round hairpin bends, past waterfalls of fern and tiny temples, while you sit as steady as a statue.",
+    "\"Good passenger!\" the driver shouts. Moments later, the minibus screeches to a stop at the top of the Peak."
+   ],
+   "choices": [
+    {
+     "label": "Climb out at the Peak",
+     "target": "peak_top"
+    }
+   ]
+  },
+  "minibus_wild": {
+   "title": "WHEEEE!",
+   "text": [
+    "You let go to wave. The minibus takes the first bend. You slide left. The second bend. You slide right. The third bend. You end up upside down in the luggage rack with Siu Mai on your head.",
+    "You climb out at the Peak feeling like a sock that has been through the washing machine. Twice."
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -3
+    }
+   ],
+   "choices": [
+    {
+     "label": "Stagger out at the Peak",
+     "target": "peak_top"
+    }
+   ]
+  },
+  "tram_monkey": {
+   "title": "The Monkey at the Tram",
+   "text": [
+    "At the Peak Tram station, a cheeky monkey is swinging from the ticket barrier, munching a banana. \"Nobody rides MY tram,\" he chatters, \"unless they can answer my riddles! Two riddles! Get one wrong and you pay!\"",
+    "Behind you, the street leads back to Central. You could always find another way up the mountain..."
+   ],
+   "illustration": {
+    "src": "img/tunnel.svg",
+    "alt": "A cheeky monkey swinging on the Peak Tram barrier",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "monkey",
+      "x": 58,
+      "y": 22,
+      "scale": 2
+     }
+    ]
+   },
+   "riddle": {
+    "character": "monkey",
+    "questions": [
+     {
+      "question": "What has a neck but no head, and wears a cap?",
+      "options": [
+       "A bottle",
+       "A banana",
+       "A snail"
+      ],
+      "answer": 0
+     },
+     {
+      "question": "What has a face and two hands, but no arms or legs?",
+      "options": [
+       "A starfish",
+       "A crab",
+       "A clock"
+      ],
+      "answer": 2
+     }
+    ],
+    "onCorrect": [
+     {
+      "stat": "tokens",
+      "add": 1
+     },
+     {
+      "message": "Correct! +1 token"
+     }
+    ],
+    "wrong": {
+     "text": "Wrong! Pay up: 2 tokens, or half your Energy.",
+     "options": [
+      {
+       "label": "Pay 2 tokens",
+       "effects": [
+        {
+         "stat": "tokens",
+         "add": -2
+        }
+       ],
+       "conditions": {
+        "stat": "tokens",
+        "op": "gte",
+        "value": 2
+       },
+       "lockedHint": "You need at least 2 tokens"
+      },
+      {
+       "label": "Lose half your Energy",
+       "effects": [
+        {
+         "stat": "energy",
+         "halve": true
+        }
+       ]
+      }
+     ]
+    },
+    "retreat": {
+     "label": "Head back and take another path",
+     "target": "central"
+    },
+    "success": {
+     "target": "tram",
+     "text": "The monkey flips the barrier open.",
+     "effects": [
+      {
+       "if": {
+        "not": {
+         "flag": "zodiac_monkey",
+         "equals": true
+        }
+       },
+       "then": [
+        {
+         "setFlag": "zodiac_monkey"
+        },
+        {
+         "stat": "power",
+         "add": 2
+        },
+        {
+         "message": "Zodiac friend found: MONKEY! +2 Pixel Power"
+        }
+       ]
+      },
+      {
+       "setFlag": "monkey_passed"
+      }
+     ]
+    }
+   }
+  },
+  "tram": {
+   "title": "The Peak Tram",
+   "text": [
+    "You climb into the little red Peak Tram. It clanks and begins to climb. The hill is so steep that the buildings outside seem to lean sideways.",
+    "Halfway up, the tram rattles into a long tunnel, and every light goes out. The tram stops with a jolt. Somewhere in the dark, something giggles."
+   ],
+   "illustration": {
+    "src": "img/tunnel.svg",
+    "alt": "A dark tunnel with a small tram",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Hold up your rabbit lantern",
+     "target": "tunnel_lit",
+     "conditions": {
+      "hasItem": "lantern"
+     },
+     "lockedHint": "Needs a light (a lantern, maybe?)"
+    },
+    {
+     "label": "Hold up the Phoenix Feather",
+     "target": "tunnel_lit",
+     "conditions": {
+      "hasItem": "feather"
+     },
+     "hideIf": {
+      "hasItem": "lantern"
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Feel your way through the dark",
+     "target": "tunnel_dark"
+    },
+    {
+     "label": "Ride the tram back down and find a light",
+     "target": "central"
+    }
+   ]
+  },
+  "tunnel_dark": {
+   "title": "Bonk!",
+   "text": [
+    "You shuffle forward with your hands stretched out. BONK! A wall. BONK! Another wall. A gremlin stamps on your toe and runs away cackling.",
+    "By the time you find the end of the tunnel you're bruised and grumpy, but you've reached the top of the Peak."
+   ],
+   "onEnter": [
+    {
+     "if": {
+      "not": {
+       "flag": "tunnel_known",
+       "equals": true
+      }
+     },
+     "then": [
+      {
+       "stat": "energy",
+       "add": -4
+      },
+      {
+       "setFlag": "tunnel_known"
+      }
+     ],
+     "else": [
+      {
+       "stat": "energy",
+       "add": -1
+      },
+      {
+       "message": "You know the way now. Only one bonk!"
+      }
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "label": "Climb out onto the Peak",
+     "target": "peak_top"
+    }
+   ]
+  },
+  "tunnel_lit": {
+   "title": "Hidden Door",
+   "text": [
+    "Warm light spills through the tunnel. The giggling stops (gremlins hate light!) and you spot something the dark was hiding: a small round door in the tunnel wall, painted with a dragon's claw.",
+    "Underneath, someone has scratched: GREMLIN VAULT. KEEP OUT. (THIS MEANS YOU.)"
+   ],
+   "choices": [
+    {
+     "label": "Unlock the door with the brass key",
+     "target": "vault_snake",
+     "conditions": {
+      "hasItem": "brass_key"
+     },
+     "lockedHint": "Needs a Brass Key. Somewhere in Pixel Harbour there must be one..."
+    },
+    {
+     "label": "Leave the door and walk up to the Peak",
+     "target": "peak_top"
+    }
+   ]
+  },
+  "vault_snake": {
+   "title": "The Vault Guardian",
+   "text": [
+    "The key turns with a click. Inside, curled around a velvet cushion, is a long green snake with gold spots. On the cushion, glowing softly, is the Pearl of Light.",
+    "\"Ssso,\" hisses the Snake, not unkindly. \"The gremlins made me guard this. I don't even LIKE gremlinsss. Answer my two riddles and the pearl is yoursss. Or back out now, and nobody gets hurt.\""
+   ],
+   "illustration": {
+    "src": "img/vault.svg",
+    "alt": "A green snake guarding a glowing pearl in a treasure vault",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "snake",
+      "x": 62,
+      "y": 22,
+      "scale": 2
+     }
+    ]
+   },
+   "riddle": {
+    "character": "snake",
+    "questions": [
+     {
+      "question": "I have keys but open no locks. I have space but no room. You can enter, but you can't go inside. What am I?",
+      "options": [
+       "A hotel",
+       "A keyboard",
+       "A vault"
+      ],
+      "answer": 1
+     },
+     {
+      "question": "What comes once in a minute, twice in a moment, but never in a thousand years?",
+      "options": [
+       "The letter M",
+       "A blink",
+       "A shooting star"
+      ],
+      "answer": 0
+     }
+    ],
+    "onCorrect": [
+     {
+      "stat": "tokens",
+      "add": 1
+     },
+     {
+      "message": "Correct! +1 token"
+     }
+    ],
+    "wrong": {
+     "text": "Wrong! Pay up: 2 tokens, or half your Energy.",
+     "options": [
+      {
+       "label": "Pay 2 tokens",
+       "effects": [
+        {
+         "stat": "tokens",
+         "add": -2
+        }
+       ],
+       "conditions": {
+        "stat": "tokens",
+        "op": "gte",
+        "value": 2
+       },
+       "lockedHint": "You need at least 2 tokens"
+      },
+      {
+       "label": "Lose half your Energy",
+       "effects": [
+        {
+         "stat": "energy",
+         "halve": true
+        }
+       ]
+      }
+     ]
+    },
+    "retreat": {
+     "label": "Back out of the vault and take another path",
+     "target": "peak_top"
+    },
+    "success": {
+     "target": "vault",
+     "text": "The Snake uncurls and bows.",
+     "effects": [
+      {
+       "if": {
+        "not": {
+         "flag": "zodiac_snake",
+         "equals": true
+        }
+       },
+       "then": [
+        {
+         "setFlag": "zodiac_snake"
+        },
+        {
+         "stat": "power",
+         "add": 2
+        },
+        {
+         "message": "Zodiac friend found: SNAKE! +2 Pixel Power"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  "vault": {
+   "title": "The Gremlin Vault",
+   "text": [
+    "The vault is piled high with everything the gremlins have ever stolen: odd socks, TV remotes, a thousand lost umbrellas, every pen you have ever lent anyone, and a big jar of tokens.",
+    "You scoop up the Pearl of Light. It feels warm, like holding a tiny sun. The Snake winks. \"Take ssssome tokens too. The gremlins owe everyone.\""
+   ],
+   "illustration": {
+    "src": "img/vault.svg",
+    "alt": "A treasure vault full of stolen things",
+    "pixelated": true
+   },
+   "onEnter": [
+    {
+     "addItem": "pearl"
+    },
+    {
+     "stat": "tokens",
+     "add": 3
+    },
+    {
+     "setFlag": "secret_route"
+    },
+    {
+     "message": "Secret route found! +3 tokens"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Race up to the Neon Dragon",
+     "target": "dragon_summit"
+    }
+   ]
+  },
+  "peak_top": {
+   "title": "The Peak",
+   "text": [
+    "The top of the Peak is windy and wild. Far below, Pixel Harbour twinkles, but whole streets have already gone dark. The Sky Tower looms above you, and the Neon Dragon is coiled weakly around it, her lights dim and flickering.",
+    "Blocking the tower door stands BOLT-BOT, the gremlins' guard: a rusty robot as tall as a bus, with a saucepan for a head. \"HALT. NO. PLAYERS. ALLOWED.\" Its tummy makes a long, sad rumble.",
+    "Over by the lookout railing, a goat in golden sneakers and a tiny crown is doing tricks for a crowd of tourists."
+   ],
+   "illustration": {
+    "src": "img/robot.svg",
+    "alt": "A big rusty robot guarding a tower door",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Blow the Silver Whistle",
+     "target": "bot_dance",
+     "conditions": {
+      "hasItem": "whistle"
+     },
+     "lockedHint": "Needs a Silver Whistle"
+    },
+    {
+     "label": "Offer Bolt-Bot your egg tart",
+     "target": "bot_snack",
+     "conditions": {
+      "hasItem": "egg_tart"
+     },
+     "lockedHint": "Needs an Egg Tart",
+     "effects": [
+      {
+       "removeItem": "egg_tart"
+      }
+     ]
+    },
+    {
+     "label": "Offer Bolt-Bot your bubble tea",
+     "target": "bot_snack",
+     "conditions": {
+      "hasItem": "bubble_tea"
+     },
+     "hideIfLocked": true,
+     "effects": [
+      {
+       "removeItem": "bubble_tea"
+      }
+     ]
+    },
+    {
+     "label": "Talk to the goat in golden sneakers",
+     "target": "loulou",
+     "hideIf": {
+      "flag": "loulou_passed",
+      "equals": true
+     }
+    },
+    {
+     "label": "Climb the tower the way Loulou showed you",
+     "target": "goat_climb",
+     "conditions": {
+      "flag": "goat_tips",
+      "equals": true
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Sneak round the back and climb the tower wall",
+     "target": "peak_climb",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "peak_climb"
+       },
+       {
+        "flag": "goat_tips",
+        "equals": true
+       }
+      ]
+     }
+    },
+    {
+     "label": "Challenge Bolt-Bot to a duel!",
+     "target": "bot_battle"
+    }
+   ]
+  },
+  "loulou": {
+   "title": "Loulou the GOAT",
+   "text": [
+    "The goat finishes a triple backflip off the railing, lands perfectly and bows. The tourists go wild. \"Loulou the GOAT,\" she says, adjusting her crown. \"Greatest Of All Time. Also, an actual goat. Zodiac goat, if you're counting.\"",
+    "\"Want to know how to get past that robot? I know a secret climbing route. GOATs climb anything. But first: three riddles. Mess one up and it'll cost you. Or wander off and try another path. Your call, champ.\""
+   ],
+   "illustration": {
+    "src": "img/peak.svg",
+    "alt": "Loulou the GOAT in golden sneakers at the Peak lookout",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "loulou",
+      "x": 58,
+      "y": 20,
+      "scale": 2
+     }
+    ]
+   },
+   "riddle": {
+    "character": "loulou",
+    "questions": [
+     {
+      "question": "I'm tall when I'm young and short when I'm old. What am I?",
+      "options": [
+       "A tree",
+       "A candle",
+       "A goat"
+      ],
+      "answer": 1
+     },
+     {
+      "question": "A goat climbs 3 steps up the Peak every minute, then slides 1 step back down. How many steps up is it after 4 minutes?",
+      "options": [
+       "12",
+       "4",
+       "8"
+      ],
+      "answer": 2
+     },
+     {
+      "question": "What can you catch but never throw?",
+      "options": [
+       "A cold",
+       "A ball",
+       "A ferry"
+      ],
+      "answer": 0
+     }
+    ],
+    "onCorrect": [
+     {
+      "stat": "tokens",
+      "add": 1
+     },
+     {
+      "message": "Correct! +1 token"
+     }
+    ],
+    "wrong": {
+     "text": "Wrong! Pay up: 2 tokens, or half your Energy.",
+     "options": [
+      {
+       "label": "Pay 2 tokens",
+       "effects": [
+        {
+         "stat": "tokens",
+         "add": -2
+        }
+       ],
+       "conditions": {
+        "stat": "tokens",
+        "op": "gte",
+        "value": 2
+       },
+       "lockedHint": "You need at least 2 tokens"
+      },
+      {
+       "label": "Lose half your Energy",
+       "effects": [
+        {
+         "stat": "energy",
+         "halve": true
+        }
+       ]
+      }
+     ]
+    },
+    "retreat": {
+     "label": "Head back and take another path",
+     "target": "peak_top"
+    },
+    "success": {
+     "target": "peak_top",
+     "text": "\"G.O.A.T.!\" Loulou cheers.",
+     "effects": [
+      {
+       "if": {
+        "not": {
+         "flag": "zodiac_goat",
+         "equals": true
+        }
+       },
+       "then": [
+        {
+         "setFlag": "zodiac_goat"
+        },
+        {
+         "stat": "power",
+         "add": 2
+        },
+        {
+         "message": "Zodiac friend found: GOAT! +2 Pixel Power"
+        }
+       ]
+      },
+      {
+       "setFlag": "loulou_passed"
+      },
+      {
+       "setFlag": "goat_tips"
+      },
+      {
+       "message": "Loulou taught you her secret climbing route!"
+      },
+      {
+       "message": "Loulou winks: \"Need to get back DOWN the mountain? Pick a fight with Bolt-Bot and run for the tram. It's slower than it looks.\""
+      }
+     ]
+    }
+   }
+  },
+  "goat_climb": {
+   "title": "The GOAT Route",
+   "text": [
+    "Hop on the bin. Spring to the lamp-post. Toes on the drainpipe. Never look down. You climb exactly the way Loulou showed you, and Bolt-Bot never even notices.",
+    "You swing in through a high window of the Sky Tower. Siu Mai, who climbed it without any help at all, is already waiting."
+   ],
+   "choices": [
+    {
+     "label": "Creep up to the top of the tower",
+     "target": "tower_top"
+    }
+   ]
+  },
+  "peak_climb": {
+   "title": "Wheee... Ow.",
+   "text": [
+    "You tiptoe round the back of the tower and start climbing a drainpipe. You get surprisingly high. Then the drainpipe says \"BEEP\". It is not a drainpipe. It is Bolt-Bot's leg.",
+    "You slide all the way down on your bottom and land in a bush. \"NICE. TRY,\" it booms. (If only you knew someone who was good at climbing...)"
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -3
+    },
+    {
+     "stat": "luck",
+     "add": -1
+    }
+   ],
+   "choices": [
+    {
+     "label": "Brush off the leaves and go back to the door",
+     "target": "peak_top"
+    }
+   ]
+  },
+  "bot_dance": {
+   "title": "Robot Boogie",
+   "text": [
+    "You blow one bright silver note. Bolt-Bot freezes. Then its feet start tapping. In seconds it's doing the robot (badly) and it boogies right out of the doorway and away down the hill.",
+    "\"I. CANNOT. STOP,\" it wails happily."
+   ],
+   "choices": [
+    {
+     "label": "Dash into the Sky Tower",
+     "target": "tower_top"
+    }
+   ]
+  },
+  "bot_snack": {
+   "title": "Snack Attack",
+   "text": [
+    "Bolt-Bot sniffs. Its saucepan head tilts. Then it gobbles your snack in one bite, and its eyes turn into two pink hearts.",
+    "\"DELICIOUS. NOBODY. EVER. FEEDS. BOLT-BOT.\" It steps aside and gives you a creaky thumbs-up. Auntie Lam was right!"
+   ],
+   "onEnter": [
+    {
+     "setFlag": "robot_friend"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Dash into the Sky Tower",
+     "target": "tower_top"
+    }
+   ]
+  },
+  "bot_battle": {
+   "title": "Duel!",
+   "text": [
+    "You raise your fists. Bolt-Bot raises its huge rubber-glove fists.",
+    "\"BEEP BOOP. PREPARE. FOR. BOPPING.\""
+   ],
+   "combat": {
+    "intro": "Each round, you and Bolt-Bot both roll two dice and add your attack (your LUCK). Higher total lands a bop (the loser loses 2). Knock Bolt-Bot down to 0 to win! Careful: if your Energy hits 0, you're trapped in the game forever.",
+    "enemies": [
+     {
+      "name": "Bolt-Bot",
+      "attack": 5,
+      "health": 4,
+      "sprite": {
+       "palette": {
+        "g": "#c0c8d0",
+        "c": "#37406b",
+        "R": "#ff3355",
+        "m": "#b06b3a",
+        "r": "#ff5d8f",
+        "k": "#7a4a26"
+       },
+       "rows": [
+        "...gggggg...",
+        "..g......g..",
+        "..gccccccg..",
+        "..gcRccRcg..",
+        "..gccccccg..",
+        "...gggggg...",
+        "....kkkk....",
+        ".mmmmmmmmmm.",
+        "rm.mmmmmm.mr",
+        "rr.mmmmmm.rr",
+        "...mm..mm...",
+        "..mmm..mmm.."
+       ]
+      }
+     }
+    ],
+    "loseAt": 2,
+    "win": {
+     "target": "bot_beaten",
+     "text": "Bolt-Bot topples over!"
+    },
+    "lose": {
+     "target": "zapped",
+     "text": "Bolt-Bot bops you!"
+    },
+    "flee": {
+     "label": "Run back to the tram",
+     "target": "central",
+     "effects": [
+      {
+       "stat": "energy",
+       "add": -1
+      }
+     ]
+    }
+   }
+  },
+  "bot_beaten": {
+   "title": "Clang!",
+   "text": [
+    "With one last bop, Bolt-Bot topples over with a mighty CLANG, its saucepan head spinning like a top. A few tokens roll out of its pocket.",
+    "\"OKAY. OKAY. YOU. WIN,\" it says, and sits down for a little rest. The tower door swings open."
+   ],
+   "onEnter": [
+    {
+     "stat": "tokens",
+     "add": 2
+    }
+   ],
+   "choices": [
+    {
+     "label": "Dash into the Sky Tower",
+     "target": "tower_top"
+    }
+   ]
+  },
+  "tower_top": {
+   "title": "The Gremlin King",
+   "text": [
+    "At the very top of the tower, in a room full of tangled wires and flashing screens, sits the Gremlin King. He is the size of a cat, wears a bottle-cap crown, and is juggling the Pearl of Light from hand to hand.",
+    "\"A PLAYER?!\" he shrieks. He takes a huge breath, puffs up like a balloon and lets out his most terrible attack: the GLITCH SCREEEEEAM! The screens crackle. The windows rattle. The sound tries to shake the pixels right out of you."
+   ],
+   "illustration": {
+    "src": "img/king.svg",
+    "alt": "A small purple gremlin king with a bottle-cap crown holding a glowing pearl",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Breathe slowly, like the temple keeper taught you",
+     "target": "king_calm",
+     "conditions": {
+      "flag": "calm",
+      "equals": true
+     },
+     "lockedHint": "Needs a calm mind (someone could teach you)"
+    },
+    {
+     "label": "Blow the Silver Whistle even louder",
+     "target": "king_calm",
+     "conditions": {
+      "hasItem": "whistle"
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "Cover your ears and hope for the best",
+     "target": "king_scream"
+    }
+   ]
+  },
+  "king_scream": {
+   "title": "SCREEEEEAM!",
+   "text": [
+    "You clamp your hands over your ears, but the scream gets in anyway. It rattles your teeth, fizzes your hair and shakes a big chunk of your pixel power loose. Little glowing squares rain down around your feet.",
+    "Finally the Gremlin King runs out of breath. \"Hee hee. Now. I suppose you want my lovely shiny pearl?\""
+   ],
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -4
+    }
+   ],
+   "choices": [
+    {
+     "label": "\"Yes. Give it back!\"",
+     "target": "king_challenge"
+    }
+   ]
+  },
+  "king_calm": {
+   "title": "Unshakeable",
+   "text": [
+    "The scream washes over you, but you stay steady. (Or, if you're blowing a whistle as hard as you can, WHEEEEEEEE!) The scream bounces off you like rain off an umbrella.",
+    "The Gremlin King runs out of breath and goes bright purple. \"That... ALWAYS... works! Fine. I suppose you want my lovely shiny pearl?\""
+   ],
+   "onEnter": [
+    {
+     "message": "The Glitch Scream bounced right off you!"
+    }
+   ],
+   "choices": [
+    {
+     "label": "\"Yes. Give it back!\"",
+     "target": "king_challenge"
+    }
+   ]
+  },
+  "king_challenge": {
+   "title": "The King's Offer",
+   "text": [
+    "He grins a wide, pointy grin. \"You can't have it. Unless... you answer my riddle! Get it wrong and midnight turns your little city dark!\"",
+    "Then his eyes glitter. \"OR... forget the pearl and join us! Be a Gremlin Prince! Free bottle-cap crown! Stay up all night! No bedtime EVER!\" Siu Mai's tail puffs up like a bottle brush. \"Don't you dare.\"",
+    "A clock on the wall ticks towards twelve. The pearl is sitting right there on his knee..."
+   ],
+   "choices": [
+    {
+     "label": "Accept the riddle challenge",
+     "target": "riddle"
+    },
+    {
+     "label": "Grab the pearl and run!",
+     "target": "grab"
+    },
+    {
+     "label": "Accept the crown and become a Gremlin Prince",
+     "target": "crown_try",
+     "hideIf": {
+      "visited": "crown_try"
+     }
+    },
+    {
+     "label": "Put the crown on again. Being a prince sounded fun!",
+     "target": "gremlin_prince",
+     "conditions": {
+      "visited": "crown_try"
+     },
+     "hideIfLocked": true
+    }
+   ]
+  },
+  "crown_try": {
+   "title": "A Sticky Crown",
+   "text": [
+    "You plonk the bottle-cap crown on your head. It's sticky. It smells of old fizzy drinks. The gremlins start chanting \"PRINCE! PRINCE! PRINCE!\" and the room starts to go dark at the edges.",
+    "Siu Mai leaps onto your shoulder and knocks the crown flying. \"Are you MAD? Gremlin Princes never go home!\" Your pixels feel a bit wobbly, but you're still you."
+   ],
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -3
+    },
+    {
+     "stat": "luck",
+     "add": -1
+    }
+   ],
+   "choices": [
+    {
+     "label": "\"Okay, okay. Where were we?\"",
+     "target": "king_challenge"
+    }
+   ]
+  },
+  "grab": {
+   "title": "Grab It!",
+   "text": [
+    "You lunge for the pearl just as the Gremlin King tosses it into the air..."
+   ],
+   "test": {
+    "label": "TEST YOUR LUCK",
+    "prompt": "Roll two dice. Equal to or under your LUCK and you snatch it! (Uses up 1 LUCK, pass or fail.)",
+    "dice": "2d6",
+    "againstStat": "luck",
+    "costEffects": [
+     {
+      "stat": "luck",
+      "add": -1
+     }
+    ],
+    "success": {
+     "target": "grab_win",
+     "text": "Got it!"
+    },
+    "failure": {
+     "target": "grab_fail",
+     "text": "Whoops!"
+    }
+   }
+  },
+  "grab_win": {
+   "title": "Snatched!",
+   "text": [
+    "Your fingers close around the warm, glowing pearl. \"Hey! No fair!\" squeals the Gremlin King, but you're already racing up the stairs to the roof."
+   ],
+   "onEnter": [
+    {
+     "addItem": "pearl"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Run up to the roof",
+     "target": "dragon_summit"
+    }
+   ]
+  },
+  "grab_fail": {
+   "title": "Fizz!",
+   "text": [
+    "The Gremlin King hops aside and you crash into a pile of wires. Sparks fizz. Ouch!",
+    "\"Tsk, tsk. No grabbing. Riddle time!\""
+   ],
+   "onEnter": [
+    {
+     "stat": "energy",
+     "add": -3
+    },
+    {
+     "stat": "luck",
+     "add": -1
+    }
+   ],
+   "choices": [
+    {
+     "label": "Listen to the riddle",
+     "target": "riddle"
+    }
+   ]
+  },
+  "riddle": {
+   "title": "The King's Riddle",
+   "text": [
+    "The Gremlin King clears his throat.",
+    "\"I have hands, but I cannot clap. I have a face, but I cannot smile. I run all day, but I never leave the wall. What am I?\"",
+    "Behind him, the clock ticks loudly. Tick. Tock. Tick..."
+   ],
+   "choices": [
+    {
+     "label": "\"A monkey!\"",
+     "target": "riddle_miss",
+     "hideIf": {
+      "flag": "king_miss",
+      "equals": true
+     }
+    },
+    {
+     "label": "\"A monkey!\"",
+     "target": "riddle_wrong",
+     "conditions": {
+      "flag": "king_miss",
+      "equals": true
+     },
+     "hideIfLocked": true
+    },
+    {
+     "label": "\"A clock!\"",
+     "target": "riddle_right"
+    },
+    {
+     "label": "\"A tree!\"",
+     "target": "riddle_miss",
+     "hideIf": {
+      "flag": "king_miss",
+      "equals": true
+     }
+    },
+    {
+     "label": "\"A tree!\"",
+     "target": "riddle_wrong",
+     "conditions": {
+      "flag": "king_miss",
+      "equals": true
+     },
+     "hideIfLocked": true
+    }
+   ]
+  },
+  "riddle_miss": {
+   "title": "WRONG! (Nearly)",
+   "text": [
+    "\"WRONG!\" the Gremlin King cackles, and zaps you with a crackle of static that makes your pixels fizz.",
+    "Then he wags a finger. \"But I'm a generous king. ONE more try. Get it wrong again and it's lights out!\" Siu Mai hisses: \"Listen to the room. What's ticking?\""
+   ],
+   "onEnter": [
+    {
+     "stat": "power",
+     "add": -4
+    },
+    {
+     "setFlag": "king_miss"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Listen to the riddle again, very carefully",
+     "target": "riddle"
+    }
+   ]
+  },
+  "riddle_right": {
+   "title": "Correct!",
+   "text": [
+    "The Gremlin King's mouth falls open. \"How did you... nobody ever... oh, FINE.\"",
+    "He sulks and tosses you the pearl. \"Rules are rules, even for gremlins.\""
+   ],
+   "onEnter": [
+    {
+     "addItem": "pearl"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Run up to the roof",
+     "target": "dragon_summit"
+    }
+   ]
+  },
+  "dragon_summit": {
+   "title": "The Neon Dragon",
+   "text": [
+    "You burst out onto the tower roof. The wind howls. The Neon Dragon lifts her great head. She is enormous, made of a million tiny lights, but almost all of them have gone dim.",
+    "\"Player One,\" she whispers, in a voice like distant thunder. \"Do you have it?\"",
+    "Below you, the clock begins to chime midnight."
+   ],
+   "illustration": {
+    "src": "img/dragon.svg",
+    "alt": "A huge dragon made of dim lights coiled around a tower",
+    "pixelated": true
+   },
+   "choices": [
+    {
+     "label": "Hold up the Pearl of Light",
+     "target": "victory",
+     "conditions": {
+      "hasItem": "pearl"
+     },
+     "lockedHint": "Needs the Pearl of Light",
+     "effects": [
+      {
+       "removeItem": "pearl"
+      }
+     ]
+    }
+   ]
+  },
+  "victory": {
+   "title": "Lights On!",
+   "text": [
+    "The pearl leaps from your hands and spins into the dragon's chest. FWOOOSH! Light races through her body (red, gold, green, blue) and bursts out across the city. Every tower, every tram, every neon sign in Causeway Bay and every lantern on Temple Street blazes back to life.",
+    "Then the harbour fireworks begin. BOOM! Gold chrysanthemums. BOOM! Pink peonies. The Star Ferry toots, the red minibus honks, the grumpy taxi driver almost smiles, and the sky spells out a word in giant pixel letters: {{name}}!",
+    {
+     "text": "And then, one by one, eleven zodiac animals climb onto the roof beside you: Rat, Ox, Tiger, Rabbit, Snake, Horse, Loulou the Goat, Monkey, Rooster, Dog and Pig. High above, a jade-green shape loops around the moon and waves. It's the zodiac Dragon, finally done with the moon! The twelve of them light the biggest firework Pixel Harbour has ever seen, shaped exactly like you. ZODIAC MASTER!",
+     "if": {
+      "all": [
+       {
+        "flag": "zodiac_rat",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_ox",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_tiger",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_rabbit",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_snake",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_horse",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_goat",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_monkey",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_rooster",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_dog",
+        "equals": true
+       },
+       {
+        "flag": "zodiac_pig",
+        "equals": true
+       }
+      ]
+     }
+    },
+    "The Neon Dragon bows her head. \"Thank you, hero.\" Siu Mai purrs so loudly the whole roof vibrates, then hands you a bubble tea with a straw shaped like a dragon.",
+    "With a blink, you're back in the Golden Joystick. The machine's screen shows a brand-new HIGH SCORE with your name next to it. Auntie Lam winks and hands you another egg tart."
+   ],
+   "illustration": {
+    "src": "img/fireworks.svg",
+    "alt": "Fireworks over a brightly lit pixel harbour with the Star Ferry",
+    "pixelated": true
+   },
+   "ending": {
+    "type": "win",
+    "title": "YOU SAVED PIXEL HARBOUR!",
+    "stars": 3
+   }
+  },
+  "riddle_wrong": {
+   "title": "Lights Out",
+   "text": [
+    "\"WRONG!\" cackles the Gremlin King. BONG... BONG... BONG... The clock strikes midnight. One by one, the lights of Pixel Harbour blink out, until only the moon is left.",
+    "Everything goes black, and you're back in the Golden Joystick. The screen says: GAME OVER. INSERT TOKEN TO TRY AGAIN.",
+    "Maybe next time, listen to the clock..."
+   ],
+   "ending": {
+    "type": "fail",
+    "title": "LIGHTS OUT",
+    "stars": 1
+   }
+  },
+  "zapped": {
+   "title": "Bopped!",
+   "text": [
+    "BOP! Bolt-Bot's giant rubber fist sends you spinning... and spinning... and you land on your bottom on the floor of the Golden Joystick.",
+    "The machine flashes: GAME OVER. BOLT-BOT WINS THIS ROUND.",
+    "Next time, maybe try a different idea. Even robots have soft spots (and tummies)."
+   ],
+   "ending": {
+    "type": "fail",
+    "title": "BOPPED OUT",
+    "stars": 0
+   }
+  },
+  "gremlin_prince": {
+   "title": "Prince of the Gremlins",
+   "text": [
+    "You put on the bottle-cap crown. It's a bit sticky. The gremlins cheer, and the Gremlin King pats you on the head. \"Welcome to the family!\"",
+    "At midnight the lights of Pixel Harbour go out, and the gremlins throw the noisiest party in history. You stay up all night. And the next night. And the next. It turns out \"no bedtime EVER\" is actually quite tiring.",
+    "Siu Mai sends you a postcard: WISH YOU WEREN'T THERE."
+   ],
+   "illustration": {
+    "src": "img/king.svg",
+    "alt": "Gremlins partying in the dark",
+    "pixelated": true
+   },
+   "ending": {
+    "type": "fail",
+    "title": "GREMLIN PRINCE",
+    "stars": 0
+   }
+  },
+  "trapped": {
+   "title": "Game Over",
+   "text": [
+    "Your last pixel of strength fizzles out. Everything freezes: Siu Mai mid-meow, the gremlins mid-giggle, the clock mid-tick.",
+    "Then the world folds up like a cardboard box, and you're standing behind thick glass, looking OUT at the Golden Joystick. You're inside the Neon Dragon machine. You bang on the screen. Outside, a kid walks past, glances at the machine and says, \"Cool graphics.\"",
+    "Somewhere far away, a tinny voice starts to count: CONTINUE? 9... 8... 7..."
+   ],
+   "illustration": {
+    "src": "img/trapped.svg",
+    "alt": "An arcade machine in a dark void with a tiny hero trapped inside the screen",
+    "pixelated": true
+   },
+   "ending": {
+    "type": "death",
+    "title": "TRAPPED IN THE GAME FOREVER",
+    "stars": 0,
+    "style": "trapped"
+   }
+  },
+  "out_of_tokens": {
+   "title": "Out of Tokens",
+   "text": [
+    "You reach into your pocket. Nothing. Not one single token.",
+    "The world flickers. Big letters scroll across the sky: INSERT COIN. INSERT COIN. INSERT COIN. But you have no coins to insert. The pixels fold up around you, and you're stuck inside the Neon Dragon machine, looking out at the Golden Joystick, waiting for somebody, anybody, to drop in a token.",
+    "Auntie Lam did say: never spend your last token."
+   ],
+   "illustration": {
+    "src": "img/trapped.svg",
+    "alt": "An arcade machine flashing INSERT COIN with a tiny hero trapped inside",
+    "pixelated": true
+   },
+   "ending": {
+    "type": "death",
+    "title": "OUT OF TOKENS",
+    "stars": 0,
+    "style": "trapped"
+   }
+  },
+  "go_home": {
+   "title": "Home Safe",
+   "text": [
+    "You decide that's enough adventure for one night. Siu Mai sighs, but shows you a glowing exit door behind a fish-ball stall.",
+    "You step through and you're back in the arcade, warm and dry. The Neon Dragon machine flickers... then switches off.",
+    "Somewhere, a pixel city is getting darker. Maybe tomorrow you'll feel braver?"
+   ],
+   "ending": {
+    "type": "neutral",
+    "title": "THE END?",
+    "stars": 0
+   }
+  }
+ }
 }

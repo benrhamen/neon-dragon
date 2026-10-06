@@ -26,10 +26,7 @@
       <span class="logo-sub">OF PIXEL HARBOUR</span>
     </div>
     <div class="topbar-actions">
-      <button class="player-chip" id="playerChip" data-testid="player-chip" aria-label="Player menu">
-        <canvas width="16" height="16" class="pix" id="chipAvatar"></canvas>
-        <span id="chipName">PLAYER 1</span>
-      </button>
+      <button class="icon-btn" id="scoresBtn" data-testid="scores-btn" aria-label="Best scores" title="Best scores">🏆</button>
       <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" title="Sound">♪</button>
       <button class="icon-btn" id="restartBtn" data-testid="restart" aria-label="Restart adventure" title="Restart">↺</button>
     </div>
@@ -47,7 +44,7 @@
         <div>
           <div class="label">PLAYER 1</div>
           <div class="hero-name" id="heroName" data-testid="hero-name">—</div>
-          <button class="link-btn" id="editHeroBtn" data-testid="edit-hero">EDIT HERO</button>
+          <div class="hero-best" id="heroBest"></div>
         </div>
       </div>
       <div class="panel">
@@ -58,6 +55,9 @@
         <h2 class="panel-title">INVENTORY</h2>
         <div id="inventory" class="inventory" data-testid="inventory"></div>
         <div id="itemDetail" class="item-detail" hidden></div>
+      </div>
+      <div class="panel zodiac-panel">
+        <div id="zodiac" class="zodiac" data-testid="zodiac"></div>
       </div>
       <div class="panel journey-panel">
         <h2 class="panel-title">JOURNEY</h2>

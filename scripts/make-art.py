@@ -224,7 +224,264 @@ def scene_victory():
     water(cv, r, 34, '#13246a', '#1d3388', ['#ffd23f', '#29e7ff', '#ff2e88', '#3dff6e', '#ffffff'])
     cv.svg('victory', 'Pixel Harbour lit up with fireworks')
 
+TAXI = (["....yyyy........", "...rrrrrrrr.....", "..rccrrrccrr....", ".rrccrrrccrrrrr.", "rrrrrrrrrrrrrrrr", "rWrrrrrrrrrrrrYr", "rrrrrrrrrrrrrrrr", "..kk.......kk...", "..kk.......kk..."], {'y': '#fff6c8', 'r': '#d7263d', 'c': '#9fd8ff', 'W': '#fff6a0', 'Y': '#ffb347', 'k': '#1b1b2a'})
+MINI = (["..rrrrrrrrrrrr..", ".rwwwwwwwwwwwwr.", ".rcccccccccccwr.", ".rcccccccccccwr.", "rrrrrrrrrrrrrrrr", "rrggggggggggrrYr", "rrrrrrrrrrrrrrrr", "..kk........kk.."], {'r': '#d7263d', 'w': '#f2f2f2', 'c': '#9fd8ff', 'g': '#1f8a4c', 'Y': '#fff6a0', 'k': '#1b1b2a'})
+CUP = ([".ss.", "wwww", "wbbw", "wbbw", "wbbw", ".ww."], {'s': '#ff2e88', 'w': '#e8e8f0', 'b': '#8a5a3c'})
+STEAMER = ([".wwwww.", "kkkkkkk", "kyyyyyk", "kkkkkkk"], {'w': '#e8e8f0', 'k': '#8a5a2b', 'y': '#ffe6a0'})
+TART = ([".oooo.", "oyyyyo", ".oooo."], {'o': '#c8803a', 'y': '#ffd23f'})
+
+def firework(cv, fx, fy, c, rad=6):
+    for a in range(12):
+        ang = a * math.pi / 6
+        for d in range(2, rad + 1):
+            if d % 2 == 0 or d == rad - 1: cv.px(fx + math.cos(ang) * d, fy + math.sin(ang) * d, c)
+    cv.px(fx, fy, '#ffffff')
+
+def scene_mtr():
+    cv = Canvas(); r = random.Random(11)
+    cv.rect(0, 0, W, H, '#1a1f2e')
+    cv.rect(0, 0, W, 6, '#2a3146')
+    for x in range(4, W, 12): cv.rect(x, 1, 8, 2, '#f2f6ff')
+    cv.rect(0, 8, W, 3, '#e8e8f0'); cv.rect(0, 9, W, 1, '#d7263d')
+    for i, ch in enumerate('MTR'): cv.rect(6 + i * 4, 13, 3, 4, '#d7263d')
+    cv.rect(4, 12, 15, 1, '#e8e8f0')
+    cv.rect(0, 20, W, 16, '#2b6e4f')
+    for x in range(0, W, 8): cv.rect(x, 20, 7, 15, '#2f7a57')
+    cv.rect(0, 36, W, 2, '#ffd23f')
+    for x in range(0, W, 4): cv.rect(x, 37, 2, 1, '#1a1f2e')
+    cv.rect(0, 38, W, 16, '#3a3f52')
+    for x in range(0, W, 6): cv.rect(x, 44 + (x // 6) % 2, 4, 1, '#454b62')
+    # train in the station
+    cv.rect(2, 21, 92, 15, '#c9ced8'); cv.rect(2, 21, 92, 2, '#d7263d'); cv.rect(2, 33, 92, 1, '#d7263d')
+    for x in range(6, 90, 14): cv.rect(x, 25, 9, 6, '#20304a'); cv.rect(x + 1, 26, 3, 2, '#5c7fb0')
+    for x in range(17, 90, 28): cv.rect(x, 24, 1, 10, '#7a808e')
+    # crowd silhouettes
+    for x in range(4, W, 5):
+        h = r.randint(7, 10); c = r.choice(['#161a26', '#20263a', '#2a2240'])
+        cv.rect(x, 52 - h, 4, h, c); cv.rect(x + 1, 52 - h - 2, 2, 2, c)
+    cv.svg('mtr', 'An MTR platform at rush hour')
+
+def scene_causeway():
+    cv = Canvas(); r = random.Random(12)
+    sky(cv, '#0a0820', '#2a1450', 30); stars(cv, r, 18, 10)
+    skyline(cv, r, 34, ['#1b1840', '#241d52', '#1d2550'], ['#ff2e88', '#29e7ff', '#ffd23f', '#3dff6e'], 14, 32, lit=.6)
+    # giant screen
+    cv.rect(30, 4, 30, 17, '#0b0618'); cv.rect(31, 5, 28, 15, '#1c3a8a')
+    for k in range(4): cv.rect(33 + k * 7, 8, 5, 9, ['#ff2e88', '#ffd23f', '#29e7ff', '#3dff6e'][k])
+    # neon shop signs
+    for (x, y, c) in [(3, 12, '#ff2e88'), (4, 20, '#29e7ff'), (84, 10, '#ffd23f'), (86, 22, '#3dff6e'), (68, 16, '#ff9a3c')]:
+        cv.rect(x, y, 6, 8, '#0b0618'); cv.rect(x + 1, y + 1, 4, 6, c)
+    cv.rect(0, 34, W, 20, '#2a2a3a')
+    # zebra crossing
+    for x in range(4, W, 6): cv.rect(x, 42, 4, 8, '#e8e8f0')
+    # crowd
+    for x in range(0, W, 3):
+        if r.random() < .55:
+            c = r.choice(['#ff5d8f', '#29e7ff', '#ffd23f', '#9b5cff', '#3dff6e', '#f2f2f2'])
+            cv.rect(x, 36 + r.randint(0, 2), 2, 4, c); cv.px(x, 35 + r.randint(0, 1), '#f5c28f')
+    cv.svg('causeway', 'Causeway Bay at night, neon signs and a giant screen')
+
+def scene_taxi():
+    cv = Canvas(); r = random.Random(13)
+    cv.rect(0, 0, W, H, '#0b0a1c')
+    # tunnel arch with lights
+    for y in range(0, 40):
+        w = int(math.sqrt(max(0, 1 - ((y - 40) / 40) ** 2)) * 46)
+        cv.rect(48 - w, y, 2 * w, 1, '#16142e')
+    for i in range(10):
+        x = 48 + int(math.cos(math.pi * (i + .5) / 10) * 42); y = 40 - int(math.sin(math.pi * (i + .5) / 10) * 36)
+        cv.rect(x, y, 2, 1, '#3dff6e' if i % 2 else '#b05cff')
+    cv.rect(0, 40, W, 14, '#24222e')
+    for x in range(0, W, 10): cv.rect(x, 47, 6, 1, '#ffd23f')
+    cv.sprite(*TAXI, 30, 32, 2)
+    for i in range(1, 8): cv.rect(30 - i * 3, 40 + (i % 2), 2, 1, '#55556a')
+    cv.svg('taxi', 'A red taxi racing through the cross-harbour tunnel')
+
+def scene_manmo():
+    cv = Canvas(); r = random.Random(14)
+    cv.rect(0, 0, W, H, '#2a0f0f')
+    for x in range(0, W, 12): cv.rect(x, 0, 2, 40, '#5a1a14'); cv.rect(x, 0, 2, 2, '#c8a040')
+    cv.rect(0, 0, W, 3, '#7a2a1a'); cv.rect(0, 3, W, 1, '#c8a040')
+    # hanging incense coils
+    for (cx, cy, rad) in [(16, 12, 6), (40, 9, 5), (64, 13, 6), (84, 8, 4)]:
+        cv.rect(cx, 4, 1, cy - rad - 4, '#7a5a3a')
+        for k in range(rad, 0, -2):
+            for a in range(0, 360, 12):
+                cv.px(cx + math.cos(math.radians(a)) * k, cy + math.sin(math.radians(a)) * k * .5 + (rad - k), '#b07a3a' if k % 4 else '#e0a050')
+        cv.px(cx, cy + rad, '#ff7a1a')
+    # smoke
+    for _ in range(70):
+        x = r.randrange(W); y = r.randrange(14, 40); cv.px(x, y, r.choice(['#5a3a3a', '#6a4a4a', '#4a2a2a']))
+    # altar
+    cv.rect(26, 34, 44, 6, '#7a2a1a'); cv.rect(26, 34, 44, 1, '#c8a040')
+    cv.rect(42, 28, 12, 6, '#c8a040'); cv.rect(44, 26, 8, 2, '#e8c060')
+    for x in (44, 48, 52): cv.rect(x, 22, 1, 4, '#8a5a3a'); cv.px(x, 21, '#ff7a1a')
+    cv.rect(0, 40, W, 14, '#3a1610')
+    for x in range(0, W, 8): cv.rect(x, 40, 7, 1, '#4a1e16')
+    cv.svg('manmo', 'Inside a quiet temple with hanging incense coils')
+
+def scene_bubbletea():
+    cv = Canvas(); r = random.Random(15)
+    cv.rect(0, 0, W, H, '#1a0f2e')
+    cv.rect(0, 0, W, 12, '#2a1450')
+    cv.rect(18, 2, 60, 8, '#0b0618'); cv.rect(19, 3, 58, 6, '#ff5d8f')
+    for i in range(8): cv.rect(23 + i * 7, 4, 4, 4, '#ffffff' if i % 2 else '#ffd23f')
+    # menu boards
+    for x in (6, 70):
+        cv.rect(x, 14, 20, 16, '#0d2a3a'); 
+        for y in range(16, 29, 3): cv.rect(x + 2, y, r.randint(8, 16), 1, '#9fd8ff')
+    # counter
+    cv.rect(0, 34, W, 20, '#5a3a6a'); cv.rect(0, 34, W, 2, '#ff9ed2')
+    for i, x in enumerate(range(30, 66, 8)):
+        pal = dict(CUP[1]); pal['b'] = ['#8a5a3c', '#ff9ed2', '#3dff6e', '#ffd23f', '#9b5cff'][i % 5]
+        cv.sprite(CUP[0], pal, x, 27, 1)
+    cv.sprite(*CAT, 10, 25)
+    cv.svg('bubbletea', 'A bubble tea shop with a neon sign')
+
+def scene_dimsum():
+    cv = Canvas(); r = random.Random(16)
+    cv.rect(0, 0, W, H, '#3a0a14')
+    # red and gold walls with dragon panels
+    cv.rect(0, 0, W, 3, '#c8a040')
+    for x in range(4, W, 22): cv.rect(x, 6, 16, 18, '#5a1420'); cv.rect(x + 1, 7, 14, 16, '#7a1a28'); cv.circle(x + 8, 15, 4, '#c8a040'); cv.circle(x + 8, 15, 3, '#7a1a28')
+    for x in range(10, W, 22): cv.sprite(*LANT, x, 2)
+    # round table
+    cv.rect(10, 34, 76, 6, '#f2f2f2'); cv.rect(8, 36, 80, 4, '#e0e0e8'); cv.rect(44, 40, 8, 14, '#5a1420')
+    for x in (16, 30, 54, 70): cv.sprite(*STEAMER, x, 29)
+    for x in (24, 62): cv.sprite(*TART, x, 32)
+    for x in (18, 32, 56, 72):
+        for k in range(3): cv.px(x + 2 + k, 26 - k, '#c8c8d8')
+    cv.svg('dimsum', 'A busy dim sum restaurant with bamboo steamers')
+
+def scene_fireworks():
+    cv = Canvas(); r = random.Random(17)
+    sky(cv, '#0a0a30', '#4a1d6e', 32); stars(cv, r, 30, 20)
+    for (fx, fy, c, rr) in [(14, 9, '#ff2e88', 7), (40, 6, '#ffd23f', 6), (66, 10, '#29e7ff', 7), (86, 6, '#3dff6e', 5), (27, 17, '#ff9a3c', 5), (54, 18, '#ff5d8f', 5), (78, 19, '#ffffff', 4)]:
+        firework(cv, fx, fy, c, rr)
+    skyline(cv, r, 34, ['#2a2f7a', '#34308a', '#3a2a7a'], ['#ffd23f', '#29e7ff', '#ff2e88', '#3dff6e', '#ffffff'], 8, 26, lit=.85)
+    dragon(cv, 0, 24, 56, 4, ['#ff2e88', '#ffd23f', '#3dff6e', '#29e7ff'], '#ff2e88')
+    water(cv, r, 34, '#13246a', '#1d3388', ['#ffd23f', '#29e7ff', '#ff2e88', '#3dff6e', '#ffffff'])
+    cv.sprite(*FERRY, 60, 40)
+    cv.svg('fireworks', 'Fireworks over the harbour with the Star Ferry')
+
+def scene_trapped():
+    cv = Canvas(); r = random.Random(18)
+    cv.rect(0, 0, W, H, '#05030c')
+    for _ in range(90):
+        x = r.randrange(W); y = r.randrange(H); cv.px(x, y, r.choice(['#1a1430', '#2a1a40', '#3a1030']))
+    # glitch bars
+    for y in (6, 19, 44):
+        x = r.randrange(0, 60); cv.rect(x, y, r.randint(10, 30), 1, r.choice(['#ff2e88', '#29e7ff']))
+    # a big arcade cabinet, screen left empty in the middle for the hero
+    cv.rect(30, 2, 36, 52, '#3a1a5a'); cv.rect(30, 2, 36, 6, '#5b2a86')
+    cv.rect(33, 3, 30, 4, '#0b0618')
+    for i, c in enumerate(['#ff3355', '#ffd23f', '#ff3355', '#ffd23f', '#ff3355', '#ffd23f', '#ff3355']): cv.rect(35 + i * 4, 4, 2, 2, c)
+    cv.rect(33, 10, 30, 22, '#111122'); cv.rect(35, 12, 26, 18, '#0a1a2a')
+    for y in range(12, 30, 2): cv.rect(35, y, 26, 1, '#0d2236')
+    cv.rect(33, 34, 30, 6, '#2a1450')
+    cv.rect(40, 35, 2, 3, '#ff3355'); cv.circle(52, 36, 1, '#29e7ff'); cv.circle(57, 36, 1, '#3dff6e')
+    cv.rect(44, 44, 8, 3, '#ffd23f'); cv.rect(45, 45, 6, 1, '#111')
+    cv.svg('trapped', 'A lonely arcade machine glowing in a dark void')
+
+def scene_park():
+    cv = Canvas(); r = random.Random(19)
+    sky(cv, '#0a1030', '#24305e', 30); stars(cv, r, 30, 18); moon(cv, 82, 7, 3)
+    skyline(cv, r, 26, ['#1b2350', '#232d66'], ['#ffd23f', '#29e7ff'], 6, 16, lit=.35)
+    cv.rect(0, 26, W, 28, '#1f4a2a')
+    for x in range(0, W, 2): cv.px(x, 26 + (x % 3 == 0), '#2d6a3a')
+    for (tx, ty) in [(8, 18), (26, 20), (88, 19)]:
+        cv.rect(tx, ty + 6, 2, 8, '#4a2e1a'); cv.circle(tx + 1, ty + 4, 5, '#1d5a2a'); cv.circle(tx, ty + 3, 3, '#27703a')
+    # path + flower beds
+    for y in range(36, H): cv.rect(30 + (y - 36) // 2, y, 22, 1, '#7a6a4a')
+    for _ in range(40):
+        x = r.choice([r.randrange(0, 28), r.randrange(60, W)]); y = r.randrange(38, H); cv.px(x, y, r.choice(['#ff5d8f', '#ffd23f', '#ff9a3c', '#f2f2f2']))
+    for x in (4, 20, 70, 86): cv.rect(x, 30, 1, 6, '#55556a'); cv.rect(x - 1, 28, 3, 2, '#fff6a0')
+    cv.svg('park', 'Victoria Park at night with flower beds')
+
+def scene_racecourse():
+    cv = Canvas(); r = random.Random(20)
+    sky(cv, '#0a0d2a', '#2a2a5e', 24); stars(cv, r, 25, 14)
+    skyline(cv, r, 22, ['#1b2350', '#232d66', '#2b1f5c'], ['#ffd23f', '#29e7ff', '#ff2e88'], 8, 20, lit=.6)
+    # floodlights
+    for x in (6, 90):
+        cv.rect(x, 4, 1, 20, '#7a808e'); cv.rect(x - 2, 3, 5, 2, '#fff6c8')
+        for k in range(1, 9): cv.px(x + (k if x < 50 else -k), 5 + k, '#3a3a6a')
+    cv.rect(0, 22, W, 10, '#1d2a3a')
+    for x in range(30, W, 5): cv.rect(x, 28, 3, 1, '#f2f2f2')
+    cv.rect(30, 29, W - 30, 1, '#f2f2f2')
+    # grandstand
+    cv.rect(0, 22, 30, 10, '#3a3a52'); 
+    for y in range(23, 31, 2):
+        for x in range(1, 29, 2): cv.px(x, y, r.choice(['#ff5d8f', '#29e7ff', '#ffd23f', '#f2f2f2']))
+    cv.rect(0, 32, W, 22, '#2a7a3a')
+    for y in (36, 46): cv.rect(0, y, W, 1, '#f2f2f2')
+    for x in range(0, W, 4): cv.rect(x, 35, 1, 2, '#f2f2f2')
+    for x in range(0, W, 3): cv.px(x, 40 + (x % 2), '#33883f')
+    cv.svg('racecourse', 'The Happy Valley racecourse under floodlights')
+
+def scene_tram():
+    cv = Canvas(); r = random.Random(21)
+    sky(cv, '#0a0a26', '#2a1a4e', 28); stars(cv, r, 20, 12)
+    skyline(cv, r, 30, ['#2a2048', '#33285a', '#1e2a52'], ['#ffd23f', '#ff2e88', '#29e7ff'], 16, 30, lit=.55)
+    # shop signs sticking out
+    for (x, y, c) in [(6, 10, '#ff2e88'), (20, 14, '#ffd23f'), (78, 9, '#29e7ff'), (88, 15, '#3dff6e')]:
+        cv.rect(x, y, 4, 10, '#0b0618'); cv.rect(x + 1, y + 1, 2, 8, c)
+    cv.rect(0, 30, W, 24, '#2a2a3a')
+    cv.rect(0, 50, W, 1, '#7a808e'); cv.rect(0, 52, W, 1, '#7a808e')
+    cv.rect(0, 2, W, 1, '#55556a')
+    # double-decker ding-ding tram
+    cv.rect(18, 16, 44, 32, '#1f7a4c'); cv.rect(18, 16, 44, 2, '#2a9a5c'); cv.rect(18, 31, 44, 2, '#f2f2f2')
+    for x in range(21, 60, 8): cv.rect(x, 20, 6, 7, '#ffe680'); cv.rect(x, 35, 6, 7, '#ffe680')
+    cv.rect(18, 45, 44, 3, '#14502f'); cv.rect(22, 48, 4, 2, '#1b1b2a'); cv.rect(54, 48, 4, 2, '#1b1b2a')
+    cv.rect(39, 6, 1, 10, '#7a808e'); cv.rect(36, 3, 7, 1, '#7a808e')
+    cv.rect(28, 12, 24, 4, '#0b0618'); cv.rect(29, 13, 22, 2, '#ffd23f')
+    cv.svg('tram', 'A double-decker ding-ding tram on a neon street')
+
+def scene_peak():
+    cv = Canvas(); r = random.Random(22)
+    sky(cv, '#05051a', '#2a1450', 30); stars(cv, r, 50, 24); moon(cv, 12, 7, 3)
+    # city far below
+    for y in range(30, 42):
+        for x in range(0, W):
+            if r.random() < .25: cv.px(x, y, r.choice(['#ffd23f', '#29e7ff', '#ff2e88', '#ffffff', '#3dff6e']))
+    water(cv, r, 42, '#0b1f4a', '#123068', ['#ffd23f', '#29e7ff'])
+    # hills
+    for x in range(W):
+        h = int(10 + 4 * math.sin(x / 9) + 3 * math.sin(x / 4))
+        cv.rect(x, 30 - h // 3, 1, 2, '#1a1636')
+    # lookout terrace and railing
+    cv.rect(0, 46, W, 8, '#3a3346')
+    cv.rect(0, 44, W, 1, '#9aa3c7'); cv.rect(0, 46, W, 1, '#9aa3c7')
+    for x in range(0, W, 6): cv.rect(x, 44, 1, 3, '#9aa3c7')
+    # the Sky Tower on the left
+    cv.rect(4, 8, 10, 36, '#1d1838'); cv.rect(6, 4, 6, 4, '#241e45')
+    for y in range(10, 42, 3): cv.px(8, y, '#ffd23f'); cv.px(11, y + 1, '#29e7ff')
+    cv.svg('peak', 'The view from the Peak lookout at night')
+
+def scene_vault():
+    cv = Canvas(); r = random.Random(23)
+    cv.rect(0, 0, W, H, '#14100a')
+    for y in range(0, 40, 6):
+        off = (y // 6) % 2 * 6
+        for x in range(-6 + off, W, 12): cv.rect(x, y, 11, 5, '#2a2014'); cv.rect(x, y, 11, 1, '#3a2c1a')
+    cv.rect(0, 40, W, 14, '#1d160c')
+    # treasure piles
+    for _ in range(140):
+        x = r.randrange(W); y = r.randrange(36, H)
+        if abs(x - 48) < 14 and y < 44: continue
+        cv.px(x, y, r.choice(['#ffd23f', '#c8a040', '#ff2e88', '#29e7ff', '#e8e8f0', '#3dff6e', '#ff9a3c']))
+    # umbrellas and socks
+    for x in (6, 80):
+        cv.rect(x, 30, 9, 2, '#ff5d8f'); cv.rect(x + 1, 28, 7, 2, '#ff5d8f'); cv.rect(x + 4, 32, 1, 6, '#7a5a3a')
+    # cushion with the pearl
+    cv.rect(38, 40, 20, 4, '#8a1a3a'); cv.rect(36, 42, 24, 3, '#a02a4a')
+    cv.sprite(*PEARL, 46, 34, 1)
+    for k in range(1, 5): cv.px(48 + k * 2, 33 - k, '#9fd8ff'); cv.px(48 - k * 2, 33 - k, '#9fd8ff')
+    cv.svg('vault', 'A treasure vault full of stolen things and a glowing pearl')
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
-    for f in [scene_arcade, scene_harbour, scene_market, scene_ferry, scene_tunnel, scene_robot, scene_king, scene_dragon, scene_victory]: f()
+    for f in [scene_arcade, scene_harbour, scene_market, scene_ferry, scene_tunnel, scene_robot, scene_king, scene_dragon,
+              scene_mtr, scene_causeway, scene_taxi, scene_manmo, scene_bubbletea, scene_dimsum, scene_fireworks, scene_trapped,
+              scene_park, scene_racecourse, scene_tram, scene_peak, scene_vault]: f()
     print('ok', sorted(os.listdir(OUT)))

@@ -1,20 +1,23 @@
 import * as E from './engine.js';
-import { drawAvatar, drawSprite, PRESETS, SKINS, HAIR_COLORS, OUTFITS, HAIR_STYLES, ACCESSORIES, LABELS, defaultAvatar, randomAvatar } from './avatar.js';
+import { drawAvatar, drawSprite, avatarGrid, SKINS, HAIR_COLORS, OUTFITS, HAIR_STYLES, ACCESSORIES, LABELS, defaultAvatar, randomAvatar } from './avatar.js';
 import { sfx, setSound, soundOn } from './sound.js';
+import * as LB from './leaderboard.js';
 
 const BOOK_URL = 'data/neon-dragon.json';
-const PROFILES_KEY = 'gb.profiles.v1';
 const SETTINGS_KEY = 'gb.settings.v1';
 const params = new URLSearchParams(location.search);
 const rng = E.makeRng(params.get('seed'));
-const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || params.has('nomotion');
 
+// Every game is independent: the only things kept between games are the Best Scores tables and
+// the sound setting. The current run is autosaved (so a reload resumes it) and cleared when it ends.
 let book = null;
-let profiles = { activeId: null, players: {} };
+let player = null; // { name, avatar } for this run only
 let state = null;
 let prevStats = {};
 let lastRenderedSection = null;
 let busy = false;
+let scoreRecorded = false;
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -23,11 +26,11 @@ const LOCK = '<svg class="lock" viewBox="0 0 8 8" aria-hidden="true" shape-rende
 
 function loadJSON(key, fallback) { try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; } catch { return fallback; } }
 function saveJSON(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) { console.warn('Could not save', e); } }
-const activePlayer = () => profiles.players[profiles.activeId];
-const saveKey = (pid = profiles.activeId) => `gb.save.v1.${book.metadata.id}.${pid}`;
-const persist = () => saveJSON(saveKey(), state);
-const saveProfiles = () => saveJSON(PROFILES_KEY, profiles);
-const T = (s) => E.interpolate(s, { name: activePlayer()?.name || 'PLAYER' });
+const bookId = () => book.metadata.id || book.metadata.title;
+const runKey = () => `gb.run.v1.${bookId()}`;
+const persist = () => { if (state && player && !state.ended) saveJSON(runKey(), { player, state }); };
+const clearRun = () => { try { localStorage.removeItem(runKey()); } catch { /* ignore */ } };
+const T = (s) => E.interpolate(s, { name: player?.name || 'PLAYER' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, reduceMotion ? 0 : ms));
 
 // ---------------- boot ----------------
@@ -49,29 +52,40 @@ async function boot() {
   lint.warnings.forEach((m) => console.warn('[book]', m));
   document.title = `${book.metadata.title} · Pixel Gamebook`;
   $('#bookCredit').textContent = `${book.metadata.title} v${book.metadata.version}${book.metadata.original ? ' · original story' : ''} · ${book.metadata.license.name}`;
+  // tidy up data from older versions (per-player profiles and saves are gone)
+  try { Object.keys(localStorage).filter((k) => k.startsWith('gb.profiles.') || k.startsWith('gb.save.')).forEach((k) => localStorage.removeItem(k)); } catch { /* ignore */ }
 
-  profiles = loadJSON(PROFILES_KEY, { activeId: null, players: {} });
-  if (!activePlayer()) {
-    renderEmpty();
-    openCreator({ mode: 'first' });
-  } else startOrResume();
-
+  const saved = loadJSON(runKey(), null);
+  if (saved?.player?.name && saved.state && saved.state.saveVersion === E.SAVE_VERSION && saved.state.bookId === bookId()
+      && book.sections[saved.state.current] && !saved.state.ended) {
+    player = saved.player;
+    state = saved.state;
+    beginRender();
+    toast(`WELCOME BACK, ${player.name}!`, 'info');
+  } else {
+    clearRun();
+    newRun();
+  }
   if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !params.has('nosw')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 }
 
-function startOrResume() {
-  const saved = loadJSON(saveKey(), null);
-  const bookId = book.metadata.id || book.metadata.title;
-  if (saved && saved.saveVersion === E.SAVE_VERSION && saved.bookId === bookId && book.sections[saved.current]) {
-    state = saved;
-  } else {
-    state = E.newGame(book, { rng, playerName: activePlayer().name }).state;
-    persist();
-  }
+// Start a brand-new game: always a blank creator (name + hero from scratch).
+function newRun() {
+  clearRun();
+  state = null;
+  player = null;
+  scoreRecorded = false;
+  renderTitle();
+  openCreator();
+}
+
+function beginRender() {
   prevStats = { ...state.stats };
   lastRenderedSection = null;
+  scoreRecorded = !!state.ended;
+  document.body.classList.add('in-game');
   renderAll();
 }
 
@@ -87,11 +101,11 @@ function wireChrome() {
     setSound(!soundOn()); saveJSON(SETTINGS_KEY, { sound: soundOn() }); updateSoundBtn(); sfx.select();
   });
   $('#restartBtn').addEventListener('click', async () => {
-    if (!state) return;
-    if (await confirmModal('START OVER?', 'Your progress in this adventure will be lost.', 'RESTART')) restart();
+    if (!book) return;
+    if (!state || state.ended) return newRun();
+    if (await confirmModal('START OVER?', 'This adventure will end and you will make a brand-new hero.', 'RESTART')) newRun();
   });
-  $('#playerChip').addEventListener('click', () => book && openPlayerMenu());
-  $('#editHeroBtn').addEventListener('click', () => book && activePlayer() && openCreator({ mode: 'edit' }));
+  $('#scoresBtn').addEventListener('click', () => book && openScores());
 }
 
 function updateSoundBtn() {
@@ -101,57 +115,81 @@ function updateSoundBtn() {
   b.title = soundOn() ? 'Sound on' : 'Sound off';
 }
 
-function restart() {
-  state = E.newGame(book, { rng, playerName: activePlayer().name }).state;
-  prevStats = { ...state.stats };
-  persist();
-  lastRenderedSection = null;
-  renderAll();
-  sfx.start();
-  toast('NEW GAME! Stats re-rolled.', 'info');
-}
-
 // ---------------- rendering ----------------
-function renderEmpty() {
-  $('#story').innerHTML = `<div class="title-screen"><div class="logo big"><span class="logo-main">NEON DRAGON</span><span class="logo-sub">OF PIXEL HARBOUR</span></div><p class="blink">INSERT COIN</p></div>`;
+function renderTitle() {
+  document.body.classList.remove('in-game');
+  $('#story').innerHTML = `<div class="title-screen"><div class="logo big"><span class="logo-main">NEON DRAGON</span><span class="logo-sub">OF PIXEL HARBOUR</span></div><p class="blink">INSERT COIN</p><button class="btn btn-ghost" data-testid="title-scores">🏆 BEST SCORES</button></div>`;
+  $('[data-testid=title-scores]').addEventListener('click', () => openScores());
+  renderHeroCard();
 }
 
 function renderAll() {
-  renderPlayer();
+  renderHeroCard();
   renderStory();
   renderStats();
   renderInventory();
   renderJourney();
 }
 
-function renderPlayer() {
-  const p = activePlayer();
-  if (!p) return;
-  drawAvatar($('#chipAvatar'), p.avatar);
-  drawAvatar($('#heroAvatar'), p.avatar);
-  $('#chipName').textContent = p.name;
-  $('#heroName').textContent = p.name;
+function renderHeroCard() {
+  const nameEl = $('#heroName');
+  if (player) {
+    drawAvatar($('#heroAvatar'), player.avatar);
+    nameEl.textContent = player.name;
+  } else {
+    drawAvatar($('#heroAvatar'), defaultAvatar());
+    nameEl.textContent = '—';
+  }
+  const best = book ? LB.bestLocal(bookId()) : null;
+  const mine = book && player ? LB.bestLocal(bookId(), player.name) : null;
+  $('#heroBest').innerHTML = `${mine ? `<span>YOUR BEST <b data-testid="hero-best">${mine.score_pct}%</b></span>` : ''}${best ? `<span>HI-SCORE <b data-testid="hero-hiscore">${best.score_pct}%</b> ${esc(best.nickname)}</span>` : '<span>HI-SCORE <b>—</b></span>'}`;
+}
+
+// Character sprites drawn on top of a scene, on the scene's pixel grid (default 96×54).
+function drawOverlay(canvas, ill) {
+  const g = ill.grid || { w: 96, h: 54 };
+  canvas.width = g.w; canvas.height = g.h;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, g.w, g.h);
+  for (const ch of ill.characters || []) {
+    const sp = book.characters?.[ch.id]?.sprite;
+    if (sp) paintSprite(ctx, sp, ch.x, ch.y, ch.scale || 1, ch.flip);
+  }
+}
+function paintSprite(ctx, sp, ox, oy, scale = 1, flip = false) {
+  const w = Math.max(...sp.rows.map((r) => r.length));
+  sp.rows.forEach((row, y) => [...row].forEach((c, x) => {
+    const col = sp.palette[c];
+    if (!col || c === '.' || c === ' ') return;
+    ctx.fillStyle = col;
+    ctx.fillRect(ox + (flip ? w - 1 - x : x) * scale, oy + y * scale, scale, scale);
+  }));
+}
+function illustrationHTML(ill) {
+  if (!ill) return '';
+  if (ill.src) return `<figure class="illus"><span class="illus-box"><img class="${ill.pixelated === false ? '' : 'pix'}" src="${esc(ill.src)}" alt="${esc(ill.alt || '')}" width="768" height="432">${ill.characters?.length ? '<canvas class="pix illus-chars" data-chars aria-hidden="true"></canvas>' : ''}</span></figure>`;
+  if (ill.sprite) return `<figure class="illus sprite-illus"><canvas class="pix" data-illus></canvas></figure>`;
+  return '';
 }
 
 function renderStory() {
   const sec = book.sections[state.current];
   const el = $('#story');
   const changed = lastRenderedSection !== state.current + ':' + state.history.length;
-  const paras = Array.isArray(sec.text) ? sec.text : [sec.text];
-  let illus = '';
-  if (sec.illustration?.src) illus = `<figure class="illus"><img class="${sec.illustration.pixelated === false ? '' : 'pix'}" src="${esc(sec.illustration.src)}" alt="${esc(sec.illustration.alt || '')}" width="768" height="432"></figure>`;
-  else if (sec.illustration?.sprite) illus = `<figure class="illus sprite-illus"><canvas class="pix" data-illus></canvas></figure>`;
+  const paras = E.sectionParagraphs(book, state, sec);
   el.innerHTML = `
     <div class="sec-head">
-      <span class="page-no">PAGE ${state.history.length}</span>
+      <span class="page-no" data-testid="move-count">MOVE ${state.moves || 0}</span>
       <h1 class="sec-title" data-testid="section-title">${esc(T(sec.title || ''))}</h1>
     </div>
     ${state.ended ? '<div class="ending-first" id="endingSlot"></div>' : ''}
-    ${illus}
+    ${state.ended?.style === 'trapped' ? '' : illustrationHTML(sec.illustration)}
     <div class="sec-text ${changed ? 'fresh' : ''}" data-testid="section-text">${paras.map((p, i) => `<p style="--d:${i}">${esc(T(p))}</p>`).join('')}</div>
     <div class="actions" id="actions"></div>`;
   el.dataset.section = state.current;
   if (sec.illustration?.sprite) drawSprite($('[data-illus]', el), sec.illustration.sprite);
+  const ov = $('[data-chars]', el);
+  if (ov) drawOverlay(ov, sec.illustration);
   renderActions();
   if (changed && lastRenderedSection !== null) {
     const top = el.getBoundingClientRect().top + window.scrollY - 70;
@@ -160,16 +198,63 @@ function renderStory() {
   lastRenderedSection = state.current + ':' + state.history.length;
 }
 
+const warnText = (w) => w ? `<span class="warn" data-testid="warning">⚠ ${esc(w.name.toUpperCase())} WOULD RUN OUT${w.target ? ` · ${esc((book.sections[w.target]?.ending?.title || 'GAME OVER').toUpperCase())}` : ''}</span>` : '';
+
 function renderActions() {
   const box = $('#actions');
   if (state.ended) { box.innerHTML = ''; return renderEnding($('#endingSlot')); }
   if (state.pending?.kind === 'test') return renderTest(box);
   if (state.pending?.kind === 'combat') return renderCombat(box);
+  if (state.pending?.kind === 'riddle') return renderRiddle(box);
   const opts = E.availableChoices(book, state).filter((c) => !c.hidden);
   box.innerHTML = `<div class="choices" data-testid="choices">${opts.map((c) => c.available
-    ? `<button class="choice" data-choice="${c.index}"><span class="cursor">▶</span><span class="choice-label">${esc(T(c.label))}</span></button>`
+    ? `<button class="choice ${c.warning ? 'danger' : ''}" data-choice="${c.index}"><span class="cursor">${c.warning ? '⚠' : '▶'}</span><span class="choice-label">${esc(T(c.label))}${warnText(c.warning)}</span></button>`
     : `<button class="choice locked" disabled aria-disabled="true"><span class="cursor">${LOCK}</span><span class="choice-label">${esc(T(c.label))}<span class="need">${esc(c.need)}</span></span></button>`).join('')}</div>`;
   $$('.choice[data-choice]', box).forEach((b) => b.addEventListener('click', () => act(() => E.choose(book, state, +b.dataset.choice, rng))));
+}
+
+// ---- riddles (an NPC asks multiple-choice questions) ----
+function renderRiddle(box) {
+  const r = E.currentRiddle(book, state);
+  const p = state.pending;
+  const rd = book.sections[state.current].riddle;
+  const npc = book.characters?.[rd.character];
+  const total = rd.questions.length;
+  let body = '';
+  if (p.picked === null) {
+    body = `
+      <div class="riddle-q" data-testid="riddle-question">${esc(T(r.question.question))}</div>
+      <div class="riddle-options">${r.question.options.map((o, i) => `<button class="choice riddle-opt" data-opt="${i}" data-testid="riddle-option-${i}"><span class="cursor">${'ABC'[i] || i + 1}</span><span class="choice-label">${esc(T(o))}</span></button>`).join('')}</div>
+      <button class="btn btn-ghost riddle-retreat" data-testid="riddle-retreat">↩ ${esc(T(rd.retreat.label || 'Head back and take another path'))}</button>`;
+  } else if (p.correct) {
+    body = `<div class="result ok" data-testid="riddle-result" data-correct="true">CORRECT!</div>${r.question.correctText ? `<p class="outcome">${esc(T(r.question.correctText))}</p>` : ''}
+      <button class="btn btn-big" data-testid="continue">CONTINUE ▶</button>`;
+  } else if (p.penaltyDue) {
+    const pens = E.riddlePenalties(book, state);
+    body = `<div class="result bad" data-testid="riddle-result" data-correct="false">WRONG!</div>
+      <p class="outcome">${esc(T(r.question.wrongText || rd.wrong?.text || 'Wrong! Choose your penalty.'))}</p>
+      <div class="riddle-penalty" data-testid="riddle-penalty">${pens.map((o) => o.available
+        ? `<button class="choice ${o.warning ? 'danger' : ''}" data-pen="${o.index}" data-testid="penalty-${o.index}"><span class="cursor">${o.warning ? '⚠' : '▶'}</span><span class="choice-label">${esc(T(o.label))}${warnText(o.warning)}</span></button>`
+        : `<button class="choice locked" disabled data-testid="penalty-${o.index}"><span class="cursor">${LOCK}</span><span class="choice-label">${esc(T(o.label))}<span class="need">${esc(o.need)}</span></span></button>`).join('')}</div>`;
+  } else {
+    body = `<div class="result bad" data-testid="riddle-result" data-correct="false">PENALTY PAID</div><button class="btn btn-big" data-testid="continue">CONTINUE ▶</button>`;
+  }
+  box.innerHTML = `
+    <div class="riddle" data-testid="riddle" data-character="${esc(rd.character)}">
+      <div class="riddle-head">
+        <canvas class="pix riddle-npc" data-npc></canvas>
+        <div><div class="riddle-name">${esc((npc?.name || rd.character).toUpperCase())}</div>
+        <div class="riddle-count">RIDDLE ${Math.min(r.index + 1, total)} OF ${total}</div></div>
+      </div>
+      ${body}
+    </div>`;
+  if (npc?.sprite) drawSprite($('[data-npc]', box), npc.sprite);
+  $$('[data-opt]', box).forEach((b) => b.addEventListener('click', () => {
+    act(() => E.answerRiddle(book, state, +b.dataset.opt, rng), { sound: state.pending && r.question.answer === +b.dataset.opt ? 'coin' : 'hurt' });
+  }));
+  $$('[data-pen]', box).forEach((b) => b.addEventListener('click', () => act(() => E.payRiddlePenalty(book, state, +b.dataset.pen, rng))));
+  $('[data-testid=riddle-retreat]', box)?.addEventListener('click', () => act(() => E.retreatRiddle(book, state, rng)));
+  $('[data-testid=continue]', box)?.addEventListener('click', () => act(() => E.continueRiddle(book, state, rng)));
 }
 
 // ---- dice ----
@@ -197,8 +282,9 @@ function renderTest(box) {
   const p = state.pending;
   const statName = t.againstStat ? book.stats[t.againstStat].name.toUpperCase() : '';
   const { count } = E.parseDice(t.dice);
+  const goal = p.roll ? p.roll.goal : state.stats[t.againstStat];
   const goalLine = t.againstStat
-    ? `NEED ${p.roll ? p.roll.goal : state.stats[t.againstStat]} OR LESS <small>(YOUR ${statName})</small>`
+    ? `NEED ${goal} OR LESS <small>(YOUR ${statName})</small>${goal < count ? '<div class="warn" data-testid="luck-empty">YOUR ' + statName + ' IS TOO LOW: THIS CAN\'T SUCCEED</div>' : ''}`
     : `NEED ${t.target} OR MORE`;
   box.innerHTML = `
     <div class="dice-box" data-testid="dice-test">
@@ -214,10 +300,11 @@ function renderTest(box) {
     btns.innerHTML = `<button class="btn btn-big" data-testid="roll">ROLL DICE</button>`;
     $('button', btns).addEventListener('click', async (ev) => {
       if (busy) return; busy = true; ev.currentTarget.disabled = true;
-      const { roll, messages } = E.rollTest(book, state, rng);
+      const { roll, messages, diverted } = E.rollTest(book, state, rng);
       persist(); // the result is locked in: reloading can't re-roll
       await animateDice($$('.die', box), roll.rolls);
       busy = false;
+      if (diverted) return afterAction(messages);
       showMessages(messages);
       renderStats();
       renderTest(box);
@@ -241,7 +328,7 @@ function renderCombat(box) {
   const hpMax = E.statBounds(book, state, cs.healthStat).max;
   const hp = state.stats[cs.healthStat];
   const last = p.rounds[p.rounds.length - 1];
-  const nm = activePlayer().name;
+  const nm = player.name;
   const { count } = E.parseDice(cs.dice);
   box.innerHTML = `
     <div class="combat" data-testid="combat">
@@ -268,7 +355,7 @@ function renderCombat(box) {
       <div class="round-log" data-testid="round-log">${last ? roundText(last, nm, cs) : 'ROUND 1 · PRESS ATTACK TO ROLL!'}</div>
       <div class="combat-buttons"></div>
     </div>`;
-  drawAvatar($('[data-you]', box), activePlayer().avatar);
+  drawAvatar($('[data-you]', box), player.avatar);
   if (enemy.sprite) drawSprite($('[data-foe]', box), enemy.sprite);
   const btns = $('.combat-buttons', box);
   if (p.result) {
@@ -278,14 +365,15 @@ function renderCombat(box) {
     return;
   }
   btns.innerHTML = `<button class="btn btn-big btn-attack" data-testid="attack">ATTACK! <small>(ROLL)</small></button>${c.flee ? `<button class="btn btn-ghost" data-testid="flee">${esc(c.flee.label || 'RUN AWAY')}</button>` : ''}`;
-  $('[data-testid=attack]', btns).addEventListener('click', async (ev) => {
+  $('[data-testid=attack]', btns).addEventListener('click', async () => {
     if (busy) return; busy = true;
     $$('button', btns).forEach((b) => (b.disabled = true));
-    const { round, messages } = E.combatRound(book, state, rng);
+    const { round, messages, diverted } = E.combatRound(book, state, rng);
     persist();
     await animateDice([...$$('[data-pd] .die', box), ...$$('[data-ed] .die', box)], [...round.playerRolls, ...round.enemyRolls]);
     busy = false;
     if (round.winner === 'enemy') sfx.hurt(); else if (round.winner === 'player') sfx.coin();
+    if (diverted) return afterAction(messages);
     showMessages(messages, { silent: true });
     renderStats();
     renderCombat(box);
@@ -299,26 +387,147 @@ function roundText(r, nm, cs) {
   return `ROUND ${r.n} · ${you} · ${foe}<br>${res}${r.nextEnemy ? `<br>NEXT UP: ${esc(r.nextEnemy)}!` : ''}`;
 }
 
-// ---- ending ----
+// ---- endings ----
+function zodiacInfo() { return E.trackerProgress(book, state).find((t) => t.id === 'zodiac') || null; }
+
 function renderEnding(box) {
   const end = state.ended;
+  if (end.style === 'trapped') return renderTrapped(box);
   const kind = end.type === 'win' ? 'win' : end.type === 'neutral' ? 'neutral' : 'lose';
   const banner = { win: 'YOU WIN!', neutral: 'THE END', lose: 'GAME OVER' }[kind];
   const stars = end.stars ?? (kind === 'win' ? 3 : 0);
-  const items = Object.keys(state.inventory).length;
+  const z = zodiacInfo();
+  const score = kind === 'win' ? E.computeScore(book, state) : null;
   box.innerHTML = `
     <div class="ending ending-${kind}" data-testid="ending" data-ending-type="${esc(end.type)}">
       <div class="ending-banner">${banner}</div>
       <div class="ending-title">${esc(T(end.title))}</div>
       <div class="stars" aria-label="${stars} of 3 stars">${[0, 1, 2].map((i) => `<span class="star ${i < stars ? 'on' : ''}">★</span>`).join('')}</div>
+      ${z?.complete ? `<div class="badge-master" data-testid="zodiac-master">★ ${esc(z.badge || 'COMPLETE')} ★</div>` : ''}
       <div class="ending-stats">
-        <div><b>${state.history.length}</b><span>PAGES</span></div>
-        <div><b>${items}</b><span>ITEMS</span></div>
+        <div><b>${state.moves || 0}</b><span>MOVES</span></div>
+        <div><b data-testid="end-zodiac">${z ? `${z.met.length}/${z.total}` : '-'}</b><span>ZODIAC</span></div>
         <div><b>${new Set(state.history).size}</b><span>PLACES</span></div>
       </div>
-      <button class="btn btn-big btn-start" data-testid="play-again">PLAY AGAIN</button>
+      ${score ? scoreBoardHTML(score) : `<p class="no-score">NO SCORE THIS TIME. ONLY HEROES WHO SAVE PIXEL HARBOUR GET A SCORE!</p>`}
+      <div class="ending-buttons">
+        <button class="btn btn-big btn-start" data-testid="play-again">PLAY AGAIN</button>
+        <button class="btn btn-ghost" data-testid="end-scores">🏆 BEST SCORES</button>
+      </div>
     </div>`;
-  $('[data-testid=play-again]', box).addEventListener('click', restart);
+  wireEndingButtons(box);
+  if (score) finishScore(box, score);
+}
+
+function scoreBoardHTML(score) {
+  return `
+    <div class="score-screen" data-testid="score-screen">
+      <div class="score-head">SCORE</div>
+      <div class="score-rows">${score.components.map((c, i) => `
+        <div class="score-row" style="--i:${i}" data-testid="score-${c.id}"><span class="sr-label">${esc(c.label)}</span><span class="sr-calc">${c.value} × ${c.each}</span><span class="sr-pts">${c.points}</span></div>`).join('')}
+        <div class="score-row total" style="--i:${score.components.length}"><span class="sr-label">TOTAL</span><span class="sr-calc">/ ${score.reference ?? '?'}</span><span class="sr-pts">${score.raw}</span></div>
+      </div>
+      <div class="score-pct" data-testid="score-pct" style="--i:${score.components.length + 1}">${score.percent ?? '--'}<small>%</small></div>
+      <div class="score-rank" data-testid="score-rank" style="--i:${score.components.length + 2}">${esc(score.rank || '')}</div>
+      <div class="score-status" id="scoreStatus"></div>
+    </div>`;
+}
+
+// Save the score on this device (once per run) and offer the shared board.
+function finishScore(box, score) {
+  const status = $('#scoreStatus', box);
+  const z = zodiacInfo();
+  const entry = { nickname: player.name, avatar: player.avatar, score_pct: score.percent ?? 0, rank: score.rank || '', zodiac_count: z ? z.met.length : 0 };
+  if (!scoreRecorded) {
+    const before = LB.bestLocal(bookId());
+    const pos = LB.addLocalScore(bookId(), entry);
+    scoreRecorded = true;
+    state.scorePosition = pos;
+    state.newHigh = !before || entry.score_pct > before.score_pct;
+    renderHeroCard();
+  }
+  const pos = state.scorePosition;
+  status.innerHTML = `${state.newHigh ? '<div class="new-high blink" data-testid="new-high">NEW HIGH SCORE!</div>' : ''}
+    <div class="dim">${pos ? `#${pos} ON THIS DEVICE` : 'NOT IN THIS DEVICE\'S TOP 10'}</div>
+    ${LB.globalConfigured() ? '<button class="btn btn-small" data-testid="post-global">POST TO WORLD TOP 50</button><div class="nick-tip">Posts your nickname, hero and score. No real names!</div>' : ''}`;
+  $('[data-testid=post-global]', status)?.addEventListener('click', async (ev) => {
+    const b = ev.currentTarget;
+    b.disabled = true; b.textContent = 'SENDING...';
+    try {
+      await LB.submitGlobal(entry);
+      b.outerHTML = '<div class="ok" data-testid="post-result">SENT TO THE WORLD BOARD!</div>';
+      sfx.coin();
+    } catch (e) {
+      console.warn('global board', e);
+      b.outerHTML = '<div class="bad" data-testid="post-result">WORLD BOARD OFFLINE. YOUR SCORE IS SAVED ON THIS DEVICE.</div>';
+    }
+  });
+}
+
+function wireEndingButtons(box) {
+  $('[data-testid=play-again]', box).addEventListener('click', () => { sfx.select(); newRun(); });
+  $('[data-testid=end-scores]', box)?.addEventListener('click', () => openScores());
+}
+
+// The dramatic "trapped in the game" ending: glitchy GAME OVER, your hero stuck behind the glass.
+function renderTrapped(box) {
+  const end = state.ended;
+  const cause = end.cause ? book.stats[end.cause.stat]?.name?.toUpperCase() : null;
+  box.innerHTML = `
+    <div class="ending ending-trapped" data-testid="ending" data-ending-type="${esc(end.type)}" data-style="trapped">
+      <div class="glitch" data-text="GAME OVER">GAME OVER</div>
+      <div class="ending-title trapped-title" data-testid="trapped-title">${esc(T(end.title))}</div>
+      ${cause ? `<div class="trapped-cause" data-testid="trapped-cause">YOUR ${esc(cause)} RAN OUT</div>` : ''}
+      <canvas class="pix trapped-art" id="trappedArt" width="192" height="108" aria-label="Your hero trapped inside the arcade machine"></canvas>
+      <div class="continue-count" aria-hidden="true">CONTINUE? <b id="contNum">9</b></div>
+      <div class="ending-stats">
+        <div><b>${state.moves || 0}</b><span>MOVES</span></div>
+        <div><b data-testid="end-zodiac">${zodiacInfo() ? `${zodiacInfo().met.length}/${zodiacInfo().total}` : '-'}</b><span>ZODIAC</span></div>
+      </div>
+      <div class="ending-buttons">
+        <button class="btn btn-big btn-start insert-coin-btn" data-testid="play-again">INSERT COIN · PLAY AGAIN</button>
+        <button class="btn btn-ghost" data-testid="end-scores">🏆 BEST SCORES</button>
+      </div>
+    </div>`;
+  wireEndingButtons(box);
+  drawTrapped($('#trappedArt', box));
+  let n = 9;
+  const tick = () => {
+    const el = document.getElementById('contNum');
+    if (!el) return;
+    n = Math.max(0, n - 1);
+    el.textContent = n;
+    if (n > 0) setTimeout(tick, reduceMotion ? 0 : 900); else el.parentElement.classList.add('done');
+  };
+  if (!reduceMotion) setTimeout(tick, 900); else { $('#contNum', box).textContent = '0'; }
+}
+
+function drawTrapped(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const W = 192, H = 108;
+  const ill = book.sections[state.current].illustration;
+  const finish = () => {
+    // the hero, small and sad, inside the cabinet screen, behind bars
+    const grid = avatarGrid(player.avatar);
+    const tmp = document.createElement('canvas');
+    drawAvatar(tmp, player.avatar);
+    void grid;
+    const sx = 80, sy = 26, sc = 2;
+    ctx.globalAlpha = 0.95;
+    ctx.drawImage(tmp, sx, sy, 16 * sc, 16 * sc);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#9aa3c7';
+    for (let x = sx - 4; x <= sx + 16 * sc + 4; x += 6) ctx.fillRect(x, sy - 4, 2, 16 * sc + 6);
+    ctx.fillRect(sx - 4, sy - 4, 16 * sc + 10, 2);
+    ctx.fillRect(sx - 4, sy + 16 * sc, 16 * sc + 10, 2);
+  };
+  if (ill?.src) {
+    const img = new Image();
+    img.onload = () => { ctx.drawImage(img, 0, 0, W, H); finish(); };
+    img.onerror = () => { ctx.fillStyle = '#0b0820'; ctx.fillRect(0, 0, W, H); finish(); };
+    img.src = ill.src;
+  } else { ctx.fillStyle = '#0b0820'; ctx.fillRect(0, 0, W, H); finish(); }
 }
 
 // ---- side panels ----
@@ -331,20 +540,36 @@ function renderStats() {
     if (def.hidden) continue;
     const v = state.stats[id];
     const { max } = E.statBounds(book, state, id);
-    const shown = Number.isFinite(max) ? max : v;
     const delta = prevStats[id] !== undefined ? v - prevStats[id] : 0;
     const cls = delta > 0 ? 'up' : delta < 0 ? 'down' : '';
-    const pct = shown > 0 ? Math.max(0, Math.min(100, (v / shown) * 100)) : 0;
-    rows.push(`
-      <div class="stat ${cls}" data-stat="${id}" style="--c:${def.color || '#29e7ff'}" title="${esc(def.description || '')}">
-        <div class="stat-top"><span class="stat-name"><span class="stat-icon">${esc(def.icon || '')}</span>${esc(def.name.toUpperCase())}</span><span class="stat-val" data-testid="stat-${id}">${v}<small>/${shown}</small></span></div>
-        ${def.display === 'number' ? '' : `<div class="bar"><i style="width:${pct}%"></i></div>`}
-      </div>`);
-    mini.push(`<span class="mini-stat ${cls}" style="--c:${def.color || '#29e7ff'}">${esc(def.short || def.name)} <b>${v}</b></span>`);
+    const icon = def.sprite ? `<canvas class="pix stat-sprite" data-sprite="${id}"></canvas>` : `<span class="stat-icon">${esc(def.icon || '')}</span>`;
+    if (def.display === 'timer') {
+      // countdown bar: the initial value is "full"; bonuses can push it past full
+      const full = Math.max(typeof def.initial === 'number' ? def.initial : state.statMax[id] || v, 1);
+      const pct = Math.max(0, Math.min(100, (v / full) * 100));
+      const low = v <= 10;
+      rows.push(`
+        <div class="stat timer ${cls} ${low ? 'low' : ''}" data-stat="${id}" style="--c:${def.color || '#29e7ff'}" title="${esc(def.description || '')}">
+          <div class="stat-top"><span class="stat-name">${icon}${esc(def.name.toUpperCase())}</span><span class="stat-val" data-testid="stat-${id}">${v}</span></div>
+          <div class="bar timer-bar"><i style="width:${pct}%"></i>${v > full ? '<em class="bonus">+BONUS</em>' : ''}</div>
+          <div class="timer-note">${low ? '⚠ ' : ''}${v} MOVE${v === 1 ? '' : 'S'} LEFT</div>
+        </div>`);
+    } else {
+      const shown = Number.isFinite(max) ? max : v;
+      const pct = shown > 0 ? Math.max(0, Math.min(100, (v / shown) * 100)) : 0;
+      const note = id === 'luck' && v <= 1 ? '<div class="timer-note warn-note">LUCK TESTS WILL FAIL</div>' : '';
+      rows.push(`
+        <div class="stat ${cls}" data-stat="${id}" style="--c:${def.color || '#29e7ff'}" title="${esc(def.description || '')}">
+          <div class="stat-top"><span class="stat-name">${icon}${esc(def.name.toUpperCase())}</span><span class="stat-val" data-testid="stat-${id}">${v}${def.display === 'number' ? '' : `<small>/${shown}</small>`}</span></div>
+          ${def.display === 'number' ? '' : `<div class="bar"><i style="width:${pct}%"></i></div>`}${note}
+        </div>`);
+    }
+    mini.push(`<span class="mini-stat ${cls} ${def.display === 'timer' && v <= 10 ? 'low' : ''}" style="--c:${def.color || '#29e7ff'}">${esc(def.short || def.name)} <b>${v}</b></span>`);
   }
   wrap.innerHTML = rows.join('');
-  const tokens = Object.entries(state.inventory).filter(([, q]) => q > 0);
-  mini.push(`<button class="mini-stat mini-inv" data-jump="inventory">BAG <b>${tokens.length}</b></button>`);
+  $$('[data-sprite]', wrap).forEach((c) => drawSprite(c, book.stats[c.dataset.sprite].sprite));
+  const items = Object.entries(state.inventory).filter(([, q]) => q > 0);
+  mini.push(`<button class="mini-stat mini-inv" data-jump="inventory">BAG <b>${items.length}</b></button>`);
   hud.innerHTML = mini.join('');
   $('[data-jump]', hud)?.addEventListener('click', () => $('#inventory').scrollIntoView({ behavior: 'smooth', block: 'center' }));
   prevStats = { ...state.stats };
@@ -382,6 +607,17 @@ function renderInventory() {
 }
 
 function renderJourney() {
+  const zwrap = $('#zodiac');
+  const trackers = E.trackerProgress(book, state);
+  zwrap.innerHTML = trackers.map((t) => {
+    const def = book.trackers.find((x) => x.id === t.id);
+    return `<div class="tracker" data-testid="tracker-${t.id}">
+      <div class="tracker-head"><span>${esc(def.label)}</span><b data-testid="tracker-count">${t.met.length}/${t.total}</b></div>
+      <div class="tracker-grid">${def.entries.map((e) => `<div class="tk ${t.met.includes(e.id) ? 'met' : ''}" title="${esc(t.met.includes(e.id) ? e.name : '???')}"><canvas class="pix" data-tk="${esc(e.character || '')}"></canvas></div>`).join('')}</div>
+      ${t.complete ? `<div class="badge-master small">★ ${esc(t.badge || 'COMPLETE')} ★</div>` : ''}
+    </div>`;
+  }).join('');
+  $$('[data-tk]', zwrap).forEach((c) => { const sp = book.characters?.[c.dataset.tk]?.sprite; if (sp) drawSprite(c, sp); });
   const list = $('#journey');
   const hist = state.history;
   const start = Math.max(0, hist.length - 8);
@@ -390,16 +626,32 @@ function renderJourney() {
 }
 
 // ---------------- actions & feedback ----------------
-function act(fn) {
+function act(fn, { sound } = {}) {
   if (busy) return;
   let msgs;
-  try { msgs = fn() || []; } catch (e) { console.error(e); toast(e.message.toUpperCase(), 'bad'); return; }
-  persist();
+  try {
+    const out = fn();
+    msgs = Array.isArray(out) ? out : out?.messages || [];
+  } catch (e) { console.error(e); toast(e.message.toUpperCase(), 'bad'); return; }
+  afterAction(msgs, sound);
+}
+function afterAction(msgs, sound) {
+  if (state.ended) clearRun(); else persist();
   renderAll();
+  if (msgs.some((m) => m.halved)) glitch();
   if (state.ended) {
     state.ended.type === 'win' ? sfx.win() : state.ended.type === 'neutral' ? sfx.select() : sfx.lose();
     showMessages(msgs, { silent: true });
-  } else showMessages(msgs);
+  } else {
+    showMessages(msgs, { silent: !!sound });
+    if (sound) sfx[sound]?.();
+  }
+}
+function glitch() {
+  document.body.classList.remove('halved');
+  void document.body.offsetWidth;
+  document.body.classList.add('halved');
+  setTimeout(() => document.body.classList.remove('halved'), 700);
 }
 
 function showMessages(msgs, { silent = false } = {}) {
@@ -408,8 +660,10 @@ function showMessages(msgs, { silent = false } = {}) {
     let kind = 'info';
     if (m.type === 'stat') kind = m.delta > 0 ? 'good' : 'bad';
     if (m.type === 'item') kind = m.delta > 0 ? 'good' : 'bad';
+    if (m.halved) kind = 'halved';
+    if (m.type === 'depleted') kind = 'bad';
     if (kind === 'good' && sound === 'select') sound = 'coin';
-    if (kind === 'bad' && m.type === 'stat') sound = 'hurt';
+    if ((kind === 'bad' || kind === 'halved') && m.type === 'stat') sound = 'hurt';
     setTimeout(() => toast(m.text.toUpperCase(), kind), i * 180);
   });
   if (!silent) sfx[sound]();
@@ -425,14 +679,15 @@ function toast(text, kind = 'info') {
 }
 
 // ---------------- modals ----------------
-function openModal(html, { dismissible = true, cls = '', testid = 'modal' } = {}) {
+function openModal(html, { dismissible = true, cls = '', testid = 'modal', onClose = null } = {}) {
   closeModal();
   const root = $('#modalRoot');
   root.innerHTML = `<div class="modal-backdrop"><div class="modal ${cls}" role="dialog" aria-modal="true" data-testid="${testid}">${html}</div></div>`;
   const back = $('.modal-backdrop', root);
   if (dismissible) {
-    back.addEventListener('click', (e) => { if (e.target === back) closeModal(); });
-    back.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    const close = () => { closeModal(); onClose?.(); };
+    back.addEventListener('click', (e) => { if (e.target === back) close(); });
+    back.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   }
   document.body.classList.add('modal-open');
   return $('.modal', root);
@@ -441,23 +696,24 @@ function closeModal() { $('#modalRoot').innerHTML = ''; document.body.classList.
 
 function confirmModal(title, text, yes = 'YES') {
   return new Promise((resolve) => {
-    const m = openModal(`<h2 class="modal-title">${esc(title)}</h2><p class="modal-text">${esc(text)}</p><div class="modal-buttons"><button class="btn btn-ghost" data-no>CANCEL</button><button class="btn" data-yes data-testid="confirm-yes">${esc(yes)}</button></div>`, { cls: 'small', testid: 'confirm' });
+    const m = openModal(`<h2 class="modal-title">${esc(title)}</h2><p class="modal-text">${esc(text)}</p><div class="modal-buttons"><button class="btn btn-ghost" data-no>CANCEL</button><button class="btn" data-yes data-testid="confirm-yes">${esc(yes)}</button></div>`, { cls: 'small', testid: 'confirm', onClose: () => resolve(false) });
     $('[data-yes]', m).addEventListener('click', () => { closeModal(); resolve(true); });
     $('[data-no]', m).addEventListener('click', () => { closeModal(); resolve(false); });
     $('[data-yes]', m).focus();
   });
 }
 
-function openCreator({ mode }) {
-  const editing = mode === 'edit';
-  const player = editing ? activePlayer() : null;
-  const av = { ...(player?.avatar || defaultAvatar()) };
+// The hero creator. Every new game starts here with a blank name and the default hero; it can't
+// be dismissed: the only way on is PRESS START.
+function openCreator() {
+  const av = defaultAvatar();
+  delete av.label;
   const swatches = (key, colors) => `<div class="swatches" role="radiogroup" aria-label="${key}">${colors.map((c, i) => `<button class="swatch" role="radio" data-key="${key}" data-val="${i}" style="--s:${c}" aria-label="${key} ${i + 1}"></button>`).join('')}</div>`;
   const cycler = (key) => `<div class="cycler" data-key="${key}"><button class="arrow" data-dir="-1" aria-label="previous ${key}">◀</button><span class="cycle-val" data-val-for="${key}"></span><button class="arrow" data-dir="1" aria-label="next ${key}">▶</button></div>`;
   const m = openModal(`
     <div class="creator-head">
-      <div class="insert-coin blink">${editing ? 'EDIT HERO' : 'PLAYER 1 · INSERT COIN'}</div>
-      <h2 class="creator-title">${editing ? 'CUSTOMIZE YOUR HERO' : 'CREATE YOUR HERO'}</h2>
+      <div class="insert-coin blink">PLAYER 1 · INSERT COIN</div>
+      <h2 class="creator-title">CREATE YOUR HERO</h2>
     </div>
     <div class="creator-grid">
       <div class="stage">
@@ -467,22 +723,22 @@ function openCreator({ mode }) {
         <div class="stage-name" id="cEcho">???</div>
       </div>
       <div class="controls">
-        <div class="ctl-label">CHOOSE A HERO</div>
-        <div class="presets">${PRESETS.map((p, i) => `<button class="preset" data-preset="${i}" data-testid="preset-${i}" title="${p.label}"><canvas class="pix"></canvas><span>${p.label}</span></button>`).join('')}</div>
-        <div class="ctl-label">CUSTOMIZE <button class="btn btn-small btn-ghost" id="cRandom" data-testid="randomize">? RANDOM</button></div>
+        <div class="ctl-label">BUILD YOUR HERO <button class="btn btn-small btn-ghost" id="cRandom" data-testid="randomize">? RANDOM</button></div>
         <div class="ctl-row"><span>SKIN</span>${swatches('skin', SKINS)}</div>
         <div class="ctl-row"><span>HAIR</span>${cycler('hairStyle')}</div>
         <div class="ctl-row"><span>COLOR</span>${swatches('hairColor', HAIR_COLORS)}</div>
         <div class="ctl-row"><span>OUTFIT</span>${swatches('outfit', OUTFITS)}</div>
         <div class="ctl-row"><span>EXTRA</span>${cycler('accessory')}</div>
-        <label class="ctl-label" for="cName">ENTER YOUR NAME</label>
-        <input id="cName" class="name-input" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="YOUR NAME" data-testid="name-input" value="${esc(player?.name || '')}">
+        <label class="ctl-label" for="cName">ENTER A NICKNAME</label>
+        <input id="cName" class="name-input" maxlength="${LB.NICK_MAX}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NICKNAME" data-testid="name-input" value="">
+        <div class="nick-tip" data-testid="nick-tip">Use a nickname, not your real name. Max ${LB.NICK_MAX} letters.</div>
+        <div class="nick-problem" id="cProblem" data-testid="nick-problem"></div>
       </div>
     </div>
     <div class="creator-foot">
-      ${mode !== 'first' ? '<button class="btn btn-ghost" id="cCancel">CANCEL</button>' : ''}
-      <button class="btn btn-start" id="cStart" data-testid="press-start">${editing ? 'SAVE HERO' : 'PRESS START'}</button>
-    </div>`, { dismissible: mode !== 'first', cls: 'creator', testid: 'avatar-modal' });
+      <button class="btn btn-ghost" id="cScores" data-testid="creator-scores">🏆 BEST SCORES</button>
+      <button class="btn btn-start" id="cStart" data-testid="press-start">PRESS START</button>
+    </div>`, { dismissible: false, cls: 'creator', testid: 'avatar-modal' });
 
   const preview = $('#cAvatar', m);
   const nameIn = $('#cName', m);
@@ -492,78 +748,79 @@ function openCreator({ mode }) {
     drawAvatar(preview, av);
     $$('.swatch', m).forEach((s) => { const on = av[s.dataset.key] === +s.dataset.val; s.classList.toggle('on', on); s.setAttribute('aria-checked', String(on)); });
     for (const k of Object.keys(lists)) $(`[data-val-for=${k}]`, m).textContent = LABELS[av[k]] || av[k];
-    $$('.preset', m).forEach((b) => { const p = PRESETS[+b.dataset.preset]; b.classList.toggle('on', ['skin', 'hairStyle', 'hairColor', 'outfit', 'accessory'].every((k) => p[k] === av[k])); });
-    const nm = cleanName(nameIn.value);
+    const nm = LB.cleanNickname(nameIn.value);
+    const problem = nm ? LB.nicknameProblem(nm) : null;
     $('#cEcho', m).textContent = nm || '???';
-    startBtn.disabled = !nm;
+    $('#cProblem', m).textContent = problem || '';
+    startBtn.disabled = !nm || !!problem;
   };
-  $$('.preset', m).forEach((b) => {
-    drawAvatar($('canvas', b), PRESETS[+b.dataset.preset]);
-    b.addEventListener('click', () => { Object.assign(av, PRESETS[+b.dataset.preset]); sfx.select(); refresh(); });
-  });
   $$('.swatch', m).forEach((s) => s.addEventListener('click', () => { av[s.dataset.key] = +s.dataset.val; sfx.select(); refresh(); }));
   $$('.cycler', m).forEach((c) => $$('.arrow', c).forEach((a) => a.addEventListener('click', () => {
     const list = lists[c.dataset.key];
     av[c.dataset.key] = list[(list.indexOf(av[c.dataset.key]) + +a.dataset.dir + list.length) % list.length];
     sfx.select(); refresh();
   })));
-  $('#cRandom', m).addEventListener('click', () => { Object.assign(av, randomAvatar()); sfx.select(); refresh(); });
+  $('#cRandom', m).addEventListener('click', () => { const r = randomAvatar(); delete r.label; Object.assign(av, r); sfx.select(); refresh(); });
   nameIn.addEventListener('input', () => { const c = nameIn.value.toUpperCase(); if (c !== nameIn.value) nameIn.value = c; refresh(); });
   nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !startBtn.disabled) startBtn.click(); });
-  $('#cCancel', m)?.addEventListener('click', closeModal);
+  $('#cScores', m).addEventListener('click', () => openScores({ back: openCreator }));
   startBtn.addEventListener('click', () => {
-    const name = cleanName(nameIn.value);
-    if (!name) return;
-    const avatar = { skin: av.skin, hairStyle: av.hairStyle, hairColor: av.hairColor, outfit: av.outfit, accessory: av.accessory };
-    if (editing) {
-      Object.assign(player, { name, avatar });
-      saveProfiles();
-      closeModal();
-      sfx.start();
-      renderAll();
-      toast('HERO SAVED!', 'good');
-    } else {
-      const id = 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
-      profiles.players[id] = { id, name, avatar, createdAt: Date.now() };
-      profiles.activeId = id;
-      saveProfiles();
-      closeModal();
-      sfx.start();
-      startOrResume();
-      toast(`GET READY, ${name}!`, 'good');
-    }
+    const name = LB.cleanNickname(nameIn.value);
+    if (!name || LB.nicknameProblem(name)) return;
+    player = { name, avatar: { skin: av.skin, hairStyle: av.hairStyle, hairColor: av.hairColor, outfit: av.outfit, accessory: av.accessory } };
+    state = E.newGame(book, { rng, playerName: name }).state;
+    closeModal();
+    persist();
+    beginRender();
+    sfx.start();
+    toast(`GET READY, ${name}!`, 'good');
   });
   refresh();
   setTimeout(() => nameIn.focus({ preventScroll: true }), 50);
 }
 
-function cleanName(s) { return s.toUpperCase().replace(/[^A-Z0-9 \-!.]/g, '').replace(/\s+/g, ' ').trim().slice(0, 12); }
+// ---------------- best scores ----------------
+function scoreRowsHTML(rows) {
+  if (!rows.length) return '<div class="empty" data-testid="scores-empty">NO SCORES YET. BE THE FIRST!</div>';
+  return `<table class="scores-table" data-testid="scores-table"><thead><tr><th>#</th><th></th><th>NAME</th><th>SCORE</th><th>RANK</th><th>ZODIAC</th><th>DATE</th></tr></thead><tbody>${rows.map((r, i) => `
+    <tr class="${i === 0 ? 'top' : ''}" data-testid="score-row"><td>${i + 1}</td><td><canvas class="pix score-av" data-av="${i}"></canvas></td><td class="nm">${esc(r.nickname)}</td><td class="pct">${r.score_pct}%</td><td class="rk">${esc(r.rank || '')}</td><td>${r.zodiac_count ?? 0}/11</td><td class="dt">${esc(String(r.created_at || '').slice(0, 10))}</td></tr>`).join('')}</tbody></table>`;
+}
 
-function openPlayerMenu() {
-  const rows = Object.values(profiles.players).sort((a, b) => a.createdAt - b.createdAt).map((p) => {
-    const s = loadJSON(saveKey(p.id), null);
-    const where = s && book.sections[s.current] ? (s.ended ? `FINISHED: ${s.ended.title}` : `PAGE ${s.history.length} · ${book.sections[s.current].title || ''}`) : 'NEW GAME';
-    return `<div class="player-row ${p.id === profiles.activeId ? 'active' : ''}">
-      <canvas class="pix" data-pid="${p.id}"></canvas>
-      <div class="player-info"><b>${esc(p.name)}</b><small>${esc(where.toUpperCase())}</small></div>
-      ${p.id === profiles.activeId ? '<span class="tag">PLAYING</span>' : `<button class="btn btn-small" data-play="${p.id}">PLAY</button>`}
-      <button class="btn btn-small btn-ghost" data-del="${p.id}" aria-label="Remove ${esc(p.name)}">✕</button>
-    </div>`;
-  }).join('');
-  const m = openModal(`<h2 class="modal-title">SELECT PLAYER</h2><div class="player-list">${rows}</div><div class="modal-buttons"><button class="btn btn-ghost" data-edit>EDIT MY HERO</button><button class="btn" data-new data-testid="new-player">+ NEW PLAYER</button></div>`, { cls: 'players', testid: 'player-menu' });
-  $$('canvas[data-pid]', m).forEach((c) => drawAvatar(c, profiles.players[c.dataset.pid].avatar));
-  $$('[data-play]', m).forEach((b) => b.addEventListener('click', () => { profiles.activeId = b.dataset.play; saveProfiles(); closeModal(); sfx.start(); startOrResume(); }));
-  $$('[data-del]', m).forEach((b) => b.addEventListener('click', async () => {
-    const p = profiles.players[b.dataset.del];
-    if (!(await confirmModal(`REMOVE ${p.name}?`, 'This deletes this player and their saved progress on this device.', 'REMOVE'))) return openPlayerMenu();
-    localStorage.removeItem(saveKey(p.id));
-    delete profiles.players[p.id];
-    if (profiles.activeId === p.id) profiles.activeId = Object.keys(profiles.players)[0] || null;
-    saveProfiles();
-    if (!activePlayer()) { state = null; renderEmpty(); openCreator({ mode: 'first' }); } else { startOrResume(); openPlayerMenu(); }
-  }));
-  $('[data-edit]', m).addEventListener('click', () => openCreator({ mode: 'edit' }));
-  $('[data-new]', m).addEventListener('click', () => openCreator({ mode: 'new' }));
+function openScores({ back = null } = {}) {
+  const goBack = () => { closeModal(); if (back) back(); else if (!state) openCreator(); };
+  const m = openModal(`
+    <h2 class="modal-title">🏆 BEST SCORES</h2>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="global" data-testid="tab-global">WORLD TOP 50</button>
+      <button class="tab" role="tab" data-tab="local" data-testid="tab-local">MY DEVICE</button>
+    </div>
+    <div class="scores-body" data-testid="scores-body"></div>
+    <div class="modal-buttons"><button class="btn" data-testid="scores-back">BACK</button></div>`,
+  { cls: 'scores', testid: 'scores-modal', onClose: () => { if (back) back(); else if (!state) openCreator(); } });
+  const body = $('.scores-body', m);
+  const draw = (rows) => { body.innerHTML = scoreRowsHTML(rows); $$('[data-av]', body).forEach((c) => drawAvatar(c, rows[+c.dataset.av].avatar || defaultAvatar())); };
+  const show = async (tab) => {
+    $$('.tab', m).forEach((t) => t.classList.toggle('on', t.dataset.tab === tab));
+    if (tab === 'local') { draw(LB.localScores(bookId())); return; }
+    if (!LB.globalConfigured()) { body.innerHTML = '<div class="empty" data-testid="global-offline">THE WORLD BOARD ISN\'T SET UP. SHOWING THIS DEVICE.</div>'; setTimeout(() => show('local'), reduceMotion ? 0 : 900); return; }
+    body.innerHTML = '<div class="loading">LOADING<span class="blink">_</span></div>';
+    try {
+      const rows = await LB.fetchGlobal(50);
+      if ($('.tab.on', m)?.dataset.tab === 'global') draw(rows);
+    } catch (e) {
+      console.warn('global board', e);
+      if ($('.tab.on', m)?.dataset.tab !== 'global') return;
+      body.innerHTML = `<div class="empty" data-testid="global-offline">WORLD BOARD OFFLINE. HERE ARE THIS DEVICE'S BEST:</div>`;
+      const rows = LB.localScores(bookId());
+      const holder = document.createElement('div');
+      holder.innerHTML = scoreRowsHTML(rows);
+      body.appendChild(holder);
+      $$('[data-av]', body).forEach((c) => drawAvatar(c, rows[+c.dataset.av].avatar || defaultAvatar()));
+    }
+  };
+  $$('.tab', m).forEach((t) => t.addEventListener('click', () => { sfx.select(); show(t.dataset.tab); }));
+  $('[data-testid=scores-back]', m).addEventListener('click', goBack);
+  show(LB.globalConfigured() ? 'global' : 'local');
 }
 
 boot();

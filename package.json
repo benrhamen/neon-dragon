@@ -1,6 +1,6 @@
 {
   "name": "neon-gamebook",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Retro arcade gamebook reader prototype (static site)",
   "scripts": {
     "validate": "node tests/validate.mjs",
@@ -8,7 +8,9 @@
     "test:engine": "node --test tests/engine.test.mjs",
     "test:e2e": "node tests/e2e.mjs",
     "test": "npm run validate && npm run test:engine && npm run test:e2e",
-    "serve": "python3 -m http.server 8080 --directory public"
+    "serve": "python3 -m http.server 8080 --directory public",
+    "score:ref": "node --max-old-space-size=6000 scripts/score-reference.mjs",
+    "sim": "node -e \"import('./tests/sim.mjs').then(async m=>{const b=JSON.parse(require('fs').readFileSync('public/data/neon-dragon.json'));console.log(JSON.stringify(m.balanceReport(b,5000),null,1))})\""
   },
   "author": "",
   "license": "UNLICENSED",

@@ -15,7 +15,7 @@
 - With nothing open to choose from, I picked the **most representative** gamebook. *Double Trouble*
   branches with "turn to page N" choices, gives you items that unlock later choices, keeps a coin
   score, has a coin-flip random branch, has several GAME OVER endings, and ends with a scorecard. It
-  also has a clean text layer (a "Text PDF") and is written for roughly the same age group as the kids
+  also has a clean text layer (a "Text PDF") and is written for roughly the same age group as our young readers
   (the book says "IL 5+").
 
 ## Facts about the book
@@ -53,17 +53,17 @@
    would need to cover the text, the illustrations and puzzle art, and the Mario characters and
    trademarks. It would also need to cover the specific use: digitising the book, adapting it into an
    interactive format, and private versus public access.
-2. **Private family use is still not clearly allowed.** In Hong Kong there is no general "fair use"
+2. **Private/home use is still not clearly allowed.** In Hong Kong there is no general "fair use"
    or private-copying exception. Fair dealing only covers set purposes such as research and private
    study, criticism/review/quotation, parody, and education. Copying for "private use" is not one of
    them, and copying a whole book that stands in for buying it is unlikely to be fair
    ([CLIC on permitted acts](https://www.clic.org.hk/en/topics/intellectualProperty/infringement_of_copyright/B);
    [Cap. 528 s.38](https://www.elegislation.gov.hk/hk/cap528!en/s38?_lang=en)). Typing the book into
-   the app, even just for the family, is a risk.
+   the app, even just for private/home use, is a risk.
 3. **Public hosting is clearly off-limits without a licence.** Putting the text on GitHub Pages or
    Vercel makes it available to the public, which only the copyright owner can authorise. The
-   parents' standing rule (only publish public-domain or openly licensed content) rules it out.
-4. **What is allowed:** the kids can read a physical or legitimately bought copy. Game *mechanics*
+   project rule (only publish public-domain or openly licensed content) rules it out.
+4. **What is allowed:** young readers can read a physical or legitimately bought copy. Game *mechanics*
    (page-turn choices, items, coin scores, coin flips) are ideas, not protected text. That is why the
    app uses an **original** story, *The Neon Dragon of Pixel Harbour*, written from scratch and marked
    `"original": true` in its metadata.

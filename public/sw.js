@@ -1,10 +1,31 @@
 // Offline support: network-first (so updates show up), falling back to the cache when offline.
-const CACHE = 'neon-gamebook-v1';
+// Only same-origin GETs are handled: the online leaderboard (Supabase) always goes to the network.
+const CACHE = 'neon-gamebook-v2';
 const ASSETS = [
-  './', 'index.html', 'css/style.css', 'js/app.js', 'js/engine.js', 'js/avatar.js', 'js/sound.js',
+  './', 'index.html', 'css/style.css', 'js/app.js', 'js/engine.js', 'js/avatar.js', 'js/sound.js', 'js/leaderboard.js', 'js/config.js',
   'data/neon-dragon.json', 'fonts/PressStart2P-Regular.ttf', 'fonts/VT323-Regular.ttf', 'manifest.webmanifest',
   'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png',
-  'img/arcade.svg', 'img/harbour.svg', 'img/market.svg', 'img/ferry.svg', 'img/tunnel.svg', 'img/robot.svg', 'img/king.svg', 'img/dragon.svg', 'img/victory.svg',
+  'img/arcade.svg',
+  'img/bubbletea.svg',
+  'img/causeway.svg',
+  'img/dimsum.svg',
+  'img/dragon.svg',
+  'img/ferry.svg',
+  'img/fireworks.svg',
+  'img/harbour.svg',
+  'img/king.svg',
+  'img/manmo.svg',
+  'img/market.svg',
+  'img/mtr.svg',
+  'img/park.svg',
+  'img/peak.svg',
+  'img/racecourse.svg',
+  'img/robot.svg',
+  'img/taxi.svg',
+  'img/tram.svg',
+  'img/trapped.svg',
+  'img/tunnel.svg',
+  'img/vault.svg',
 ];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => {
