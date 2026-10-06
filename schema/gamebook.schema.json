@@ -1,0 +1,1042 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/gamebook/gamebook.schema.json",
+  "title": "Gamebook",
+  "description": "A choose-your-path gamebook: numbered/keyed sections, choices, player stats, inventory, flags, dice tests, light combat and endings. Text fields may contain the token {{name}}, which the reader replaces with the player's name.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "metadata",
+    "start",
+    "sections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": "1.0",
+      "description": "Version of this schema the book was written for."
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "start": {
+      "$ref": "#/$defs/id",
+      "description": "Id of the first section."
+    },
+    "rules": {
+      "$ref": "#/$defs/rules"
+    },
+    "stats": {
+      "type": "object",
+      "description": "Player stat definitions keyed by stat id.",
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/statDef"
+      }
+    },
+    "flags": {
+      "type": "object",
+      "description": "Optional declaration of story flags (documentation + initial values). Undeclared flags start as false.",
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "initial": {
+            "$ref": "#/$defs/flagValue"
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "object",
+      "description": "Catalog of every item that can appear in the inventory, keyed by item id.",
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/itemDef"
+      }
+    },
+    "startingInventory": {
+      "type": "array",
+      "description": "Items the player starts with. A bare string means quantity 1.",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/id"
+          },
+          {
+            "type": "object",
+            "required": [
+              "item"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "item": {
+                "$ref": "#/$defs/id"
+              },
+              "quantity": {
+                "type": "integer",
+                "minimum": 1,
+                "default": 1
+              }
+            }
+          }
+        ]
+      }
+    },
+    "sections": {
+      "type": "object",
+      "description": "All sections (pages/paragraphs) keyed by id. Ids can be numbers-as-strings (\"1\", \"237\") like classic gamebooks, or readable slugs.",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/section"
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_\\-]*$",
+      "maxLength": 64
+    },
+    "flagValue": {
+      "type": [
+        "boolean",
+        "number",
+        "string"
+      ]
+    },
+    "diceFormula": {
+      "type": "string",
+      "description": "Dice notation: NdS with optional +/- modifier, e.g. \"1d6+6\", \"2d6\", \"2d6-1\". \"1d2\" is a coin flip.",
+      "pattern": "^[1-9][0-9]?d(2|4|6|8|10|12|20)([+-][0-9]{1,3})?$"
+    },
+    "richText": {
+      "description": "A string, or an array of paragraphs.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "pixelSprite": {
+      "type": "object",
+      "description": "Tiny pixel-art image: each row is a string, each character is a key into palette ('.' or ' ' = transparent).",
+      "required": [
+        "palette",
+        "rows"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "palette": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "title",
+        "author",
+        "version",
+        "license"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id",
+          "description": "Stable id, used as the save-game key."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "description": "Book content version (semver recommended).",
+          "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?([-+].*)?$"
+        },
+        "language": {
+          "type": "string",
+          "default": "en"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ageRange": {
+          "type": "string",
+          "examples": [
+            "8-12"
+          ]
+        },
+        "original": {
+          "type": "boolean",
+          "description": "True when the text is original work (not taken from a published book)."
+        },
+        "license": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "examples": [
+                "CC BY 4.0",
+                "All rights reserved",
+                "Used with written permission"
+              ]
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "holder": {
+              "type": "string"
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        },
+        "source": {
+          "type": "object",
+          "description": "Provenance if the book is an adaptation of an existing work.",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "publisher": {
+              "type": "string"
+            },
+            "year": {
+              "type": "integer"
+            },
+            "permission": {
+              "type": "string",
+              "description": "Reference to the permission/licence that allows this use."
+            }
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "healthStat": {
+          "$ref": "#/$defs/id",
+          "description": "Stat that represents health/energy."
+        },
+        "onHealthDepleted": {
+          "$ref": "#/$defs/id",
+          "description": "Section to jump to whenever healthStat reaches its min (usually 0)."
+        },
+        "combat": {
+          "type": "object",
+          "description": "Defaults for combat encounters (Fighting-Fantasy-like: each round both sides roll dice + attack stat; the lower total loses damage points).",
+          "additionalProperties": false,
+          "properties": {
+            "attackStat": {
+              "$ref": "#/$defs/id"
+            },
+            "dice": {
+              "$ref": "#/$defs/diceFormula",
+              "default": "2d6"
+            },
+            "damage": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 2
+            }
+          }
+        }
+      }
+    },
+    "statDef": {
+      "type": "object",
+      "required": [
+        "name",
+        "initial"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "short": {
+          "type": "string",
+          "maxLength": 6,
+          "description": "Abbreviation for small screens."
+        },
+        "description": {
+          "type": "string"
+        },
+        "initial": {
+          "description": "Starting value: a fixed number or a dice roll made once at the start.",
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "object",
+              "required": [
+                "dice"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "dice": {
+                  "$ref": "#/$defs/diceFormula"
+                }
+              }
+            }
+          ]
+        },
+        "min": {
+          "type": "integer",
+          "default": 0
+        },
+        "max": {
+          "description": "Upper bound. \"initial\" caps the stat at its rolled starting value (Fighting Fantasy style).",
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "const": "initial"
+            }
+          ]
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Emoji or short text shown next to the stat."
+        },
+        "display": {
+          "enum": [
+            "bar",
+            "number"
+          ],
+          "default": "bar"
+        },
+        "hidden": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "itemDef": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Emoji/text fallback icon."
+        },
+        "sprite": {
+          "$ref": "#/$defs/pixelSprite"
+        },
+        "stackable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Can be held in quantity > 1 (coins, tokens, provisions)."
+        },
+        "maxQuantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "use": {
+          "type": "object",
+          "description": "Makes the item usable from the inventory at any time (e.g. eat provisions).",
+          "required": [
+            "label",
+            "effects"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "label": {
+              "type": "string",
+              "examples": [
+                "Eat",
+                "Drink"
+              ]
+            },
+            "effects": {
+              "$ref": "#/$defs/effectList"
+            },
+            "consumable": {
+              "type": "boolean",
+              "default": true
+            },
+            "conditions": {
+              "$ref": "#/$defs/condition"
+            }
+          }
+        }
+      }
+    },
+    "condition": {
+      "description": "A requirement. Combine with all/any/not.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "hasItem"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "hasItem": {
+              "$ref": "#/$defs/id"
+            },
+            "quantity": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "notHasItem"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "notHasItem": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "stat",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "stat": {
+              "$ref": "#/$defs/id"
+            },
+            "op": {
+              "enum": [
+                "eq",
+                "neq",
+                "gt",
+                "gte",
+                "lt",
+                "lte"
+              ]
+            },
+            "value": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "flag"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "flag": {
+              "$ref": "#/$defs/id"
+            },
+            "equals": {
+              "$ref": "#/$defs/flagValue",
+              "default": true,
+              "description": "Value the flag must have (default true)."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "visited"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "visited": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "all"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "any"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "not"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/condition"
+            }
+          }
+        }
+      ]
+    },
+    "effect": {
+      "description": "A change to the game state.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "stat"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "stat": {
+              "$ref": "#/$defs/id"
+            },
+            "add": {
+              "type": "integer",
+              "description": "Add (or subtract, if negative)."
+            },
+            "set": {
+              "type": "integer"
+            },
+            "restore": {
+              "const": true,
+              "description": "Reset the stat to its maximum."
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "add"
+              ]
+            },
+            {
+              "required": [
+                "set"
+              ]
+            },
+            {
+              "required": [
+                "restore"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "addItem"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "addItem": {
+              "$ref": "#/$defs/id"
+            },
+            "quantity": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "removeItem"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "removeItem": {
+              "$ref": "#/$defs/id"
+            },
+            "quantity": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "setFlag"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "setFlag": {
+              "$ref": "#/$defs/id"
+            },
+            "value": {
+              "$ref": "#/$defs/flagValue",
+              "default": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "clearFlag"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "clearFlag": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "message"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "Toast shown to the player."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "if",
+            "then"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "if": {
+              "$ref": "#/$defs/condition"
+            },
+            "then": {
+              "$ref": "#/$defs/effectList"
+            },
+            "else": {
+              "$ref": "#/$defs/effectList"
+            }
+          }
+        }
+      ]
+    },
+    "effectList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/effect"
+      }
+    },
+    "choice": {
+      "type": "object",
+      "required": [
+        "label",
+        "target"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "$ref": "#/$defs/id"
+        },
+        "conditions": {
+          "$ref": "#/$defs/condition"
+        },
+        "hideIfLocked": {
+          "type": "boolean",
+          "default": false,
+          "description": "Hide the choice entirely when conditions fail (otherwise shown as locked)."
+        },
+        "hideIf": {
+          "$ref": "#/$defs/condition",
+          "description": "Hide the choice entirely when this condition is true (e.g. you already own the item it would give)."
+        },
+        "lockedHint": {
+          "type": "string",
+          "description": "Shown on a locked choice, e.g. 'Needs: Brass Key'."
+        },
+        "effects": {
+          "$ref": "#/$defs/effectList",
+          "description": "Applied when the choice is taken, before entering the target."
+        }
+      }
+    },
+    "diceTest": {
+      "type": "object",
+      "description": "Roll dice and branch on success/failure. Success if total <= the stat (Test-Your-Luck style) when 'againstStat' is set, otherwise total >= 'target'.",
+      "required": [
+        "dice",
+        "success",
+        "failure"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "examples": [
+            "Test your Luck"
+          ]
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "dice": {
+          "$ref": "#/$defs/diceFormula"
+        },
+        "againstStat": {
+          "$ref": "#/$defs/id"
+        },
+        "target": {
+          "type": "integer"
+        },
+        "addStat": {
+          "$ref": "#/$defs/id",
+          "description": "With 'target': add this stat to the roll."
+        },
+        "costEffects": {
+          "$ref": "#/$defs/effectList",
+          "description": "Applied after every roll (e.g. luck -1)."
+        },
+        "success": {
+          "$ref": "#/$defs/outcome"
+        },
+        "failure": {
+          "$ref": "#/$defs/outcome"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "againstStat"
+          ]
+        },
+        {
+          "required": [
+            "target"
+          ]
+        }
+      ]
+    },
+    "outcome": {
+      "type": "object",
+      "required": [
+        "target"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/id"
+        },
+        "text": {
+          "type": "string"
+        },
+        "effects": {
+          "$ref": "#/$defs/effectList"
+        }
+      }
+    },
+    "combat": {
+      "type": "object",
+      "required": [
+        "enemies",
+        "win",
+        "lose"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "intro": {
+          "type": "string"
+        },
+        "enemies": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Fought one after another.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "attack",
+              "health"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "attack": {
+                "type": "integer",
+                "description": "Enemy attack value (like SKILL)."
+              },
+              "health": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Enemy health (like STAMINA)."
+              },
+              "sprite": {
+                "$ref": "#/$defs/pixelSprite"
+              }
+            }
+          }
+        },
+        "attackStat": {
+          "$ref": "#/$defs/id",
+          "description": "Overrides rules.combat.attackStat."
+        },
+        "healthStat": {
+          "$ref": "#/$defs/id",
+          "description": "Overrides rules.healthStat."
+        },
+        "dice": {
+          "$ref": "#/$defs/diceFormula"
+        },
+        "damage": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "loseAt": {
+          "type": "integer",
+          "default": 0,
+          "description": "Combat is lost when the player's health stat drops to this value or below."
+        },
+        "win": {
+          "$ref": "#/$defs/outcome"
+        },
+        "lose": {
+          "$ref": "#/$defs/outcome"
+        },
+        "flee": {
+          "type": "object",
+          "required": [
+            "target"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "target": {
+              "$ref": "#/$defs/id"
+            },
+            "effects": {
+              "$ref": "#/$defs/effectList"
+            }
+          }
+        }
+      }
+    },
+    "ending": {
+      "type": "object",
+      "required": [
+        "type",
+        "title"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "win",
+            "death",
+            "fail",
+            "neutral"
+          ],
+          "description": "death = classic gamebook 'your adventure ends here'."
+        },
+        "title": {
+          "type": "string"
+        },
+        "stars": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "text": {
+          "$ref": "#/$defs/richText"
+        },
+        "illustration": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "src": {
+              "type": "string",
+              "description": "Relative path to an image."
+            },
+            "alt": {
+              "type": "string"
+            },
+            "sprite": {
+              "$ref": "#/$defs/pixelSprite"
+            },
+            "pixelated": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "anyOf": [
+            {
+              "required": [
+                "src"
+              ]
+            },
+            {
+              "required": [
+                "sprite"
+              ]
+            }
+          ]
+        },
+        "onEnter": {
+          "$ref": "#/$defs/effectList",
+          "description": "Applied once each time the section is entered."
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/choice"
+          }
+        },
+        "test": {
+          "$ref": "#/$defs/diceTest"
+        },
+        "combat": {
+          "$ref": "#/$defs/combat"
+        },
+        "ending": {
+          "$ref": "#/$defs/ending"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "choices"
+          ],
+          "properties": {
+            "choices": {
+              "type": "array",
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "required": [
+            "test"
+          ]
+        },
+        {
+          "required": [
+            "combat"
+          ]
+        },
+        {
+          "required": [
+            "ending"
+          ]
+        }
+      ]
+    }
+  }
+}

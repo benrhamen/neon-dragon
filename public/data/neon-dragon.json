@@ -1,0 +1,1064 @@
+{
+  "$schema": "../../schema/gamebook.schema.json",
+  "schemaVersion": "1.0",
+  "metadata": {
+    "id": "neon-dragon",
+    "title": "The Neon Dragon of Pixel Harbour",
+    "subtitle": "A pocket gamebook",
+    "author": "Original story",
+    "version": "1.0.0",
+    "language": "en",
+    "ageRange": "8-12",
+    "original": true,
+    "description": "ORIGINAL CONTENT. Not taken or adapted from any published gamebook. A short choose-your-path adventure set in a pixel-art version of Hong Kong.",
+    "license": {
+      "name": "All rights reserved (family prototype)",
+      "holder": "Neon Dragon project",
+      "notes": "Original text created for this prototype. Change this to an open licence (e.g. CC BY 4.0) if you want others to reuse it."
+    }
+  },
+  "start": "intro",
+  "rules": {
+    "healthStat": "energy",
+    "onHealthDepleted": "out_of_energy",
+    "combat": {
+      "attackStat": "power",
+      "dice": "2d6",
+      "damage": 2
+    }
+  },
+  "stats": {
+    "energy": {
+      "name": "Energy",
+      "short": "NRG",
+      "description": "If it runs out, it's game over!",
+      "initial": 12,
+      "min": 0,
+      "max": 12,
+      "color": "#3dff6e",
+      "icon": "⚡",
+      "display": "bar"
+    },
+    "power": {
+      "name": "Pixel Power",
+      "short": "PWR",
+      "description": "Added to your dice roll in a duel. Rolled at the start: 1 die + 6.",
+      "initial": {
+        "dice": "1d6+6"
+      },
+      "min": 0,
+      "max": "initial",
+      "color": "#29e7ff",
+      "icon": "★",
+      "display": "bar"
+    },
+    "luck": {
+      "name": "Luck",
+      "short": "LCK",
+      "description": "Roll this or less on two dice to pass a luck test. Each test uses 1. Rolled at the start: 1 die + 6.",
+      "initial": {
+        "dice": "1d6+6"
+      },
+      "min": 0,
+      "max": "initial",
+      "color": "#ffd23f",
+      "icon": "♣",
+      "display": "bar"
+    }
+  },
+  "flags": {
+    "met_auntie": {
+      "description": "Talked to Auntie Lam"
+    },
+    "robot_friend": {
+      "description": "Fed Bolt-Bot"
+    },
+    "secret_route": {
+      "description": "Found the pearl in the Gremlin Vault"
+    }
+  },
+  "items": {
+    "token": {
+      "name": "Arcade Token",
+      "description": "Shiny brass tokens. Some things in Pixel Harbour cost one or two.",
+      "stackable": true,
+      "icon": "🪙",
+      "sprite": {
+        "palette": {
+          "o": "#b8860b",
+          "y": "#ffd23f",
+          "w": "#fff6c8"
+        },
+        "rows": [
+          "..oooo..",
+          ".oyyyyo.",
+          "oywyyyyo",
+          "oyyoooyo",
+          "oyoyyyyo",
+          "oyyoooyo",
+          ".oyyyyo.",
+          "..oooo.."
+        ]
+      }
+    },
+    "egg_tart": {
+      "name": "Egg Tart",
+      "description": "Warm, wobbly and delicious. Eat it for +4 Energy, or maybe someone else is hungry...",
+      "icon": "🥧",
+      "sprite": {
+        "palette": {
+          "b": "#c47a2c",
+          "y": "#ffd84a",
+          "Y": "#fff3a0"
+        },
+        "rows": [
+          "........",
+          "........",
+          ".bbbbbb.",
+          "byyyyyyb",
+          "byYyyyyb",
+          "bbyyyybb",
+          ".bbbbbb.",
+          "........"
+        ]
+      },
+      "use": {
+        "label": "Eat",
+        "effects": [
+          {
+            "stat": "energy",
+            "add": 4
+          },
+          {
+            "message": "Yum! +4 Energy"
+          }
+        ],
+        "consumable": true
+      }
+    },
+    "lantern": {
+      "name": "Rabbit Lantern",
+      "description": "A glowing paper rabbit lantern. Light shows hidden things.",
+      "icon": "🏮",
+      "sprite": {
+        "palette": {
+          "w": "#fff1c1",
+          "k": "#1b1b3a",
+          "p": "#ff7eb6",
+          "s": "#ffb02e"
+        },
+        "rows": [
+          "..w..w..",
+          "..w..w..",
+          ".wwwwww.",
+          "wwkwwkww",
+          "wwwppwww",
+          "wwwwwwww",
+          ".wwwwww.",
+          "...ss..."
+        ]
+      }
+    },
+    "brass_key": {
+      "name": "Brass Key",
+      "description": "A tiny key shaped like a dragon's claw. The tag says VAULT.",
+      "icon": "🔑",
+      "sprite": {
+        "palette": {
+          "o": "#e0a526",
+          "O": "#fff0a8"
+        },
+        "rows": [
+          "........",
+          ".ooo....",
+          "oO.oo...",
+          "o...oooo",
+          "oo.oo.o.",
+          ".ooo..o.",
+          "........",
+          "........"
+        ]
+      }
+    },
+    "whistle": {
+      "name": "Silver Whistle",
+      "description": "One note makes any machine dance.",
+      "icon": "🎵",
+      "sprite": {
+        "palette": {
+          "s": "#9aa7b8",
+          "W": "#e8eef5"
+        },
+        "rows": [
+          "........",
+          "........",
+          "ssssss..",
+          "sWWWWss.",
+          "sWWWWsss",
+          "ssssss.s",
+          "........",
+          "........"
+        ]
+      }
+    },
+    "pearl": {
+      "name": "Pearl of Light",
+      "description": "Warm as a tiny sun. The Neon Dragon needs it back!",
+      "icon": "⚪",
+      "sprite": {
+        "palette": {
+          "w": "#9fd8ff",
+          "W": "#ffffff",
+          "b": "#cdeeff"
+        },
+        "rows": [
+          "..wwww..",
+          ".wWWWWw.",
+          "wWWbWWWw",
+          "wWbWWWWw",
+          "wWWWWWWw",
+          "wWWWWWbw",
+          ".wWWWWw.",
+          "..wwww.."
+        ]
+      }
+    }
+  },
+  "startingInventory": [
+    {
+      "item": "token",
+      "quantity": 3
+    }
+  ],
+  "sections": {
+    "intro": {
+      "title": "Insert Coin",
+      "text": [
+        "Rain drums on the windows of the Golden Joystick, the tiniest arcade in Mong Kok. Neon signs buzz outside, painting the puddles pink and blue.",
+        "You, {{name}}, have three arcade tokens left in your pocket, and there's one machine you have never seen before. It sits in the back corner, humming softly. On its screen, a dragon made of glowing lights is curled around the words NEON DRAGON. Underneath, letters flash: THE PEARL IS LOST. PLAYER ONE, PLEASE HELP.",
+        "Funny. You're sure it wasn't there yesterday."
+      ],
+      "illustration": {
+        "src": "img/arcade.svg",
+        "alt": "A glowing arcade machine in a rainy Mong Kok arcade",
+        "pixelated": true
+      },
+      "choices": [
+        {
+          "label": "Drop a token into the slot",
+          "target": "portal",
+          "effects": [
+            {
+              "removeItem": "token"
+            }
+          ]
+        },
+        {
+          "label": "Ask Auntie Lam about the strange machine",
+          "target": "auntie"
+        }
+      ]
+    },
+    "auntie": {
+      "title": "Auntie Lam",
+      "text": [
+        "Auntie Lam runs the arcade. She is small and quick and never stops snacking. Today she is guarding a box of warm egg tarts behind the counter.",
+        "\"That old thing?\" she says, squinting. \"It only switches on when someone brave walks in. Last time was... hmm, 1986?\" She pushes an egg tart into your hand. \"Take this. Heroes need snacks. And if you meet a robot, remember: everybody gets grumpy when they're hungry.\""
+      ],
+      "onEnter": [
+        {
+          "addItem": "egg_tart"
+        },
+        {
+          "setFlag": "met_auntie"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Drop a token into the Neon Dragon machine",
+          "target": "portal",
+          "effects": [
+            {
+              "removeItem": "token"
+            }
+          ]
+        }
+      ]
+    },
+    "portal": {
+      "title": "Pixel Harbour",
+      "text": [
+        "The token clinks. The screen flares so brightly you have to shut your eyes, and the floor drops away like the first second of a rollercoaster.",
+        "When you open your eyes, you're standing on a pier made of chunky square pixels. In front of you is Hong Kong... but not quite. The skyscrapers are built from glowing blocks, the harbour sparkles in eight colours, and the moon is a perfect pixel circle.",
+        "A plump orange cat with a dumpling-shaped face sits beside you. \"Finally! Player One!\" it says. \"I'm Siu Mai. The Neon Dragon keeps the lights of Pixel Harbour shining with her Pearl of Light, but the Glitch Gremlins stole it! If the pearl isn't back by midnight, every light here goes out. For good.\"",
+        "Siu Mai points two ways with its tail: towards a noisy night market, and towards the ferry pier."
+      ],
+      "illustration": {
+        "src": "img/harbour.svg",
+        "alt": "A pixel-art harbour skyline at night with an orange cat",
+        "pixelated": true
+      },
+      "choices": [
+        {
+          "label": "Explore the night market",
+          "target": "market"
+        },
+        {
+          "label": "Head to the ferry pier",
+          "target": "pier"
+        }
+      ]
+    },
+    "market": {
+      "title": "Night Market",
+      "text": [
+        "Paper lanterns sway above a street packed with stalls. A pixel fish-ball seller flips sizzling snacks, and a robot grandma sells socks that change colour every few seconds.",
+        "At one stall, rows of glowing rabbit lanterns bob on strings. A sign says: ONE TOKEN. NEVER RUNS OUT. Next to it is a claw machine stuffed with prizes, and right at the bottom something small and brass glints.",
+        "At the end of the street, the Peak Tram rattles, ready to climb the hill."
+      ],
+      "illustration": {
+        "src": "img/market.svg",
+        "alt": "A pixel night market with lanterns",
+        "pixelated": true
+      },
+      "choices": [
+        {
+          "label": "Buy a rabbit lantern (1 token)",
+          "target": "lantern_stall",
+          "conditions": {
+            "hasItem": "token"
+          },
+          "lockedHint": "Needs 1 Arcade Token",
+          "hideIf": {
+            "hasItem": "lantern"
+          },
+          "effects": [
+            {
+              "removeItem": "token"
+            }
+          ]
+        },
+        {
+          "label": "Try the claw machine (1 token)",
+          "target": "claw",
+          "conditions": {
+            "hasItem": "token"
+          },
+          "lockedHint": "Needs 1 Arcade Token",
+          "hideIf": {
+            "hasItem": "brass_key"
+          },
+          "effects": [
+            {
+              "removeItem": "token"
+            }
+          ]
+        },
+        {
+          "label": "Ride the Peak Tram up the hill",
+          "target": "tram"
+        },
+        {
+          "label": "Walk to the ferry pier",
+          "target": "pier"
+        },
+        {
+          "label": "This is too spooky. Find a way home",
+          "target": "go_home"
+        }
+      ]
+    },
+    "lantern_stall": {
+      "title": "The Lantern Seller",
+      "text": [
+        "The lantern seller is a tall, gentle crane wearing reading glasses. She picks out the brightest rabbit lantern of all and hands it to you. Its paper ears glow warm and gold.",
+        "\"Light shows the hidden things,\" she says. \"Keep it close in dark places.\""
+      ],
+      "onEnter": [
+        {
+          "addItem": "lantern"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Look around the market again",
+          "target": "market"
+        },
+        {
+          "label": "Ride the Peak Tram up the hill",
+          "target": "tram"
+        }
+      ]
+    },
+    "claw": {
+      "title": "The Claw Machine",
+      "text": [
+        "You drop in a token. Music plays. The claw whirrs down... down... down... towards the tiny brass glint.",
+        "This one is all about luck!"
+      ],
+      "test": {
+        "label": "TEST YOUR LUCK",
+        "prompt": "Roll two dice. If the total is equal to or less than your LUCK, the claw grabs the prize. (Each try uses up 1 LUCK.)",
+        "dice": "2d6",
+        "againstStat": "luck",
+        "costEffects": [
+          {
+            "stat": "luck",
+            "add": -1
+          }
+        ],
+        "success": {
+          "target": "claw_win",
+          "text": "The claw grips tight!"
+        },
+        "failure": {
+          "target": "claw_lose",
+          "text": "The claw wobbles..."
+        }
+      }
+    },
+    "claw_win": {
+      "title": "Got It!",
+      "text": [
+        "The claw closes with a CLUNK and lifts out a little brass key shaped like a dragon's claw. A paper tag hangs from it: VAULT. KEEP AWAY FROM GREMLINS.",
+        "The lantern seller whistles. \"Lucky! Nobody has won that in a hundred years.\""
+      ],
+      "onEnter": [
+        {
+          "addItem": "brass_key"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Look around the market again",
+          "target": "market"
+        },
+        {
+          "label": "Ride the Peak Tram up the hill",
+          "target": "tram"
+        }
+      ]
+    },
+    "claw_lose": {
+      "title": "So Close!",
+      "text": [
+        "The claw grabs a rubber duck, wobbles, and drops it. Then it slowly drops nothing at all, as if it's laughing at you.",
+        "Never mind. It's only a game. Probably."
+      ],
+      "choices": [
+        {
+          "label": "Try again (1 token)",
+          "target": "claw",
+          "conditions": {
+            "hasItem": "token"
+          },
+          "lockedHint": "Needs 1 Arcade Token",
+          "effects": [
+            {
+              "removeItem": "token"
+            }
+          ]
+        },
+        {
+          "label": "Back to the market",
+          "target": "market"
+        }
+      ]
+    },
+    "pier": {
+      "title": "Ferry Pier",
+      "text": [
+        "A green-and-white ferry bobs at the pier, its paddle wheels made of spinning pixels. The captain is a large, sleepy toad in a captain's hat.",
+        "\"Crossing to Lighthouse Island costs two tokens,\" he croaks. \"No tokens, no boat. Them's the rules.\"",
+        "Out on the dark water, the lighthouse blinks: on... off... on. It looks like it's trying to tell you something."
+      ],
+      "illustration": {
+        "src": "img/ferry.svg",
+        "alt": "A pixel ferry at a pier with a lighthouse in the distance",
+        "pixelated": true
+      },
+      "choices": [
+        {
+          "label": "Pay two tokens and climb aboard",
+          "target": "ferry",
+          "conditions": {
+            "hasItem": "token",
+            "quantity": 2
+          },
+          "lockedHint": "Needs 2 Arcade Tokens",
+          "effects": [
+            {
+              "removeItem": "token",
+              "quantity": 2
+            }
+          ]
+        },
+        {
+          "label": "Sneak aboard while the captain yawns",
+          "target": "sneak",
+          "hideIf": {
+            "visited": "sneak"
+          }
+        },
+        {
+          "label": "Go to the night market",
+          "target": "market"
+        }
+      ]
+    },
+    "sneak": {
+      "title": "Ribbit!",
+      "text": [
+        "You tiptoe up the gangplank... and step right on the captain's foot.",
+        "\"RIBBIT!\" he bellows. He scoops you up and plops you back on the pier with a soggy SPLOSH. You're dripping wet and a little embarrassed."
+      ],
+      "onEnter": [
+        {
+          "stat": "energy",
+          "add": -2
+        }
+      ],
+      "choices": [
+        {
+          "label": "Pay two tokens after all",
+          "target": "ferry",
+          "conditions": {
+            "hasItem": "token",
+            "quantity": 2
+          },
+          "lockedHint": "Needs 2 Arcade Tokens",
+          "effects": [
+            {
+              "removeItem": "token",
+              "quantity": 2
+            }
+          ]
+        },
+        {
+          "label": "Squelch back to the night market",
+          "target": "market"
+        }
+      ]
+    },
+    "ferry": {
+      "title": "Across the Harbour",
+      "text": [
+        "The ferry chugs across the sparkling harbour. Pixel fish leap alongside, and the city lights twinkle on the waves, though some of them flicker and go dark as you watch.",
+        "Halfway across, three small purple creatures pop out of the water, giggling. Glitch Gremlins! They tug at the ropes and blow raspberries. The captain flicks out his long tongue (THWIP!) and the gremlins tumble back into the waves.",
+        "\"Pests,\" he grumbles. \"They carried a shiny pearl up to the Sky Tower on the Peak. Saw them myself.\""
+      ],
+      "choices": [
+        {
+          "label": "Hop off at Lighthouse Island",
+          "target": "lighthouse"
+        }
+      ]
+    },
+    "lighthouse": {
+      "title": "Lighthouse Island",
+      "text": [
+        "Lighthouse Island is tiny: rocks, a bench and a tall stripy lighthouse. The keeper is an old pixel tortoise who has been waiting for company for a very, very long time.",
+        "She pours you a cup of hot lemon tea, then presses something cold and shiny into your hand. \"The Silver Whistle. One note makes any machine dance, whether it wants to or not.\" She chuckles. \"Very useful around robots.\"",
+        "From the top of the lighthouse you can see the Peak, with the Sky Tower glowing angrily on top. A cable car swings down to fetch you."
+      ],
+      "onEnter": [
+        {
+          "stat": "energy",
+          "add": 3
+        },
+        {
+          "addItem": "whistle"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Ride the cable car to the Peak",
+          "target": "peak_top"
+        }
+      ]
+    },
+    "tram": {
+      "title": "The Peak Tram",
+      "text": [
+        "The little red tram clanks and begins to climb. The hill is so steep that the buildings outside seem to lean sideways.",
+        "Halfway up, the tram rattles into a long tunnel, and every light goes out. The tram stops with a jolt. Somewhere in the dark, something giggles."
+      ],
+      "illustration": {
+        "src": "img/tunnel.svg",
+        "alt": "A dark tunnel with a small tram",
+        "pixelated": true
+      },
+      "choices": [
+        {
+          "label": "Hold up your rabbit lantern",
+          "target": "tunnel_lit",
+          "conditions": {
+            "hasItem": "lantern"
+          },
+          "lockedHint": "Needs a Rabbit Lantern"
+        },
+        {
+          "label": "Feel your way through the dark",
+          "target": "tunnel_dark"
+        }
+      ]
+    },
+    "tunnel_dark": {
+      "title": "Bonk!",
+      "text": [
+        "You climb out and shuffle forward with your hands stretched out. BONK! A wall. BONK! Another wall. A gremlin stamps on your toe and runs away cackling.",
+        "By the time you find the end of the tunnel you're bruised and grumpy, but you've reached the top of the Peak."
+      ],
+      "onEnter": [
+        {
+          "stat": "energy",
+          "add": -3
+        }
+      ],
+      "choices": [
+        {
+          "label": "Climb out onto the Peak",
+          "target": "peak_top"
+        }
+      ]
+    },
+    "tunnel_lit": {
+      "title": "Hidden Door",
+      "text": [
+        "Golden light spills from your lantern. The giggling stops (gremlins hate light!) and you spot something the dark was hiding: a small round door in the tunnel wall, painted with a dragon's claw.",
+        "Underneath, someone has scratched: GREMLIN VAULT. KEEP OUT. (THIS MEANS YOU.)"
+      ],
+      "choices": [
+        {
+          "label": "Unlock the door with the brass key",
+          "target": "vault",
+          "conditions": {
+            "hasItem": "brass_key"
+          },
+          "lockedHint": "Needs a Brass Key"
+        },
+        {
+          "label": "Rattle the door handle",
+          "target": "door_locked",
+          "hideIf": {
+            "hasItem": "brass_key"
+          }
+        },
+        {
+          "label": "Leave the door and walk up to the Peak",
+          "target": "peak_top"
+        }
+      ]
+    },
+    "door_locked": {
+      "title": "Locked",
+      "text": [
+        "The handle won't budge. The keyhole is shaped like a tiny claw. Somewhere in Pixel Harbour there must be a key that fits..."
+      ],
+      "choices": [
+        {
+          "label": "Walk on up to the Peak",
+          "target": "peak_top"
+        },
+        {
+          "label": "Ride the tram back down to the market",
+          "target": "market"
+        }
+      ]
+    },
+    "vault": {
+      "title": "The Gremlin Vault",
+      "text": [
+        "The key turns with a satisfying click. Inside is a cosy little room piled high with everything the gremlins have ever stolen: odd socks, TV remotes, a thousand lost umbrellas... and, on a velvet cushion, a pearl as big as an orange, glowing with soft white light.",
+        "The Pearl of Light! You scoop it up. It feels warm, like holding a tiny sun. The gremlins were so busy guarding the Sky Tower that they forgot to guard their own vault."
+      ],
+      "onEnter": [
+        {
+          "addItem": "pearl"
+        },
+        {
+          "setFlag": "secret_route"
+        },
+        {
+          "message": "Secret route found!"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Race up to the Neon Dragon",
+          "target": "dragon_summit"
+        }
+      ]
+    },
+    "peak_top": {
+      "title": "The Peak",
+      "text": [
+        "The top of the Peak is windy and wild. Far below, Pixel Harbour twinkles, but whole streets have already gone dark. The Sky Tower looms above you, and the Neon Dragon is coiled weakly around it, her lights dim and flickering.",
+        "Blocking the tower door stands BOLT-BOT, the gremlins' guard: a rusty robot as tall as a bus, with a saucepan for a head. \"HALT,\" it booms. \"NO. PLAYERS. ALLOWED.\"",
+        "Its tummy makes a long, sad rumble."
+      ],
+      "illustration": {
+        "src": "img/robot.svg",
+        "alt": "A big rusty robot guarding a tower door",
+        "pixelated": true
+      },
+      "choices": [
+        {
+          "label": "Blow the Silver Whistle",
+          "target": "bot_dance",
+          "conditions": {
+            "hasItem": "whistle"
+          },
+          "lockedHint": "Needs a Silver Whistle"
+        },
+        {
+          "label": "Offer Bolt-Bot your egg tart",
+          "target": "bot_snack",
+          "conditions": {
+            "hasItem": "egg_tart"
+          },
+          "lockedHint": "Needs an Egg Tart",
+          "effects": [
+            {
+              "removeItem": "egg_tart"
+            }
+          ]
+        },
+        {
+          "label": "Challenge Bolt-Bot to a duel!",
+          "target": "bot_battle"
+        },
+        {
+          "label": "Retreat down the hill",
+          "target": "market"
+        }
+      ]
+    },
+    "bot_dance": {
+      "title": "Robot Boogie",
+      "text": [
+        "You blow one bright silver note. Bolt-Bot freezes. Then its feet start tapping. Its arms start swinging. In seconds it is doing the robot (badly) and it boogies right out of the doorway and away down the hill.",
+        "\"I. CANNOT. STOP,\" it wails happily."
+      ],
+      "choices": [
+        {
+          "label": "Dash into the Sky Tower",
+          "target": "tower_top"
+        }
+      ]
+    },
+    "bot_snack": {
+      "title": "Snack Attack",
+      "text": [
+        "Bolt-Bot sniffs. Its saucepan head tilts. Then it gobbles the egg tart in one bite, and its eyes turn into two pink hearts.",
+        "\"DELICIOUS,\" it says. \"NOBODY. EVER. FEEDS. BOLT-BOT.\" It steps aside and gives you a creaky thumbs-up. Auntie Lam was right!"
+      ],
+      "onEnter": [
+        {
+          "setFlag": "robot_friend"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Dash into the Sky Tower",
+          "target": "tower_top"
+        }
+      ]
+    },
+    "bot_battle": {
+      "title": "Duel!",
+      "text": [
+        "You raise your fists. Bolt-Bot raises its huge rubber-glove fists.",
+        "\"BEEP BOOP. PREPARE. FOR. BOPPING.\""
+      ],
+      "combat": {
+        "intro": "Each round, you and Bolt-Bot both roll two dice and add your attack. Higher total lands a bop (the loser loses 2). Knock Bolt-Bot down to 0 to win!",
+        "enemies": [
+          {
+            "name": "Bolt-Bot",
+            "attack": 5,
+            "health": 6,
+            "sprite": {
+              "palette": {
+                "g": "#c0c8d0",
+                "c": "#37406b",
+                "R": "#ff3355",
+                "m": "#b06b3a",
+                "r": "#ff5d8f",
+                "k": "#7a4a26"
+              },
+              "rows": [
+                "...gggggg...",
+                "..g......g..",
+                "..gccccccg..",
+                "..gcRccRcg..",
+                "..gccccccg..",
+                "...gggggg...",
+                "....kkkk....",
+                ".mmmmmmmmmm.",
+                "rm.mmmmmm.mr",
+                "rr.mmmmmm.rr",
+                "...mm..mm...",
+                "..mmm..mmm.."
+              ]
+            }
+          }
+        ],
+        "win": {
+          "target": "bot_beaten",
+          "text": "Bolt-Bot topples over!"
+        },
+        "lose": {
+          "target": "zapped",
+          "text": "Bolt-Bot bops you!"
+        },
+        "flee": {
+          "label": "Run away down the hill",
+          "target": "market",
+          "effects": [
+            {
+              "stat": "energy",
+              "add": -1
+            }
+          ]
+        }
+      }
+    },
+    "bot_beaten": {
+      "title": "Clang!",
+      "text": [
+        "With one last bop, Bolt-Bot topples over with a mighty CLANG, its saucepan head spinning like a top.",
+        "\"OKAY. OKAY. YOU. WIN,\" it says, and sits down for a little rest. The tower door swings open."
+      ],
+      "choices": [
+        {
+          "label": "Dash into the Sky Tower",
+          "target": "tower_top"
+        }
+      ]
+    },
+    "tower_top": {
+      "title": "The Gremlin King",
+      "text": [
+        "At the very top of the tower, in a room full of tangled wires and flashing screens, sits the Gremlin King. He is the size of a cat, wears a bottle-cap crown, and is juggling the Pearl of Light from hand to hand.",
+        "\"Ooh, a Player!\" he squeaks. \"I suppose you want my lovely shiny pearl? Well, you can't have it. Unless...\" He grins a wide, pointy grin. \"Unless you can answer my riddle! Get it wrong and I keep the pearl forever, and midnight turns your little city dark!\"",
+        "A clock on the wall ticks towards twelve."
+      ],
+      "illustration": {
+        "src": "img/king.svg",
+        "alt": "A small purple gremlin king with a bottle-cap crown holding a glowing pearl",
+        "pixelated": true
+      },
+      "choices": [
+        {
+          "label": "Accept the riddle challenge",
+          "target": "riddle"
+        },
+        {
+          "label": "Grab the pearl and run!",
+          "target": "grab"
+        }
+      ]
+    },
+    "grab": {
+      "title": "Grab It!",
+      "text": [
+        "You lunge for the pearl just as the Gremlin King tosses it into the air..."
+      ],
+      "test": {
+        "label": "TEST YOUR LUCK",
+        "prompt": "Roll two dice. Equal to or under your LUCK and you snatch it! (Uses up 1 LUCK.)",
+        "dice": "2d6",
+        "againstStat": "luck",
+        "costEffects": [
+          {
+            "stat": "luck",
+            "add": -1
+          }
+        ],
+        "success": {
+          "target": "grab_win",
+          "text": "Got it!"
+        },
+        "failure": {
+          "target": "grab_fail",
+          "text": "Whoops!"
+        }
+      }
+    },
+    "grab_win": {
+      "title": "Snatched!",
+      "text": [
+        "Your fingers close around the warm, glowing pearl. \"Hey! No fair!\" squeals the Gremlin King, but you're already racing up the stairs to the roof."
+      ],
+      "onEnter": [
+        {
+          "addItem": "pearl"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Run up to the roof",
+          "target": "dragon_summit"
+        }
+      ]
+    },
+    "grab_fail": {
+      "title": "Fizz!",
+      "text": [
+        "The Gremlin King hops aside and you crash into a pile of wires. Sparks fizz. Ouch!",
+        "\"Tsk, tsk,\" he says, wagging a finger. \"No grabbing. Riddle time!\""
+      ],
+      "onEnter": [
+        {
+          "stat": "energy",
+          "add": -2
+        }
+      ],
+      "choices": [
+        {
+          "label": "Listen to the riddle",
+          "target": "riddle"
+        }
+      ]
+    },
+    "riddle": {
+      "title": "The Riddle",
+      "text": [
+        "The Gremlin King clears his throat.",
+        "\"I have hands, but I cannot clap. I have a face, but I cannot smile. I run all day, but I never leave the wall. What am I?\"",
+        "Behind him, the clock ticks loudly. Tick. Tock. Tick..."
+      ],
+      "choices": [
+        {
+          "label": "\"A monkey!\"",
+          "target": "riddle_wrong"
+        },
+        {
+          "label": "\"A clock!\"",
+          "target": "riddle_right"
+        },
+        {
+          "label": "\"A tree!\"",
+          "target": "riddle_wrong"
+        }
+      ]
+    },
+    "riddle_right": {
+      "title": "Correct!",
+      "text": [
+        "The Gremlin King's mouth falls open. \"How did you... nobody ever... oh, FINE.\"",
+        "He sulks and tosses you the pearl. \"Rules are rules, even for gremlins.\""
+      ],
+      "onEnter": [
+        {
+          "addItem": "pearl"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Run up to the roof",
+          "target": "dragon_summit"
+        }
+      ]
+    },
+    "dragon_summit": {
+      "title": "The Neon Dragon",
+      "text": [
+        "You burst out onto the tower roof. The wind howls. The Neon Dragon lifts her great head. She is enormous, made of a million tiny lights, but almost all of them have gone dim.",
+        "\"Player One,\" she whispers, in a voice like distant thunder. \"Do you have it?\"",
+        "Below you, the clock begins to chime midnight."
+      ],
+      "illustration": {
+        "src": "img/dragon.svg",
+        "alt": "A huge dragon made of dim lights coiled around a tower",
+        "pixelated": true
+      },
+      "choices": [
+        {
+          "label": "Hold up the Pearl of Light",
+          "target": "victory",
+          "conditions": {
+            "hasItem": "pearl"
+          },
+          "lockedHint": "Needs the Pearl of Light",
+          "effects": [
+            {
+              "removeItem": "pearl"
+            }
+          ]
+        }
+      ]
+    },
+    "victory": {
+      "title": "Lights On!",
+      "text": [
+        "The pearl leaps from your hands and spins into the dragon's chest. FWOOOSH! Light races through her body (red, gold, green, blue) and bursts out across the city. Every building, every boat and every lantern blazes back to life.",
+        "Fireworks bloom over the harbour, spelling out a word in giant pixel letters: {{name}}!",
+        "The dragon bows her head. \"Thank you, hero.\" Siu Mai purrs so loudly the whole roof vibrates.",
+        "Then, with a blink, you're back in the Golden Joystick. The machine's screen shows a brand-new HIGH SCORE with your name next to it. Auntie Lam winks and hands you another egg tart."
+      ],
+      "illustration": {
+        "src": "img/victory.svg",
+        "alt": "Fireworks over a brightly lit pixel harbour",
+        "pixelated": true
+      },
+      "ending": {
+        "type": "win",
+        "title": "YOU SAVED PIXEL HARBOUR!",
+        "stars": 3
+      }
+    },
+    "riddle_wrong": {
+      "title": "Lights Out",
+      "text": [
+        "\"WRONG!\" cackles the Gremlin King. BONG... BONG... BONG... The clock strikes midnight. One by one, the lights of Pixel Harbour blink out, until only the moon is left.",
+        "Everything goes black, and then you're back in the Golden Joystick, standing in front of the machine. The screen says: GAME OVER. INSERT TOKEN TO TRY AGAIN.",
+        "Maybe next time, listen to the clock..."
+      ],
+      "ending": {
+        "type": "fail",
+        "title": "GAME OVER",
+        "stars": 1
+      }
+    },
+    "zapped": {
+      "title": "Bopped!",
+      "text": [
+        "BOP! Bolt-Bot's giant rubber fist sends you spinning... and spinning... and you land on your bottom on the floor of the Golden Joystick.",
+        "The machine flashes: GAME OVER. BOLT-BOT WINS THIS ROUND.",
+        "Next time, maybe try a different idea. Even robots have soft spots."
+      ],
+      "ending": {
+        "type": "death",
+        "title": "GAME OVER",
+        "stars": 0
+      }
+    },
+    "out_of_energy": {
+      "title": "Out of Energy",
+      "text": [
+        "Your pixels go fuzzy... then fizzy... then fade away completely.",
+        "You blink and find yourself sitting on a stool in the Golden Joystick, completely worn out. Rest up, have a snack, and try again!"
+      ],
+      "ending": {
+        "type": "death",
+        "title": "GAME OVER",
+        "stars": 0
+      }
+    },
+    "go_home": {
+      "title": "Home Safe",
+      "text": [
+        "You decide that's enough adventure for one night. Siu Mai sighs, but shows you a glowing exit door.",
+        "You step through and you're back in the arcade, warm and dry. The Neon Dragon machine flickers... then switches off.",
+        "Somewhere, a pixel city is getting darker. Maybe tomorrow you'll feel braver?"
+      ],
+      "ending": {
+        "type": "neutral",
+        "title": "THE END?",
+        "stars": 0
+      }
+    }
+  }
+}

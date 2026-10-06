@@ -1,0 +1,22 @@
+{
+  "name": "neon-gamebook",
+  "version": "1.0.0",
+  "description": "Retro arcade gamebook reader prototype (static site)",
+  "scripts": {
+    "validate": "node tests/validate.mjs",
+    "build": "node tests/validate.mjs",
+    "test:engine": "node --test tests/engine.test.mjs",
+    "test:e2e": "node tests/e2e.mjs",
+    "test": "npm run validate && npm run test:engine && npm run test:e2e",
+    "serve": "python3 -m http.server 8080 --directory public"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "playwright": "^1.63.0"
+  },
+  "private": true,
+  "type": "module"
+}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Neon Dragon · Pixel Gamebook</title>
+  <meta name="description" content="A retro arcade choose-your-path gamebook reader.">
+  <meta name="theme-color" content="#0b0820">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Neon Dragon">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="preload" href="fonts/PressStart2P-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="fonts/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="crt" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="logo" aria-label="Neon Dragon">
+      <span class="logo-main">NEON DRAGON</span>
+      <span class="logo-sub">OF PIXEL HARBOUR</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="player-chip" id="playerChip" data-testid="player-chip" aria-label="Player menu">
+        <canvas width="16" height="16" class="pix" id="chipAvatar"></canvas>
+        <span id="chipName">PLAYER 1</span>
+      </button>
+      <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" title="Sound">♪</button>
+      <button class="icon-btn" id="restartBtn" data-testid="restart" aria-label="Restart adventure" title="Restart">↺</button>
+    </div>
+  </header>
+  <div class="mini-hud" id="miniHud" data-testid="mini-hud" aria-label="Stats summary"></div>
+
+  <main class="layout" id="app" aria-live="polite">
+    <section class="story panel" id="story" data-testid="story">
+      <div class="loading">LOADING<span class="blink">_</span></div>
+    </section>
+
+    <aside class="side">
+      <div class="panel hero-card">
+        <canvas width="16" height="16" class="pix hero-avatar" id="heroAvatar" data-testid="hero-avatar"></canvas>
+        <div>
+          <div class="label">PLAYER 1</div>
+          <div class="hero-name" id="heroName" data-testid="hero-name">—</div>
+          <button class="link-btn" id="editHeroBtn" data-testid="edit-hero">EDIT HERO</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 class="panel-title">STATS</h2>
+        <div id="stats" class="stats" data-testid="stats"></div>
+      </div>
+      <div class="panel">
+        <h2 class="panel-title">INVENTORY</h2>
+        <div id="inventory" class="inventory" data-testid="inventory"></div>
+        <div id="itemDetail" class="item-detail" hidden></div>
+      </div>
+      <div class="panel journey-panel">
+        <h2 class="panel-title">JOURNEY</h2>
+        <ol id="journey" class="journey" data-testid="journey"></ol>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <span id="bookCredit"></span>
+  </footer>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="modalRoot"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+node_modules/
+.DS_Store
+*.log
+.vercel/
+test-results/
+playwright-report/
+# research scans are copyrighted; never commit them
+research-cache/
+*.pdf
+*.epub
+screenshots/
