@@ -3,11 +3,10 @@
 import * as E from '../public/js/engine.js';
 
 // ---------- random playthroughs ----------
-// Policy ("random but not suicidal"): pick uniformly among visible, unlocked choices, skipping any
-// the game marks with a ⚠ game-ending warning when a safe one exists; sometimes eat/drink a usable
-// item; riddles: 15% retreat, otherwise a random answer (and a random penalty, again avoiding ⚠
-// ones when possible); fights: attack, with a 10% chance per round to flee.
-const safe = (opts) => { const ok = opts.filter((o) => !o.warning); return ok.length ? ok : opts; };
+// Policy ("random"): pick uniformly among visible, unlocked choices (the game no longer warns that a
+// choice will empty a stat, so neither does the policy); sometimes (10% per step) eat/drink a random
+// usable item, glowing fish balls included; riddles: 15% retreat, otherwise a random answer (and a
+// random penalty); fights: attack, with a 10% chance per round to flee.
 export function randomPlay(book, seed, { maxSteps = 600 } = {}) {
   const rng = E.makeRng(seed);
   const pick = (arr) => arr[Math.floor(rng() * arr.length)];
@@ -29,7 +28,7 @@ export function randomPlay(book, seed, { maxSteps = 600 } = {}) {
         E.answerRiddle(book, state, Math.floor(rng() * r.question.options.length), rng);
         continue;
       }
-      if (p.penaltyDue) { E.payRiddlePenalty(book, state, pick(safe(E.riddlePenalties(book, state).filter((o) => o.available))).index, rng); continue; }
+      if (p.penaltyDue) { E.payRiddlePenalty(book, state, pick(E.riddlePenalties(book, state).filter((o) => o.available)).index, rng); continue; }
       E.continueRiddle(book, state, rng);
       continue;
     }
@@ -37,7 +36,7 @@ export function randomPlay(book, seed, { maxSteps = 600 } = {}) {
     if (usable.length && rng() < 0.1) { E.useItem(book, state, pick(usable), rng); continue; }
     const opts = E.availableChoices(book, state).filter((c) => c.available && !c.hidden);
     if (!opts.length) throw new Error(`stuck at ${state.current} (seed ${seed})`);
-    E.choose(book, state, pick(safe(opts)).index, rng);
+    E.choose(book, state, pick(opts).index, rng);
   }
   const zodiac = E.trackerProgress(book, state).find((t) => t.id === 'zodiac');
   return {

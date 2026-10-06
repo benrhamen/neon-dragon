@@ -68,6 +68,13 @@
         "$ref": "#/$defs/itemDef"
       }
     },
+    "statusEffects": {
+      "type": "object",
+      "description": "Timed status effects (e.g. poison) by id.",
+      "additionalProperties": {
+        "$ref": "#/$defs/statusDef"
+      }
+    },
     "startingInventory": {
       "type": "array",
       "description": "Items the player starts with. A bare string means quantity 1.",
@@ -191,7 +198,7 @@
     },
     "scoring": {
       "type": "object",
-      "description": "Final SCORE shown on winning endings. Each component is value \u00d7 points; the total is shown as a percentage of `reference`, the best total any path can reach (compute it with scripts/score-reference.mjs), so the optimal path scores exactly 100%.",
+      "description": "Final SCORE shown on winning endings. Each component is value × points; the total is shown as a percentage of `reference`, the best total any path can reach (compute it with scripts/score-reference.mjs), so the optimal path scores exactly 100%.",
       "required": [
         "components",
         "reference"
@@ -834,6 +841,19 @@
               "$ref": "#/$defs/condition"
             }
           }
+        },
+        {
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/id",
+              "description": "True while this timed status effect (statusEffects) is active, e.g. poisoned."
+            }
+          }
         }
       ]
     },
@@ -868,7 +888,7 @@
             },
             "halve": {
               "const": true,
-              "description": "Shorthand for multiply 0.5 with round down: 9 \u2192 4, 1 \u2192 0."
+              "description": "Shorthand for multiply 0.5 with round down: 9 → 4, 1 → 0."
             },
             "round": {
               "enum": [
@@ -988,6 +1008,38 @@
               "minimum": 1,
               "maximum": 5,
               "description": "Award cosmetic bonus stars (needs rules.bonusStars). Never a stat, never scored."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "addStatus"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "addStatus": {
+              "$ref": "#/$defs/id",
+              "description": "Start a timed status effect from statusEffects (e.g. poison). Catching it again restarts the countdown; it never stacks."
+            },
+            "moves": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 99,
+              "description": "How many moves it lasts (default: the status effect's moves)."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "cureStatus"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "cureStatus": {
+              "$ref": "#/$defs/id",
+              "description": "End a timed status effect now (e.g. a cure for poison). Does nothing if it isn't active."
             }
           }
         },
@@ -1497,7 +1549,7 @@
             },
             "characters": {
               "type": "array",
-              "description": "Character sprites drawn on top of the picture. x/y are in picture pixels on the grid below (default 96\u00d754, the size of the bundled scenes).",
+              "description": "Character sprites drawn on top of the picture. x/y are in picture pixels on the grid below (default 96×54, the size of the bundled scenes).",
               "items": {
                 "type": "object",
                 "required": [
@@ -1758,6 +1810,49 @@
           ]
         }
       ]
+    },
+    "statusDef": {
+      "type": "object",
+      "required": [
+        "name",
+        "moves",
+        "perMove"
+      ],
+      "additionalProperties": false,
+      "description": "A timed status effect: while active, its perMove effects run on every move (after rules.perMoveEffects) and it counts down by one; at 0 it wears off. If a tick empties a death stat, the normal depletion ending follows. Saved with the game (state.status).",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "badge": {
+          "type": "string",
+          "description": "Short label for the stats-panel badge, shown with the moves left, e.g. POISONED → \"POISONED x5\"."
+        },
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "moves": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99,
+          "description": "Default length in moves."
+        },
+        "perMove": {
+          "$ref": "#/$defs/effectList"
+        },
+        "endMessage": {
+          "type": "string"
+        },
+        "cureMessage": {
+          "type": "string"
+        }
+      }
     }
   }
 }

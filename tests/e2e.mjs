@@ -170,14 +170,15 @@ try {
   console.log('first moves');
   check((await text(page, 'hero-name')) === 'MAX', 'hero panel shows the nickname');
   check((await text(page, 'section-title')) === 'Insert Coin', 'adventure starts at the first section');
-  check(await stat(page, 'power') === 150 && await stat(page, 'energy') === 32 && await stat(page, 'tokens') === 5, 'starts with 150 Pixel Power, 32 Energy, 5 tokens');
+  check(await stat(page, 'power') === 160 && await stat(page, 'energy') === 36 && await stat(page, 'tokens') === 5, 'starts with 160 Pixel Power, 36 Energy, 5 tokens');
+  check((await text(page, 'section-text')).includes('five arcade tokens'), 'the intro says FIVE tokens (matches the start)');
   check(await T(page, 'stars-panel').isVisible() && (await text(page, 'stars')) === '0' && (await text(page, 'stars-panel')).includes('NOT IN YOUR SCORE'), 'stats panel shows a BONUS STARS counter at 0 (marked: not in your score)');
   check((await text(page, 'tracker-count')) === '0/12', 'Zodiac Collection panel shows 0/12');
   check(await page.locator('.stat.timer .timer-bar').count() === 1, 'Pixel Power is shown as a countdown bar');
   const keys = await page.evaluate(() => Object.keys(localStorage));
   check(keys.includes(RUN_KEY) && !keys.some((k) => k.startsWith('gb.profiles')), 'only the current run is autosaved (no player profiles)');
   await choose(page, 'Ask Auntie Lam');
-  check(await stat(page, 'power') === 149, 'each move uses 1 Pixel Power');
+  check(await stat(page, 'power') === 159, 'each move uses 1 Pixel Power');
   check((await text(page, 'move-count')) === 'MOVE 1', 'move counter shows MOVE 1');
   const where = await text(page, 'section-title');
   await page.reload();
@@ -227,7 +228,7 @@ try {
   check((await text(page, 'riddle-question')) === rq.question, 'the saved riddle is the one on screen');
   await T(page, `riddle-option-${rq.answer}`).click();
   check((await T(page, 'riddle-result').getAttribute('data-correct')) === 'true', 'Loulou: correct answer passes');
-  check(await stat(page, 'tokens') === 6 && await stat(page, 'energy') === 14, 'correct answer: +2 Energy, no tokens');
+  check(await stat(page, 'tokens') === 6 && await stat(page, 'energy') === 15, 'correct answer: +3 Energy, no tokens');
   await T(page, 'continue').click();
   await page.waitForTimeout(200);
   check((await text(page, 'section-title')) === 'The Peak' && (await text(page, 'tracker-count')) === '1/12', 'Loulou finished after one riddle: back at the Peak, Goat added to the Zodiac Collection');
@@ -288,7 +289,7 @@ try {
   await inject(page, go('liv') + 'st.stats.tokens = 2;');
   rq = await riddleNow(page);
   await T(page, `riddle-option-${(rq.answer + 1) % rq.n}`).click();
-  check((await T(page, 'penalty-0').textContent()).includes('⚠'), 'paying your last tokens is flagged with ⚠');
+  check(!(await T(page, 'penalty-0').textContent()).includes('⚠') && await page.getByTestId('warning').count() === 0, 'paying your last tokens is NOT flagged in advance (no ⚠ warning)');
   await T(page, 'penalty-0').click();
   await T(page, 'ending').waitFor();
   check((await text(page, 'trapped-title')) === 'OUT OF TOKENS' && (await text(page, 'trapped-cause')).includes('TOKENS'), 'paying the last 2 tokens = OUT OF TOKENS ending');
@@ -298,7 +299,7 @@ try {
 
   console.log('trapped');
   await inject(page, go('tram') + 'st.stats.energy = 3;');
-  check((await page.locator('.choice', { hasText: 'Feel your way' }).textContent()).includes('ENERGY WOULD RUN OUT'), 'the dangerous choice warns that Energy would run out');
+  check(!(await page.locator('.choice', { hasText: 'Feel your way' }).textContent()).includes('WOULD RUN OUT') && await page.getByTestId('warning').count() === 0, 'NO advance warning that Energy would run out');
   await choose(page, 'Feel your way through the dark');
   await T(page, 'ending').waitFor();
   check((await T(page, 'ending').getAttribute('data-style')) === 'trapped', 'Energy at 0 = trapped-style ending');
@@ -318,7 +319,7 @@ try {
   await T(page, 'name-input').fill('kai');
   await T(page, 'press-start').click();
   await T(page, 'avatar-modal').waitFor({ state: 'detached' });
-  check((await text(page, 'hero-name')) === 'KAI' && await stat(page, 'power') === 150 && (await text(page, 'section-title')) === 'Insert Coin', 'START begins a fresh game with the new hero');
+  check((await text(page, 'hero-name')) === 'KAI' && await stat(page, 'power') === 160 && (await text(page, 'section-title')) === 'Insert Coin', 'START begins a fresh game with the new hero');
 
   console.log('win + score');
   net.mode = 'ok';
@@ -424,7 +425,7 @@ try {
   const luckWant = total >= 8 ? luckBefore : total === 7 ? Math.floor(luckBefore / 2) : luckBefore - 2;
   check((await text(page, 'section-title')) === 'Causeway Bay' && eAfter === 12 && luckNow === luckWant && tAfter === (total >= 8 ? 8 : 5), `gamble outcome applied, Luck only (roll ${total}: Luck ${luckBefore} → ${luckNow}, Energy ${eAfter}, tokens ${tAfter})`);
   await inject(page, go('claw') + 'st.stats.luck = 2;');
-  check((await text(page, 'gamble-risk')).includes('LOSING WOULD TRAP YOU'), 'gamble warns when losing would empty your Luck');
+  check((await page.locator('[data-testid="gamble-risk"]').count()) === 0 && !(await page.locator('body').innerText()).includes('⚠'), 'gamble: no "would trap you" warning even at Luck 2 (the odds are still shown)');
   await inject(page, go('horse_race') + 'st.stats.luck = 1;');
   await T(page, 'roll').click();
   await T(page, 'test-result').waitFor();
@@ -460,7 +461,7 @@ try {
     check((await text(page, 'section-title')) === 'The Peak' && await stat(page, 'power') === 46, `RUN AWAY after ${rounds} round(s) works: the Peak, -3 Pixel Power`);
   }
   await inject(page, go('bot_battle') + 'st.stats.power = 3;');
-  check((await T(page, 'flee').textContent()).includes('⚠') && await T(page, 'warning').first().isVisible(), 'RUN AWAY with 3 Pixel Power left shows the ⚠ trapped warning');
+  check(!(await T(page, 'flee').textContent()).includes('⚠') && await page.getByTestId('warning').count() === 0, 'RUN AWAY with 3 Pixel Power left: no ⚠ warning in advance');
   // the old bypasses are now in-fight advantages, picked up at the Peak before the duel
   await inject(page, go('peak_top') + "st.inventory.whistle = 1; st.inventory.egg_tart = 1; st.flags.goat_tips = true; st.stats.energy = 10;");
   check(await page.locator('.choice', { hasText: 'Sky Tower' }).count() === 0 && await page.locator('.choice:not(.locked)', { hasText: 'BOSS duel' }).count() === 1, 'the Peak: the duel is the only way into the tower');
@@ -477,11 +478,11 @@ try {
   // the boss: tougher numbers on screen, and boosts for a well-prepared hero
   await inject(page, go('bot_battle') + 'st.stats.luck = 8;');
   check((await text(page, 'enemy-hp')) === 'HP 10/10' && (await text(page, 'combat')).includes('BOP -3') && (await text(page, 'your-attack')) === 'ATTACK 8', 'boss: Turbo Bolt-Bot HP 10, bops for 3; no boosts = your plain Luck');
-  check(await page.locator('[data-testid=boost].on').count() === 0 && await page.locator('[data-testid=boost]').count() === 7, 'boss: 7 possible boosts listed, none active yet');
+  check(await page.locator('[data-testid=boost].on').count() === 0 && await page.locator('[data-testid=boost]').count() === 8, 'boss: 8 possible boosts listed (now with the Lucky Horseshoe), none active yet');
   const boostText = await text(page, 'boosts');
   check(/WHISTLE/.test(boostText) && /BOT -4 HP/.test(boostText) && /SNACK/.test(boostText) && /\+4 ENERGY/.test(boostText) && /HIGH GROUND/.test(boostText), 'boost list shows the whistle (BOT -4 HP), the snack (+4 ENERGY) and the high ground');
-  await inject(page, go('peak_top') + "st.stats.luck = 8; st.inventory.feather = 1; st.inventory.umbrella = 1; for (const e of book.trackers[0].entries.slice(0, 8)) st.flags[e.flag] = true; Object.assign(st.flags, { high_ground: true, bot_dizzy: true, robot_friend: true });" + go('bot_battle'));
-  check(await page.locator('[data-testid=boost].on').count() === 7 && (await text(page, 'your-attack')).startsWith('ATTACK 12') && (await text(page, 'combat')).includes('BOP -2') && (await text(page, 'enemy-hp')) === 'HP 6/10', 'well-prepared: all 7 boosts light up (+4 attack, umbrella softens bops to 2, robot dizzy at 6/10 HP)');
+  await inject(page, go('peak_top') + "st.stats.luck = 8; st.inventory.feather = 1; st.inventory.umbrella = 1; st.inventory.horseshoe = 1; for (const e of book.trackers[0].entries.slice(0, 8)) st.flags[e.flag] = true; Object.assign(st.flags, { high_ground: true, bot_dizzy: true, robot_friend: true });" + go('bot_battle'));
+  check(await page.locator('[data-testid=boost].on').count() === 8 && (await text(page, 'your-attack')).startsWith('ATTACK 13') && (await text(page, 'combat')).includes('BOP -2') && (await text(page, 'enemy-hp')) === 'HP 6/10', 'well-prepared: all 8 boosts light up (+5 attack, umbrella softens bops to 2, robot dizzy at 6/10 HP)');
   await page.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
   await T(page, 'boosts').scrollIntoViewIfNeeded();
   await shot(page, '27-boss-boosts.png');
@@ -530,6 +531,77 @@ try {
   await choose(page, 'Statue Square');
   await T(page, 'ending').waitFor();
   check((await text(page, 'trapped-cause')).includes('ENERGY'), 'losing your last Energy to the PiGeons is the normal trapped GAME OVER');
+
+  console.log('taxi: "drive faster" is a bumpy ride, not a death (v2.4 bug fix)');
+  await inject(page, '');
+  check((await text(page, 'section-title')) === 'Insert Coin' && await stat(page, 'tokens') === 5, 'fresh run: Insert Coin, 5 tokens');
+  await choose(page, 'Drop a token into the slot');
+  await choose(page, 'Wave down a red taxi');
+  await choose(page, 'Causeway Bay, please');
+  check((await text(page, 'section-title')) === 'Cross-Harbour Grumbles' && await stat(page, 'tokens') === 2 && await page.getByTestId('warning').count() === 0, 'in the cab with 2 tokens, and no ⚠ warnings on any choice');
+  const eTaxi = await stat(page, 'energy');
+  await choose(page, 'Ask him to drive faster');
+  check((await text(page, 'section-title')) === 'Racing Game Mode' && await T(page, 'ending').count() === 0 && await stat(page, 'energy') === eTaxi - 3, `drive faster: a bumpy ride, -3 Energy (${eTaxi} → ${await stat(page, 'energy')}), no GAME OVER`);
+  await choose(page, 'Wobble out into Causeway Bay');
+  check((await text(page, 'section-title')) === 'Causeway Bay' && await T(page, 'ending').count() === 0 && await stat(page, 'tokens') === 6, 'and on into Causeway Bay (+4 tokens from the shopkeeper)');
+  await inject(page, go('taxi_ride') + 'st.stats.tokens = 2;');
+  await choose(page, "grumpiest driver");
+  check((await text(page, 'section-title')) === 'The Long Way Round' && await T(page, 'ending').count() === 0 && await stat(page, 'tokens') === 2, 'being rude costs time and Luck, not your last tokens');
+
+  console.log('new items, poison and cures');
+  await inject(page, go('market'));
+  check((await text(page, 'section-text')).includes('glow a spooky green'), 'the market: the free fish balls glow a spooky green (the clue)');
+  await choose(page, 'FREE glowing fish ball');
+  check((await text(page, 'section-title')) === 'Free Sample!' && await T(page, 'item-glow_fishball').count() === 1, 'the free sample goes in your pocket');
+  await choose(page, 'Pocket it');
+  await T(page, 'item-glow_fishball').click();
+  const fishDesc = await page.locator('#itemDetail').textContent();
+  check(fishDesc.includes('+5 ENERGY') && fishDesc.includes('spooky green') && (await text(page, 'use-item')) === 'EAT', 'item detail: tempting sticker, suspicious glow, and an EAT button');
+  await page.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
+  await page.evaluate(() => document.querySelector('#itemDetail').scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(900);
+  await shot(page, '33-new-item-fishball.png');
+  const ePoison = await stat(page, 'energy');
+  await T(page, 'use-item').click();
+  await page.waitForTimeout(300);
+  check(await T(page, 'status-poison').isVisible() && (await text(page, 'status-poison')).includes('POISONED x5'), 'eat it: POISONED x5 badge in the stats panel');
+  check(await stat(page, 'energy') === ePoison && await T(page, 'item-glow_fishball').count() === 0, 'no Energy from it (the sticker lied), and it is gone');
+  await choose(page, 'Walk to the MTR station');
+  await page.waitForTimeout(250);
+  const toastsNow = (await page.locator('#toasts').textContent()) || '';
+  check((await text(page, 'status-poison')).includes('POISONED x4') && await stat(page, 'energy') === ePoison - 1 && /POISONED!.*ENERGY -1/.test(toastsNow), `a move: -1 Energy, a POISONED! message, badge x4 (${toastsNow.trim().slice(0, 60)})`);
+  await page.locator('[data-testid=status-poison]').scrollIntoViewIfNeeded();
+  await shot(page, '34-poison-badge.png');
+  await page.reload(); await T(page, 'section-title').waitFor();
+  check((await text(page, 'status-poison')).includes('POISONED x4'), 'reload: the poison countdown is saved with the run');
+  await choose(page, 'Go back up to the street');
+  check((await text(page, 'status-poison')).includes('POISONED x3') && await stat(page, 'energy') === ePoison - 2, 'and keeps ticking after the reload');
+  await inject(page, go('market') + 'st.inventory.herbal_tea = 1; st.status = { poison: 3 };');
+  await T(page, 'item-herbal_tea').click();
+  await T(page, 'use-item').click();
+  await page.waitForTimeout(250);
+  check(await T(page, 'status-poison').count() === 0 && /POISON CURED/.test(await page.locator('#toasts').textContent()), '24-herb tea cures the poison (badge gone)');
+  await inject(page, go('central') + 'st.status = { poison: 4 };');
+  await choose(page, 'Man Mo Temple');
+  check(await T(page, 'status-poison').count() === 0 && (await text(page, 'section-text')).includes('Poison cured!'), 'Man Mo Temple incense cures it too');
+  await inject(page, go('central') + 'st.status = { poison: 2 }; st.stats.energy = 1;');
+  await choose(page, 'Hop on a ding-ding tram');
+  await T(page, 'ending').waitFor();
+  check((await text(page, 'trapped-title')) === 'TRAPPED IN THE GAME FOREVER' && (await text(page, 'trapped-cause')).includes('ENERGY'), 'a poison tick that takes your last Energy = trapped forever');
+  await inject(page, go('happy_valley') + 'st.inventory.goggles = 1;');
+  const gog = page.locator('.choice', { hasText: 'MOOOO' });
+  check(await gog.count() === 1 && (await gog.getAttribute('class')).includes('locked') && (await gog.textContent()).includes('GREMLIN IN DISGUISE') && await page.locator('.choice:not(.locked)', { hasText: 'clip-clop' }).count() === 1, 'Gremlin Goggles: the gremlin path is locked and flagged; the real horse is open');
+  check(await gog.locator('.need.own').count() === 1 && await page.locator('.need:not(.own)').count() === 0, 'locked hints that already speak for themselves get no extra "NEEDS:" prefix');
+  await gog.scrollIntoViewIfNeeded();
+  await shot(page, '35-gremlin-goggles.png');
+  await inject(page, go('bot_battle') + 'st.inventory.horseshoe = 1;');
+  check(/horseshoe/i.test(await page.locator('#actions').textContent()), 'Lucky Horseshoe shows in the duel boost list');
+  await inject(page, go('times_square') + 'st.stats.energy = 10;');
+  await choose(page, 'egg waffle');
+  await T(page, 'item-egg_waffle').click(); await T(page, 'use-item').click(); await page.waitForTimeout(200);
+  check(await stat(page, 'energy') === 13, 'egg waffle (1 token at Times Square): +3 Energy (10 → 13)');
+  await inject(page, go('dog'));
+  check(await page.locator('.choice', { hasText: "Shortcut: follow the dog's nose straight to the Peak Tram (skips Causeway Bay)" }).count() === 1, 'dog shortcut is clearly labelled');
 
   console.log('zodiac master');
   await inject(page, go('dragon_summit') + "st.inventory.pearl = 1; for (const e of book.trackers[0].entries.slice(0, 11)) st.flags[e.flag] = true; st.stats.power = 20;");

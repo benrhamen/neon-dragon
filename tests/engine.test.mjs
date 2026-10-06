@@ -26,20 +26,21 @@ const go = (state, text, rng = () => 0.5) => E.choose(book, state, choice(state,
 const low = () => 0; // dice always roll 1s
 const high = () => 0.99; // dice always roll 6s
 
-test('book is valid and lint-clean, with 109 sections and 11 endings', () => {
+test('book is valid and lint-clean, with 112 sections and 11 endings', () => {
   const lint = E.lintBook(book);
   assert.deepEqual(lint.errors, []);
   assert.deepEqual(lint.warnings, []);
-  assert.equal(Object.keys(book.sections).length, 109);
+  assert.equal(Object.keys(book.sections).length, 112);
   assert.equal(lint.endings.length, 11);
 });
 
-test('new game: Energy 32, Pixel Power 150 (no cap), Luck 1d6+6, 5 tokens, 0 bonus stars', () => {
+test('new game: Energy 36, Pixel Power 160 (no cap), Luck 1d6+6, 5 tokens, 0 bonus stars, not poisoned', () => {
   const s = fresh(3);
   assert.equal(s.current, 'intro');
-  assert.equal(s.stats.energy, 32);
-  assert.equal(E.statBounds(book, s, 'energy').max, 32);
-  assert.equal(s.stats.power, 150);
+  assert.equal(s.stats.energy, 36);
+  assert.equal(E.statBounds(book, s, 'energy').max, 36);
+  assert.equal(s.stats.power, 160);
+  assert.deepEqual(s.status, {});
   assert.ok(s.stats.luck >= 7 && s.stats.luck <= 12);
   assert.equal(s.stats.tokens, 5);
   assert.equal(s.bonusStars, 0);
@@ -67,11 +68,11 @@ test('every move costs 1 Pixel Power, and food does not restore it', () => {
   const s = fresh();
   go(s, 'Ask Auntie Lam');
   assert.equal(s.moves, 1);
-  assert.equal(s.stats.power, 149);
+  assert.equal(s.stats.power, 159);
   s.stats.energy = 5;
   E.useItem(book, s, 'egg_tart');
   assert.equal(s.stats.energy, 8, 'egg tart = +3 Energy');
-  assert.equal(s.stats.power, 149);
+  assert.equal(s.stats.power, 159);
 });
 
 test('Pixel Power running out on a move = TRAPPED IN THE GAME FOREVER', () => {
@@ -93,9 +94,9 @@ test('Energy running out from a hazard = trapped; a halving trap can do it', () 
 });
 
 test('tokens running out = OUT OF TOKENS (trapped style)', () => {
-  const s = at(fresh(), 'taxi_ride');
+  const s = at(fresh(), 'taxi_rank');
   s.stats.tokens = 2;
-  go(s, 'grumpiest');
+  go(s, 'Causeway Bay');
   assert.equal(s.current, 'out_of_tokens');
   assert.equal(s.ended.style, 'trapped');
   assert.equal(s.ended.cause.stat, 'tokens');
@@ -128,11 +129,11 @@ test('luck tests use up 1 Luck whether you pass or fail; Luck reaching 0 is a ga
   assert.equal(s.current, 'trapped');
   assert.equal(s.stats.luck, 0);
   assert.equal(s.ended.cause.stat, 'luck');
-  // a choice into a luck test at Luck 1 carries the ⚠ warning
+  // no advance ⚠ warning on a choice into a luck test at Luck 1 (the game over is a surprise)
   const s2 = at(fresh(), 'tiger_class');
   s2.stats.luck = 1;
-  const warned = E.availableChoices(book, s2).filter((c) => book.sections[c.target]?.test?.againstStat === 'luck');
-  assert.ok(warned.length && warned.every((c) => c.warning?.stat === 'luck'), 'choices into luck tests warn at Luck 1');
+  const into = E.availableChoices(book, s2).filter((c) => book.sections[c.target]?.test?.againstStat === 'luck');
+  assert.ok(into.length && into.every((c) => !('warning' in c)), 'no warning on choices into luck tests');
 });
 
 // dice that land on the given faces (1-6), in order
@@ -236,15 +237,25 @@ test('Luck can be won back a little (temple incense), never above the starting v
   assert.equal(s2.stats.luck, start);
 });
 
-test('choices that would end the game are flagged with a warning (including what happens on arrival)', () => {
+test('NO "⚠ WOULD RUN OUT" warnings: choices and penalties never say in advance that a stat will run out', () => {
+  assert.equal(E.wouldDeplete, undefined, 'the engine no longer predicts depletion for the UI');
   const s = at(fresh(), 'tram');
   s.stats.energy = 4;
   const dark = choice(s, 'Feel your way');
-  assert.equal(dark.warning?.stat, 'energy');
-  assert.equal(choice(s, 'Ride the tram back down').warning, null);
+  assert.ok(!('warning' in dark));
+  go(s, 'Feel your way');
+  assert.equal(s.current, 'trapped', 'but running out is still the normal game over');
+  assert.equal(s.ended.cause.stat, 'energy');
+  // every choice in the book, at the worst moment (1 of everything left)
+  for (const id of Object.keys(book.sections)) {
+    const t = at(fresh(), id);
+    if (t.ended) continue;
+    for (const k of Object.keys(t.stats)) t.stats[k] = 1;
+    for (const c of E.availableChoices(book, t)) assert.ok(!('warning' in c), `${id}: ${c.label}`);
+  }
 });
 
-test('riddle: a correct answer passes, meets the animal (+2 Pixel Power) and earns +2 Energy but NO tokens', () => {
+test('riddle: a correct answer passes, meets the animal (+2 Pixel Power) and earns +3 Energy but NO tokens', () => {
   const s = at(fresh(), 'tram_monkey');
   s.stats.power = 20;
   s.stats.energy = 9;
@@ -257,7 +268,7 @@ test('riddle: a correct answer passes, meets the animal (+2 Pixel Power) and ear
   assert.ok(s.flags.zodiac_monkey);
   assert.equal(s.stats.power, 20 + 2 - 1, '+2 for meeting the Monkey, -1 for the move');
   assert.equal(s.stats.tokens, tokens, 'no token reward for a correct answer');
-  assert.equal(s.stats.energy, 11);
+  assert.equal(s.stats.energy, 12);
 });
 
 const wrongOf = (r) => (r.question.answer + 1) % r.question.options.length;
@@ -397,7 +408,7 @@ test('riddle: with fewer than 2 tokens only halving is allowed; paying your last
   s2.stats.tokens = 2;
   r = E.currentRiddle(book, s2);
   E.answerRiddle(book, s2, (r.question.answer + 1) % 3);
-  assert.equal(E.riddlePenalties(book, s2)[0].warning?.stat, 'tokens', 'the UI warns: last tokens');
+  assert.ok(!('warning' in E.riddlePenalties(book, s2)[0]), 'no advance warning about the last tokens');
   E.payRiddlePenalty(book, s2, 0);
   assert.equal(s2.current, 'out_of_tokens');
   assert.equal(s2.ended.cause.stat, 'tokens');
@@ -441,7 +452,7 @@ test('the zodiac: 12 animals; the Dragon joins only at the winning finale after 
 test('each zodiac animal gives +2 Pixel Power once', () => {
   const s = at(fresh(), 'horse_track');
   const p = s.stats.power;
-  assert.equal(p, 152);
+  assert.equal(p, 162);
   go(s, 'Cheer');
   at(s, 'horse_track');
   assert.equal(s.stats.power, p - 1 + 0, 'second visit: no extra bonus');
@@ -729,9 +740,9 @@ test('tokens: start with 5; riddles pay NO tokens; one-time token finds in Centr
   for (const id of ['central', 'man_mo', 'dingding', 'causeway_bay']) {
     const s = fresh();
     at(s, id);
-    assert.equal(s.stats.tokens, 5 + 3, `${id}: +3 tokens`);
+    assert.equal(s.stats.tokens, 5 + 4, `${id}: +4 tokens`);
     at(s, id);
-    assert.equal(s.stats.tokens, 8, `${id}: only once`);
+    assert.equal(s.stats.tokens, 9, `${id}: only once`);
   }
 });
 
@@ -982,7 +993,7 @@ test('wrong fork: a gremlin in disguise unmasks (-2 Energy or -2 Pixel Power), n
 test('wrong fork can be the normal game over (last Energy / Pixel Power), but is never an instant death otherwise', () => {
   let s = forkState('ferry'); s.stats.energy = 2;
   const c = visibleTo(s, 'gremlin_ox')[0];
-  assert.equal(c.warning?.stat, 'energy', 'the choice shows the ⚠ warning');
+  assert.ok(!('warning' in c), 'no advance warning');
   E.choose(book, s, c.index, () => 0.5);
   assert.equal(s.ended?.cause.stat, 'energy');
   s = forkState('ferry');
@@ -1002,4 +1013,239 @@ test('graph: no dead ends; every gremlin and every reachable section can still r
   assert.deepEqual(stuck, ['crown_try', 'grab_fail', 'king_challenge', 'riddle', 'riddle_miss', 'sale_trap'].filter((id) => stuck.includes(id)), `sections that can only end in a fail: ${stuck}`);
   assert.ok(!stuck.some((id) => id.startsWith('gremlin_') || Object.values(FORKS).some((f) => f[0] === id)), 'forks and gremlins are always recoverable');
   for (const gid of Object.keys(FORKS)) assert.ok(canWin(gid), gid);
+});
+
+// ---------- v2.4.0: taxi fix, new items, poison, no run-out warnings, dog shortcut ----------
+test('taxi bug: "Ask him to drive faster" is just a bumpy ride (-3 Energy), never a death', () => {
+  assert.match(E.sectionParagraphs(book, fresh(), book.sections.intro).join(' '), /five arcade tokens/, 'the intro matches the 5-token start');
+  assert.doesNotMatch(JSON.stringify(book.sections.intro), /six arcade tokens/);
+  for (const first of ['Drop a token', 'Ask Auntie Lam']) {
+    const s = fresh(7);
+    go(s, first);
+    if (first.startsWith('Ask')) go(s, 'Drop a token');
+    go(s, 'Wave down a red taxi');
+    go(s, 'Causeway Bay');
+    assert.equal(s.current, 'taxi_ride');
+    assert.equal(s.stats.tokens, 2, 'the standard route reaches the cab with exactly 2 tokens');
+    const e = s.stats.energy;
+    const msgs = go(s, 'drive faster');
+    assert.equal(s.current, 'taxi_faster');
+    assert.ok(!s.ended, 'still alive');
+    assert.equal(s.stats.energy, e - 3, 'a bumpy ride: -3 Energy');
+    assert.ok(msgs.some((m) => /bumpy/i.test(m.text)));
+    go(s, 'Wobble out');
+    assert.equal(s.current, 'causeway_bay');
+    assert.ok(!s.ended);
+  }
+  // none of the three things you can say in the cab can end the game on the standard route
+  for (const say of ['Agree', 'drive faster', 'grumpiest']) {
+    const s = fresh(7);
+    go(s, 'Drop a token'); go(s, 'Wave down a red taxi'); go(s, 'Causeway Bay');
+    go(s, say);
+    assert.ok(!s.ended, `"${say}" is survivable`);
+    assert.ok(s.stats.tokens >= 1, `"${say}" leaves you with tokens`);
+  }
+  // no taxi-ride choice spends tokens any more (the rude route costs time and luck instead)
+  for (const id of ['taxi_ride', 'taxi_agree', 'taxi_faster', 'taxi_rude']) assert.ok(!JSON.stringify(book.sections[id]).includes('"tokens"'), id);
+  // faster only kills when Energy truly reaches 0
+  const s = at(fresh(), 'taxi_ride');
+  s.stats.energy = 3;
+  go(s, 'drive faster');
+  assert.equal(s.current, 'trapped');
+  assert.equal(s.ended.cause.stat, 'energy');
+  const s2 = at(fresh(), 'taxi_ride');
+  s2.stats.energy = 4;
+  go(s2, 'drive faster');
+  assert.ok(!s2.ended);
+  assert.equal(s2.stats.energy, 1);
+});
+
+const NEW_ITEMS = ['glow_fishball', 'herbal_tea', 'goggles', 'horseshoe', 'egg_waffle'];
+test('new items: 5 collectibles, each with an 8x8 pixel icon, a description and a place to find it', () => {
+  for (const id of NEW_ITEMS) {
+    const it = book.items[id];
+    assert.ok(it?.name && it.description.length > 30, id);
+    assert.equal(it.sprite.rows.length, 8, `${id} sprite`);
+    assert.ok(it.sprite.rows.every((r) => r.length === 8 && [...r].every((ch) => ch === '.' || it.sprite.palette[ch])), `${id} sprite palette`);
+    assert.ok(Object.values(book.sections).some((sec) => JSON.stringify(sec).includes(`"addItem":"${id}"`)), `${id} can be found`);
+  }
+  assert.equal(Object.keys(book.items).length, 16);
+});
+
+test('glowing fish ball: free and tempting at the market, the clue is in plain sight; it does not count as used', () => {
+  const s = at(fresh(), 'market');
+  const text = E.sectionParagraphs(book, s, book.sections.market).join(' ');
+  assert.match(text, /FREE SAMPLES!.*\+5 ENERGY/);
+  assert.match(text, /glow a spooky green/, 'clue: glowing green, like a gremlin\'s eyes (Siu Mai\'s rule)');
+  assert.match(text, /engine oil/);
+  go(s, 'FREE glowing fish ball');
+  assert.equal(s.inventory.glow_fishball, 1);
+  assert.ok(s.found.glow_fishball, 'picking it up counts as found');
+  assert.match(E.sectionParagraphs(book, s, book.sections.fishball_cart).join(' '), /Glowing green/);
+  assert.match(book.items.glow_fishball.description, /\+5 ENERGY.*glows a spooky green/);
+  go(s, 'Pocket it');
+  assert.ok(!E.availableChoices(book, s).some((c) => !c.hidden && c.target === 'fishball_cart'), 'only one free sample');
+  const e = s.stats.energy;
+  const msgs = E.useItem(book, s, 'glow_fishball');
+  assert.equal(s.stats.energy, e, 'no Energy from it at all, despite the sticker');
+  assert.equal(s.status.poison, 5, 'POISONED x5');
+  assert.ok(!s.inventory.glow_fishball);
+  assert.ok(!s.used.glow_fishball, 'eating it scores nothing (lost, not used)');
+  assert.ok(msgs.some((m) => m.type === 'status' && /POISONED x5/.test(m.text)));
+});
+
+test('poison tick: -1 Energy per move for 5 moves, a message each tick, then it wears off', () => {
+  const s = at(fresh(), 'central');
+  s.inventory.glow_fishball = 1;
+  E.useItem(book, s, 'glow_fishball');
+  const e = s.stats.energy;
+  const order = ['Hop on a ding-ding', 'Hop off in Central', 'Hop on a ding-ding', 'Hop off in Central', 'Hop on a ding-ding'];
+  order.forEach((c, i) => {
+    const msgs = go(s, c);
+    const tick = msgs.find((m) => m.type === 'status' && m.tick);
+    assert.ok(tick, `move ${i + 1}: a tick message`);
+    assert.match(tick.text, /POISONED!.*Energy -1/);
+    assert.equal(s.status.poison ?? 0, 4 - i, `x${4 - i} left`);
+    assert.equal(s.stats.energy, e - (i + 1), `move ${i + 1}: -1 Energy`);
+    if (i === 4) assert.ok(msgs.some((m) => m.wornOff), 'wore off message');
+  });
+  assert.deepEqual(s.status, {}, 'gone after 5 moves');
+  const e2 = s.stats.energy;
+  go(s, 'Hop off in Central');
+  assert.equal(s.stats.energy, e2, 'no more ticks');
+  // catching it again restarts the countdown (no stacking)
+  s.inventory.glow_fishball = 1; E.useItem(book, s, 'glow_fishball');
+  go(s, 'Hop on a ding-ding');
+  s.inventory.glow_fishball = 1; E.useItem(book, s, 'glow_fishball');
+  assert.equal(s.status.poison, 5);
+});
+
+test('poison cures: 24-herb tea (bought at the market) or the Man Mo Temple incense', () => {
+  // the tea
+  const s = at(fresh(), 'market');
+  const t = s.stats.tokens;
+  go(s, '24-herb tea');
+  assert.equal(s.stats.tokens, t - 1, 'costs 1 token');
+  assert.equal(s.inventory.herbal_tea, 1);
+  go(s, 'Thank her');
+  s.inventory.glow_fishball = 1; E.useItem(book, s, 'glow_fishball');
+  go(s, 'Walk to the MTR');
+  assert.equal(s.status.poison, 4);
+  const e = s.stats.energy;
+  const msgs = E.useItem(book, s, 'herbal_tea');
+  assert.deepEqual(s.status, {}, 'cured');
+  assert.equal(s.stats.energy, e, 'the cure is the whole effect while poisoned');
+  assert.ok(msgs.some((m) => m.cured && /cured/i.test(m.text)));
+  assert.ok(s.used.herbal_tea);
+  go(s, 'Go back up');
+  assert.equal(s.stats.energy, e, 'no more ticks');
+  // not poisoned: a +2 Energy drink
+  const s2 = fresh(); s2.inventory.herbal_tea = 1; s2.stats.energy = 10;
+  E.useItem(book, s2, 'herbal_tea');
+  assert.equal(s2.stats.energy, 12);
+  // the incense
+  const s3 = at(fresh(), 'central');
+  s3.inventory.glow_fishball = 1; E.useItem(book, s3, 'glow_fishball');
+  const m3 = go(s3, 'Man Mo Temple');
+  assert.deepEqual(s3.status, {}, 'the incense smoke cures it on arrival');
+  assert.ok(m3.some((m) => m.cured));
+  assert.match(E.sectionParagraphs(book, s3, book.sections.man_mo).join(' '), /Poison cured!/);
+  go(s3, 'Walk quietly back');
+  assert.doesNotMatch(E.sectionParagraphs(book, at(s3, 'man_mo'), book.sections.man_mo).join(' '), /Poison cured!/, 'no cure text when not poisoned');
+});
+
+test('poison death: if a poison tick takes your last Energy, you are trapped forever (normal game over)', () => {
+  const s = at(fresh(), 'central');
+  s.inventory.glow_fishball = 1; E.useItem(book, s, 'glow_fishball');
+  s.stats.energy = 2;
+  go(s, 'Hop on a ding-ding');
+  assert.ok(!s.ended);
+  assert.equal(s.stats.energy, 1);
+  const msgs = go(s, 'Hop off in Central');
+  assert.equal(s.current, 'trapped', 'trapped in the game forever');
+  assert.equal(s.ended.cause.stat, 'energy');
+  assert.equal(s.stats.energy, 0);
+  assert.ok(msgs.some((m) => m.type === 'depleted'));
+});
+
+test('poison save/load: the countdown is saved with the game; old saves without it still load', () => {
+  const s = at(fresh(), 'central');
+  s.inventory.glow_fishball = 1; E.useItem(book, s, 'glow_fishball');
+  go(s, 'Hop on a ding-ding');
+  const loaded = JSON.parse(JSON.stringify(s)); // what the app autosaves and resumes
+  assert.equal(loaded.status.poison, 4);
+  const e = loaded.stats.energy;
+  go(loaded, 'Hop off in Central');
+  assert.equal(loaded.status.poison, 3);
+  assert.equal(loaded.stats.energy, e - 1);
+  // a v2.3.0 save has no status field at all
+  const old = JSON.parse(JSON.stringify(at(fresh(), 'central')));
+  delete old.status;
+  const e0 = old.stats.energy;
+  go(old, 'Hop on a ding-ding');
+  assert.equal(old.stats.energy, e0, 'no ticks, no crash');
+  old.inventory.glow_fishball = 1; E.useItem(book, old, 'glow_fishball');
+  assert.equal(old.status.poison, 5, 'and poison still works on it');
+  assert.equal(book.statusEffects.poison.moves, 5);
+  assert.deepEqual(book.statusEffects.poison.perMove, [{ stat: 'energy', add: -1 }]);
+});
+
+test('Gremlin Goggles (found on the MTR): every gremlin path is locked and flagged, the real path stays open', () => {
+  const m = at(fresh(), 'mtr_wait');
+  assert.equal(m.inventory.goggles, 1);
+  assert.match(E.sectionParagraphs(book, m, book.sections.mtr_wait).join(' '), /GREMLIN GOGGLES/);
+  for (const [fsec, gid] of [['market', 'gremlin_rabbit'], ['happy_valley', 'gremlin_horse'], ['central', 'gremlin_pig'], ['central', 'gremlin_dog'], ['tunnel_lit', 'gremlin_snake']]) {
+    const s = forkState(fsec);
+    const open = visibleTo(s, gid);
+    assert.equal(open.length, 1, `${gid}: one gremlin path without goggles`);
+    assert.ok(open[0].available);
+    s.inventory.goggles = 1;
+    const shown = visibleTo(s, gid);
+    assert.equal(shown.length, 1, `${gid}: still on screen with goggles`);
+    assert.equal(shown[0].available, false, `${gid}: locked`);
+    assert.match(shown[0].need, /GREMLIN IN DISGUISE/);
+    const real = E.availableChoices(book, s).find((c) => !c.hidden && c.label === forkLabel(gid));
+    assert.ok(real?.available, `${gid}: the real path is open`);
+  }
+  // the vault door without the key still asks for the key (no goggles)
+  const v = at(fresh(), 'tunnel_lit');
+  const door = visibleTo(v, 'gremlin_snake');
+  assert.equal(door.length, 1);
+  assert.match(door[0].need, /Brass Key/);
+});
+const forkLabel = (gid) => { const f = JSON.parse(readFileSync('/workspace/gamebook-tools/forks.json', 'utf8')); return Object.values(f).find((x) => x.gremlin === gid)?.right; };
+
+test('Lucky Horseshoe (from the real Horse) is a duel boost; Egg Waffle (Times Square, 1 token) is +3 Energy', () => {
+  const s = at(fresh(), 'horse_track');
+  assert.equal(s.inventory.horseshoe, 1);
+  at(s, 'bot_battle');
+  const b = E.combatBoosts(book, s);
+  assert.ok(b.active.some((x) => /Horseshoe/.test(x.label) && x.attack === 1));
+  const s0 = at(fresh(), 'bot_battle');
+  assert.equal(E.combatBoosts(book, s).attack - E.combatBoosts(book, s0).attack, 1);
+  const w = at(fresh(), 'times_square');
+  const t = w.stats.tokens;
+  go(w, 'egg waffle');
+  assert.equal(w.stats.tokens, t - 1);
+  assert.equal(w.inventory.egg_waffle, 1);
+  w.stats.energy = 10;
+  E.useItem(book, w, 'egg_waffle');
+  assert.equal(w.stats.energy, 13);
+  assert.ok(w.used.egg_waffle);
+});
+
+test('dog shortcut: clearly labelled (skips Causeway Bay), on both the normal and the tram-unlocked variant', () => {
+  const label = "Shortcut: follow the dog's nose straight to the Peak Tram (skips Causeway Bay)";
+  const cs = book.sections.dog.choices.filter((c) => c.label === label);
+  assert.deepEqual(cs.map((c) => c.target).sort(), ['tram', 'tram_gate']);
+  assert.ok(!JSON.stringify(book).includes("Follow the dog's nose to the Peak Tram"));
+  const s = at(fresh(), 'dog');
+  assert.ok(choice(s, 'Shortcut: follow the dog'));
+  s.flags.monkey_passed = true;
+  assert.equal(choice(s, 'Shortcut: follow the dog').target, 'tram');
+});
+
+test('the optimal search never eats the glowing fish ball', () => {
+  if (!localPaths) return;
+  for (const p of Object.values(localPaths)) assert.ok(!p.some((l) => /Glowing Fish Ball/.test(l)));
 });

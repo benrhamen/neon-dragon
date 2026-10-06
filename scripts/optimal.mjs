@@ -10,7 +10,9 @@
 //     never score higher;
 //   * eating/drinking items. Every usable item only restores Energy (capped at max) and no
 //     condition reads Energy, so eating later is never worse than eating earlier unless you need
-//     the Energy to survive. Items are therefore tried only when one hit could finish you
+//     the Energy to survive. (A cure for a status effect is allowed too; an item that GIVES you a
+//     status effect, like the glowing fish ball's poison, is never eaten: it is "lost", not used,
+//     so it can't score, and the poison only costs Energy.) Items are therefore tried only when one hit could finish you
 //     (Energy <= eatBelow, the biggest fixed hit) or in the scene right before a winning ending.
 //     The search checks these assumptions and throws if a book breaks them.
 //
@@ -82,9 +84,16 @@ export function checkAssumptions(book) {
   const health = book.rules?.healthStat || 'energy';
   const problems = [];
   for (const [id, def] of Object.entries(book.items || {})) {
-    if (!def.use) continue;
-    for (const e of def.use.effects || []) if (!('message' in e) && !(e.stat === health && e.add > 0)) problems.push(`item ${id}: use does more than restore ${health}`);
+    if (!def.use || harmful(def)) continue;
+    const ok = (e) => 'message' in e || 'cureStatus' in e || (e.stat === health && e.add > 0) || ('if' in e && (e.then || []).every(ok) && (e.else || []).every(ok));
+    for (const e of def.use.effects || []) if (!ok(e)) problems.push(`item ${id}: use does more than restore ${health}`);
   }
+  // harmful items must really be useless to the score: eaten = lost (not used), no other effects
+  for (const [id, def] of Object.entries(book.items || {})) {
+    if (!def.use || !harmful(def)) continue;
+    if (def.use.consumable !== false || !(def.use.effects || []).every((e) => 'message' in e || 'addStatus' in e || (e.removeItem === id && e.lost))) problems.push(`item ${id}: a harmful item must be lost when eaten and do nothing else`);
+  }
+  for (const [id, def] of Object.entries(book.statusEffects || {})) for (const e of def.perMove || []) if (!(e.stat && e.add < 0)) problems.push(`status ${id}: perMove may only take stats away`);
   JSON.stringify(book.sections, (k, v) => { if (v && typeof v === 'object' && v.stat === health && v.op) problems.push(`a condition reads ${health}`); return v; });
   // Dominance needs "more is never worse" for every stat: stat conditions may only be at-least
   // checks (gt / gte), and never inside a "not".
@@ -97,6 +106,9 @@ export function checkAssumptions(book) {
   walk([book.sections, book.items || {}], false);
   return problems;
 }
+
+// An item whose use gives you a status effect (e.g. poison): the search never eats it.
+const harmful = (def) => JSON.stringify(def.use?.effects || []).includes('"addStatus"');
 
 // The moves the search can make from a settled state: [label, next settled state] pairs.
 export function explorer(book, { eatBelow = 4 } = {}) {
@@ -173,7 +185,7 @@ export function explorer(book, { eatBelow = 4 } = {}) {
     if (finalScene || lowEnergy) {
       for (const id of Object.keys(st.inventory)) {
         const def = book.items?.[id];
-        if (!def?.use || !(st.inventory[id] > 0) || !E.checkCondition(book, st, def.use.conditions)) continue;
+        if (!def?.use || harmful(def) || !(st.inventory[id] > 0) || !E.checkCondition(book, st, def.use.conditions)) continue;
         const s2 = clone(st); E.useItem(book, s2, id, calmRng); s2.history = []; s2.log = []; out.push([`${st.current}: use ${def.name || id}`, s2]);
       }
     }
@@ -440,7 +452,7 @@ export function optimalSearch(book, { startStat = book.scoring?.reference?.bySta
   const hash = (s) => createHash('md5').update(s).digest('base64');
   const domKey = (st) => {
     const r = rel[st.current];
-    return hash(JSON.stringify([st.current, st.inventory, r.flags.filter((f) => st.flags[f]), r.visits.filter((v) => st.visited[v]),
+    return hash(JSON.stringify([st.current, st.inventory, st.status || {}, r.flags.filter((f) => st.flags[f]), r.visits.filter((v) => st.visited[v]),
       r.found.filter((i) => st.found[i]), r.used.filter((i) => st.used[i])]));
   };
   // A dice test against a stat can only be failed while the stat is below the highest roll, so a

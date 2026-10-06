@@ -4,7 +4,7 @@ A static web app (HTML/CSS/vanilla JS, no build step, no server code) for playin
 gamebooks. A **JSON Schema** describes each book, and a small engine runs it: sections, choices,
 stats, inventory, flags, dice tests, light combat, riddles, collectables, a move timer, endings and a
 score. It comes with an **original** sample adventure, *The Neon Dragon of Pixel Harbour*
-(109 sections, 11 endings), set in a pixel-art Hong Kong and written for young readers (about 9 to 11).
+(112 sections, 11 endings), set in a pixel-art Hong Kong and written for young readers (about 9 to 11).
 
 Play it: **<https://benrhamen.github.io/neon-dragon/>**
 
@@ -16,7 +16,8 @@ Play it: **<https://benrhamen.github.io/neon-dragon/>**
 - **BEST SCORES** are the only thing kept between games: a top 10 on this device, plus an optional
   shared **WORLD TOP 50** (Supabase). Players post a nickname, never a real name.
 - **Reader**: section text with pixel-art scenes (with the hero and story characters drawn in),
-  choice buttons (locked choices say what they need, risky ones are marked ⚠), stat bars, an
+  choice buttons (locked choices say what they need; there are no advance warnings that a choice will
+  empty a stat), stat bars with timed status badges (e.g. **POISONED x5**), an
   inventory you can use items from, dice tests, round-by-round combat, multiple-choice riddles,
   a zodiac collection panel, and endings with stars, a score breakdown and rank.
 - Works offline after the first visit (service worker) and can be added to an iPad/iPhone home screen.
@@ -39,16 +40,16 @@ Gremlin King along the way.
 
 | Stat | Start | How it works |
 |---|---|---|
-| ⚡ **Energy** | 32 (max 32) | Small hits −1/−2, medium −3/−4, big hits **halve** it. Bubble tea and egg tarts give +3. At 0: **TRAPPED IN THE GAME FOREVER**. |
-| ★ **Pixel Power** | 150, no cap | A **move timer**: −1 on every move, shown as a countdown ("N MOVES LEFT"). Food doesn't refill it; zodiac animals (+2 each), Man Mo Temple incense and a few lucky finds do. At 0: trapped. |
-| ♣ **Luck** | 1d6+6 | Every luck test **uses 1 Luck, pass or fail**, some bad choices cost Luck, and dice gambles risk it. Only two rare regains (Man Mo incense +1, the Rooster +1, both capped at the starting value). At 0: **YOUR LUCK RAN OUT**, trapped (a ⚠ warning shows on any choice or roll that would do it). |
-| 🪙 **Tokens** | 5 | Spent on rides and snacks and on wrong riddle answers. Riddles pay **no** tokens; you find them around the city instead (+3 once each in Central, Man Mo Temple, on the ding-ding tram and in Causeway Bay, plus a few story rewards). At 0: **OUT OF TOKENS** (game over). |
+| ⚡ **Energy** | 36 (max 36) | Small hits −1/−2, medium −3/−4, big hits **halve** it; poison takes −1 a move. Bubble tea, egg tarts, pineapple buns and egg waffles give +3. At 0: **TRAPPED IN THE GAME FOREVER**. |
+| ★ **Pixel Power** | 160, no cap | A **move timer**: −1 on every move, shown as a countdown ("N MOVES LEFT"). Food doesn't refill it; zodiac animals (+2 each), Man Mo Temple incense and a few lucky finds do. At 0: trapped. |
+| ♣ **Luck** | 1d6+6 | Every luck test **uses 1 Luck, pass or fail**, some bad choices cost Luck, and dice gambles risk it. Only two rare regains (Man Mo incense +1, the Rooster +1, both capped at the starting value). At 0: **YOUR LUCK RAN OUT**, trapped. |
+| 🪙 **Tokens** | 5 | Spent on rides and snacks and on wrong riddle answers. Riddles pay **no** tokens; you find them around the city instead (+4 once each in Central, Man Mo Temple, on the ding-ding tram and in Causeway Bay, plus a few story rewards). At 0: **OUT OF TOKENS** (game over). |
 
 - **Halving and doubling** effects (`multiply`) hit hard and come with a glitch animation.
 - **Riddles**: Liv and Loulou (and the Monkey and the Snake) ask multiple-choice riddles drawn at
   random from a pool of **200 original riddles** (`public/data/riddles.json`: wordplay, logic,
   nature, Hong Kong and Chinese culture, maths; 3-4 options, ages 9-11). **You pass when you get one
-  right** (+2 Energy, no tokens). A wrong answer costs **2 tokens or half your Energy** (and shows the
+  right** (+3 Energy, no tokens). A wrong answer costs **2 tokens or half your Energy** (and shows the
   right answer; with fewer than 2 tokens, halving is the only option), and then the same character
   asks **another** random riddle (`RIDDLE 2 · ... · TRY AGAIN!`), again and again until you answer one
   correctly. Before every riddle you can still **head back for free** and take another path, so you
@@ -73,7 +74,8 @@ Gremlin King along the way.
   robot can you race up the tower to the Dragon. Bolt-Bot has **ATTACK 8, 10 HP, and its bops cost 3
   Energy**. Each round both roll two dice + attack (yours is your Luck); you bop it for 2, and you lose
   at Energy 2 or less. A well-prepared hero gets **boosts**, listed on the fight screen and lit up when
-  active: 2+ zodiac friends **+1 attack**, 4+ another **+1**, Liv's Phoenix Feather **+1**, the duck
+  active: 2+ zodiac friends **+1 attack**, 4+ another **+1**, Liv's Phoenix Feather **+1**, the Horse's
+  Lucky Horseshoe **+1**, the duck
   Umbrella blocks **1 damage** per bop, and the three old shortcuts are now pre-fight advantages picked
   up at the Peak: the **Silver Whistle** makes the robot dizzy (**it starts with 4 less HP**), sharing an
   egg tart or bubble tea (**snack break**) gives **+4 Energy** before the fight, and **Loulou's climb**
@@ -95,6 +97,27 @@ Gremlin King along the way.
   paw prints / painted stripes running in the rain), Horse (clip-clop / "MOOOO"), Rooster (crows at the
   neon sunrise / rubber-glove comb), Monkey (peels its banana / drinking-straw tail), Snake (shed skin /
   a hiss like a bicycle pump), Loulou (lands with a clatter of hooves / sneakers on the wrong feet).
+- **New items (v2.4)**, each with an 8×8 pixel icon and an inventory description:
+  - **Glowing Fish Ball** (risky): a FREE sample from an unattended cart in the Temple Street market
+    ("SUPER FISH BALLS! +5 ENERGY!!!"). The clue is right there: it glows a spooky green and smells of
+    engine oil (the gremlin tells Siu Mai warns about), and Siu Mai backs away from it. Picking it up
+    counts as an item found; **eating it POISONS you** (no Energy at all) and doesn't count as used.
+  - **24-Herb Tea** (1 token, the herbal tea shop next to the cart): drink it to **cure poison**, or for
+    +2 Energy when you're fine.
+  - **Gremlin Goggles** (left on the seat of the quiet MTR train): with them, every fork's gremlin path
+    stays on screen but is **locked** and flashes "GREMLIN IN DISGUISE!", so you can't be tricked.
+  - **Lucky Horseshoe** (a gift from the real Horse at Happy Valley): **+1 attack** in the Bolt-Bot duel.
+  - **Egg Waffle** (1 token, a street hatch at Times Square): eat it for **+3 Energy**.
+- **Poison** is a timed status effect (`statusEffects` in the book, `state.status` in the save): for the
+  next **5 moves** it takes **1 Energy per move**, with a message on every tick and a **POISONED x5**
+  badge in the stats panel (and the mobile HUD) counting down. Eating another one restarts the count
+  (it never stacks). Cures: the 24-herb tea, or walking into **Man Mo Temple**, where the keeper wafts
+  the incense smoke over you. If a tick takes your last Energy, it's the normal TRAPPED GAME OVER.
+- **No spoiler warnings**: choices no longer say "⚠ TOKENS WOULD RUN OUT" (or any other stat).
+  Running out is still the normal game over, and the GAME OVER screen says what ran out.
+- **The taxi**: asking the driver to go faster is a bumpy ride (−3 Energy) and nothing more. Being rude
+  costs time and Luck (−4 Pixel Power, −1 Energy, −1 Luck) instead of 2 tokens, because the standard
+  route reaches the cab with exactly 2 tokens left and the old charge emptied them (OUT OF TOKENS).
 - **Statue Square** (an optional detour from Central) belongs to the **PiGeons**. Arrive carrying an
   egg tart or a pineapple bun and they swarm you: they eat **all** of them and you lose 2 Pixel Power,
   2 Energy and 2 Luck (which can end the game like any other loss). Arrive without food and they
@@ -113,8 +136,8 @@ Gremlin King along the way.
   game gives that game **+2 tokens**, once; used codes are remembered on the device. Codes are
   self-checking (`public/js/voucher.js`), so made-up codes are rejected. This is the only thing that
   carries over from one game to the next.
-- **Balance**: a random-but-careful player wins about 1 game in 6 (see Tests). The traps are fair and
-  signposted (⚠ warnings, hints in the text).
+- **Balance**: a random player wins about 1 game in 6 (see Tests). The traps are fair: the clues are
+  in the text, but there are no advance "would run out" warnings.
 
 ### Score
 
@@ -194,6 +217,7 @@ File: [`schema/gamebook.schema.json`](schema/gamebook.schema.json) (JSON Schema 
 | `stats` | Stat definitions keyed by id: `name`, `description`, `initial` (a number or `{ "dice": "1d6+6" }`), `min`, `max` (a number, `"initial"` = capped at the starting roll, or none = no cap), `color`, `icon`, `display`: `bar`, `number` or `timer` (a countdown bar against the starting value that flashes when low) |
 | `rules` | `healthStat`; `depletion`: a list of `{stat, target, atOrBelow}` checked after **every** change (the first stat at or below its limit sends the player to `target`, usually an ending: this is how Energy, Pixel Power and Tokens each have their own game over); `perMoveEffects`: effects applied on every move (`[{"stat":"power","add":-1}]` makes a move timer); combat defaults (`attackStat`, `dice`, `damage`); the older `onHealthDepleted` still works; `bonusStars: true` turns on cosmetic bonus stars (+1 per passed `againstStat` test or won gamble, kept in `state.bonusStars`, never scored) |
 | `items` | Catalogue: `name`, `description`, `icon` or pixel `sprite`, `stackable`, optional `use` (e.g. eat for +3 Energy) |
+| `statusEffects` | Timed status effects by id: `name`, `badge`, `icon`, `color`, `moves` (default length), `perMove` (effects run on every move, e.g. Energy −1), `endMessage`, `cureMessage`. Active ones are saved in `state.status` (id → moves left) |
 | `startingInventory` | `["map"]` or `[{ "item": "gold", "quantity": 10 }]` |
 | `flags` | Optional declarations or initial values for story flags |
 | `characters` | NPCs keyed by id: `name`, `description`, pixel `sprite`. Drawn on illustrations and in riddles |
@@ -203,9 +227,9 @@ File: [`schema/gamebook.schema.json`](schema/gamebook.schema.json) (JSON Schema 
 | `sections` | Keyed by id (`"1"`, `"237"` or `"night_market"`). Each has `text`, optional `title` and `illustration`, `onEnter` effects, and at least one of `choices`, `test`, `combat`, `riddle` or `ending` |
 | **text** | A string or a list of paragraphs. A paragraph can be `{ "text": …, "if": condition }` to show it only sometimes. `{{name}}` is replaced with the player's name |
 | **illustration** | `src` (or a pixel `sprite`), `alt`, and `characters: [{id, x, y, scale, flip}]` to draw NPC sprites on the scene (x/y on a 96×54 grid by default) |
-| **choice** | `label`, `target`, optional `conditions`, `effects` (applied when chosen), `lockedHint`, `hideIfLocked`, `hideIf`. The reader adds a ⚠ warning automatically when a choice's effects (plus the next section's `onEnter`) would end the game |
+| **choice** | `label`, `target`, optional `conditions`, `effects` (applied when chosen), `lockedHint`, `hideIfLocked`, `hideIf` |
 | **condition** | `{hasItem, quantity}`, `{notHasItem}`, `{stat, op: eq/neq/gt/gte/lt/lte, value}`, `{flag, equals}`, `{visited}`, and `all` / `any` / `not` to combine them |
-| **effect** | `{stat, add / set / restore / multiply / halve, round}` (`halve: true` halves rounding down, so 9 → 4 and 1 → 0; `multiply: 2` doubles; `round` for multiply is `down` (default), `up` or `nearest`; the result is clamped to the stat's min/max), `{addItem, quantity}`, `{removeItem, quantity, lost}` (`lost: true` = taken away, not counted as used for the score), `{setFlag, value}`, `{clearFlag}`, `{bonusStar: n}` (cosmetic bonus stars, with the star-burst), `{message}`, `{if, then, else}` |
+| **effect** | `{stat, add / set / restore / multiply / halve, round}` (`halve: true` halves rounding down, so 9 → 4 and 1 → 0; `multiply: 2` doubles; `round` for multiply is `down` (default), `up` or `nearest`; the result is clamped to the stat's min/max), `{addItem, quantity}`, `{removeItem, quantity, lost}` (`lost: true` = taken away, not counted as used for the score), `{setFlag, value}`, `{clearFlag}`, `{bonusStar: n}` (cosmetic bonus stars, with the star-burst), `{addStatus, moves}` / `{cureStatus}` (timed status effects such as poison), `{message}`, `{if, then, else}`. Conditions also accept `{status: id}` (true while that status effect is active) |
 | **test** | Dice test: `dice`. Either `againstStat` (succeed if the roll is ≤ the stat, like Test Your Luck) or `target` (+`addStat`) for roll ≥ target. Also `costEffects` (paid before rolling, pass or fail: the sample book uses `[{"stat":"luck","add":-1}]`), `success` / `failure` → `{target, text, effects}`. A stat at 0 always fails an `againstStat` test. **Dice gamble**: `"type": "gamble"` (no `againstStat`/`target`; `dice` defaults to 2d6): roll ≥ `winAt` (default 8) → `success`; exactly `halfOn` (default 7) → `halfStat` (default `luck`) is halved, rounding down, and the optional `seven {target, text, effects}` outcome is used (missing target/text come from `failure`, its effects don't); lower → `failure`. The reader shows the exact odds on the dice screen |
 | **combat** | `enemies [{name, attack, health, damage, sprite}]`, `win` / `lose` outcomes, optional `flee {label, target, effects}` (offered every round until the duel is decided). Each round both sides roll dice + attack, and the lower total loses health: the player's bop does the combat `damage`, an enemy's bop does its own `damage` (default: the combat `damage`). Optional `boosts [{label, conditions, tracker, min, attack, armor, stun, note}]`: each active boost (its conditions hold and, with `tracker`, at least `min` entries are met) adds `attack` to the player's roll total, `armor` (enemy bops do that much less, minimum 1), and/or `stun` (the enemy starts the fight with that much less health, minimum 1); `note` is a short text for an advantage that was already applied (e.g. "+4 Energy before the fight"). The fight screen lists them and lights up the active ones |
 | **riddle** | `character`, either `questions [{question, options (2-5), answer (index), correctText, wrongText}]` or `draw: N` (ask N random riddles from the book's `riddlePool`, never repeating one within a game; seeded by the saved `riddleSeed`), `onCorrect`, `wrong {text, options [{label, effects, conditions, lockedHint}]}` (the player picks a penalty, e.g. pay 2 tokens or halve Energy), `retreat {label, target, effects}` (offered before every answer) and `success {target, text, effects}`. `untilCorrect: true` (with `draw`): after a wrong answer and its penalty the same character asks another random pool riddle, repeating until one is answered right; the retreat stays available before each new riddle and every draw is saved with the run |
@@ -311,13 +335,13 @@ npm run score:ref     # re-run the best-score search after changing the story (~
 ```
 
 `test:engine` covers halving, the per-move timer, the Energy / Pixel Power / Tokens game overs
-(including in combat and in riddles), the Luck rules (every test uses 1 Luck, Luck 0 = trapped, ⚠ on choices into a test at Luck 1), the
+(including in combat and in riddles), the Luck rules (every test uses 1 Luck, Luck 0 = trapped, no warning on choices into a test at Luck 1), the
 dice-gamble rule (odds, 8+ prize / 7 half Luck / 6- minus 2 Luck, never Energy, Luck 0 traps you),
 fail endings emptying the stat they blame (Shopping Forever → Pixel Power 0), the 12th zodiac animal
 (the Dragon joins only at the finale after all 11), PLAY AGAIN voucher codes (valid, unique,
 typo-tolerant, tampering rejected, +2 tokens), the riddle pool (200 valid, unique riddles, one at a
 time per riddle character, no repeats in a game, reload keeps the drawn riddle, different games get
-different riddles), the riddle loop (right = pass with +2 Energy and no tokens; wrong, pay 2 tokens, a
+different riddles), the riddle loop (right = pass with +3 Energy and no tokens; wrong, pay 2 tokens, a
 different second and third riddle, then a correct answer passes; wrong, halve Energy, then head back
 for free before the next one; reload mid-loop keeps riddle 2; the under-2-tokens rule; halving at
 Energy 1 = trapped), bonus stars (+1 per passed luck test or won gamble, none for a loss or a 7,
@@ -332,19 +356,31 @@ the victory), the **mandatory boss audit** (a graph search proves the victory an
 without the duel, only a duel win enters `bot_beaten`, and every winning route from the route
 enumerator contains the duel), the vault → Peak → duel → Dragon path, the old shortcuts as boosts
 (whistle −4 HP, snack +4 Energy, high ground +1 attack), RUN AWAY to the Peak (−3 Pixel Power), the
-5-token start and the one-time token finds, Statue Square (the PiGeons eat every tart and bun for
+5-token start and the one-time token finds (+4), the **taxi fix** ("drive faster" is a −3 Energy bumpy
+ride from the real start, every cab choice survivable, only a true Energy 0 kills; the intro says five
+tokens), the **v2.4 items** (icons, descriptions, where found), **poison** (eat → POISONED x5, −1 Energy
+and a message per move, wears off after 5, restarts instead of stacking, saved with the run, old saves
+without it still load), the **cures** (tea, Man Mo incense), **poison death** (trapped, cause Energy),
+the Gremlin Goggles (gremlin paths locked and flagged, the real path open), the Lucky Horseshoe boost,
+the egg waffle, **no run-out warnings** anywhere, the relabelled dog shortcut, Statue Square (the PiGeons eat every tart and bun for
 −2/−2/−2; without food a once-per-game cosmetic star and a clue; game over if a stat runs out; the
 PiGeons spelling everywhere), the `bonusStar` effect, zodiac (+2 once each, exactly one route finds
 all 12), every ending being reachable, and the **balance**: thousands of random playthroughs must win
-15–25% of the time. The random player picks uniformly among the choices but avoids ⚠-marked ones
-when it has a safe option, uses an item 10% of the time, retreats from 15% of riddles (otherwise
+15–25% of the time. The random player picks uniformly among the choices (there are no warnings to avoid any more), uses
+an item 10% of the time (glowing fish balls included), retreats from 15% of riddles (otherwise
 guesses and pays a random allowed penalty, again until it gets one right) and flees 10% of fight
-rounds. It picks gremlin paths as often as right ones (it can't read the clues). Latest figures (v2.3.0,
-20,000 games): **16.8% wins**. The boss 16.9% (59% of random players reach the now-mandatory duel),
-Energy running out 15.8%, Pixel Power running out while wandering 13.4%, the six story fail endings
-28.6%, tokens 2.5%, Luck 0.2%, and 5.9% go home. A prepared player on the 100% route (45 steps, 48
-moves, every right path, all 11 animals) reaches the duel with full Energy and +3 attack and wins it
-99.9% of the time at Luck 7 (100% at Luck 8+).
+rounds. It picks gremlin paths as often as right ones (it can't read the clues). Latest figures (v2.4.0,
+20,000 games): **17.5% wins**. The boss 11.2% (51% of random players reach the mandatory duel),
+Energy running out 21.6% (about 1 in 10 random players eats the glowing fish ball; it is the last straw
+in under 1% of games), Pixel Power running out while wandering 7.3%, the six story fail endings 25.7%,
+tokens 10.6% (no warnings any more), Luck 0.2%, and 5.9% go home. The retune for v2.4 (no warnings,
+poison): Energy 36 (was 32), Pixel Power 160 (was 150), riddles +3 Energy (was +2, still no tokens), the
+four one-time token finds +4 (was +3); the 5-token start is unchanged. A prepared player on the 100%
+route (48 steps, 50 moves, every right path, all 11 animals, the herbal tea, the Lucky Horseshoe)
+reaches the duel with full Energy and +4 attack and always wins it in simulation (20,000 duels at each
+Luck); the full 100% score (winning without losing more Energy than the food can refill) comes up
+98.7% of the time at Luck 7, 99.9% at Luck 8 and 100% at Luck 9+. Score reference: 1660 (Luck 7) to
+1710 (Luck 12).
 
 The score tests replay the locally stored optimal path (skipped when `scripts/score-paths.local.json` is absent) (it must score exactly 100%, find all 12 animals and
 earn ZODIAC MASTER), check that the reference still matches `scripts/score-reference.json`,
@@ -353,12 +389,15 @@ and check that no random win ever scores above it.
 `test:e2e` starts its own static server, plays through the app with the network to Supabase mocked
 (working board, and missing table), and saves screenshots to `screenshots/`. It covers: the creator
 (always blank, can't be skipped, nickname rules), PRESS START, choices, stats and the move timer,
-⚠ warnings, halving, random riddles (different in a second game, same after a reload) with both
+no ⚠ run-out warnings (choices, riddle penalties, RUN AWAY), the taxi "drive faster" path from a fresh
+run, the glowing fish ball (clue, item detail, POISONED x5 badge, a tick per move, kept after a reload),
+both cures, poison death, the Gremlin Goggles lock, the Horseshoe boost, the egg waffle, the dog
+shortcut label, halving, random riddles (different in a second game, same after a reload) with both
 penalties and retreat, the riddle loop (wrong + pay → "RIDDLE 2 · TRY AGAIN!" with a different riddle,
 same after a reload → correct answer passes; wrong + halve → head back for free), bonus stars (counter,
 star-burst and toast on a won luck roll, none on a loss, on the win and trapped endings, posted, in
 the ✦ STARS column, and an older online table without the column), the boss fight (HP 10, 3-damage
-bops, all 7 boosts listed and lit for a prepared hero, a fork at Happy Valley (clue in the text and
+bops, all 8 boosts listed and lit for a prepared hero, a fork at Happy Valley (clue in the text and
 choices, wrong path → gremlin reveal → retreat → the real Horse), whistle / snack / high ground picked up at the
 Peak, no way into the tower without the duel), Statue Square (PiGeons swarm with food; star burst
 without; game over), the creator's new skins and add-ons (independent toggles, combos with hats,

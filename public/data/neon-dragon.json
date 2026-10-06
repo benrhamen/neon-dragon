@@ -6,7 +6,7 @@
   "title": "The Neon Dragon of Pixel Harbour",
   "subtitle": "A pocket gamebook adventure across Hong Kong",
   "author": "Original story",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "language": "en",
   "ageRange": "9-11",
   "original": true,
@@ -57,9 +57,9 @@
    "name": "Energy",
    "short": "NRG",
    "description": "If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
-   "initial": 32,
+   "initial": 36,
    "min": 0,
-   "max": 32,
+   "max": 36,
    "color": "#3dff6e",
    "icon": "⚡",
    "display": "bar"
@@ -68,7 +68,7 @@
    "name": "Pixel Power",
    "short": "PWR",
    "description": "Your move timer: every move uses 1. Halving traps drain it, each zodiac friend you meet adds +2. If it hits 0, you're TRAPPED IN THE GAME FOREVER!",
-   "initial": 150,
+   "initial": 160,
    "min": 0,
    "color": "#29e7ff",
    "icon": "★",
@@ -162,16 +162,19 @@
    "description": "Already found the Statue Square star (once per game)"
   },
   "coins_central": {
-   "description": "Picked up the 3 tokens in Central"
+   "description": "Picked up the 4 tokens in Central"
   },
   "coins_man_mo": {
-   "description": "Got 3 tokens from the Man Mo keeper"
+   "description": "Got 4 tokens from the Man Mo keeper"
   },
   "coins_dingding": {
-   "description": "Found 3 tokens under the tram seat"
+   "description": "Found 4 tokens under the tram seat"
   },
   "coins_causeway": {
-   "description": "Got 3 tokens from the Causeway Bay shopkeeper"
+   "description": "Got 4 tokens from the Causeway Bay shopkeeper"
+  },
+  "incense_cure": {
+   "description": "The Man Mo incense cured your poison on this visit"
   },
   "robot_friend": {
    "description": "Shared a snack with Bolt-Bot before the duel (+4 Energy)"
@@ -388,6 +391,127 @@
     "consumable": true
    }
   },
+  "egg_waffle": {
+   "name": "Egg Waffle",
+   "description": "A bubbly egg waffle from a Times Square street hatch: crispy outside, fluffy inside. Eat it for +3 Energy.",
+   "icon": "🧇",
+   "sprite": {
+    "palette": {
+     "y": "#e8a03a",
+     "Y": "#ffd98a"
+    },
+    "rows": [
+     "........",
+     ".yYyYyy.",
+     "yYyYyYyy",
+     "yyYyYyYy",
+     "yYyYyYyy",
+     "yyYyYyYy",
+     ".yyyyyy.",
+     "........"
+    ]
+   },
+   "use": {
+    "label": "Eat",
+    "effects": [
+     {
+      "stat": "energy",
+      "add": 3
+     },
+     {
+      "message": "Crunchy AND fluffy! +3 Energy"
+     }
+    ],
+    "consumable": true
+   }
+  },
+  "herbal_tea": {
+   "name": "24-Herb Tea",
+   "description": "Very bitter herbal tea in a takeaway cup. Drink it to cure poison. If you're feeling fine, it's still good for +2 Energy.",
+   "icon": "🍵",
+   "sprite": {
+    "palette": {
+     "k": "#2b6e3f",
+     "w": "#f2efe6",
+     "b": "#6b3a1e",
+     "B": "#9c5a2e"
+    },
+    "rows": [
+     "..kkkk..",
+     ".kkkkkk.",
+     ".wbbbbw.",
+     ".wbBBbw.",
+     ".wbbbbw.",
+     "..wbbw..",
+     "..wwww..",
+     "........"
+    ]
+   },
+   "use": {
+    "label": "Drink",
+    "consumable": true,
+    "effects": [
+     {
+      "if": {
+       "status": "poison"
+      },
+      "then": [
+       {
+        "cureStatus": "poison"
+       }
+      ],
+      "else": [
+       {
+        "stat": "energy",
+        "add": 2
+       },
+       {
+        "message": "So bitter! But you feel great. +2 Energy"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "glow_fishball": {
+   "name": "Glowing Fish Ball",
+   "description": "A FREE sample from a cart nobody was minding. The sticker says SUPER FISH BALL! +5 ENERGY!!! It glows a spooky green... just like a gremlin's eyes. Hmm.",
+   "icon": "🍢",
+   "sprite": {
+    "palette": {
+     "g": "#7dff4a",
+     "G": "#e8ffd0",
+     "k": "#c49a6c"
+    },
+    "rows": [
+     "...ggg..",
+     "...gGg..",
+     "...ggg..",
+     "...ggg..",
+     "...gGg..",
+     "...ggg..",
+     "....k...",
+     "....k..."
+    ]
+   },
+   "use": {
+    "label": "Eat",
+    "consumable": false,
+    "effects": [
+     {
+      "removeItem": "glow_fishball",
+      "lost": true
+     },
+     {
+      "addStatus": "poison",
+      "moves": 5
+     },
+     {
+      "message": "Bleurgh! It tastes of batteries. POISONED: -1 Energy every move for 5 moves!"
+     }
+    ]
+   }
+  },
   "lantern": {
    "name": "Rabbit Lantern",
    "description": "A glowing paper rabbit lantern. Light shows hidden things.",
@@ -456,6 +580,49 @@
     ]
    }
   },
+  "horseshoe": {
+   "name": "Lucky Horseshoe",
+   "description": "A little golden horseshoe from the Horse. Bring it to a fight: +1 attack in the Bolt-Bot duel.",
+   "icon": "🧲",
+   "sprite": {
+    "palette": {
+     "y": "#ffd23f",
+     "Y": "#fff3b0"
+    },
+    "rows": [
+     "........",
+     ".yy..yy.",
+     ".yY..Yy.",
+     ".yy..yy.",
+     ".yy..yy.",
+     ".yyyyyy.",
+     "..yYYy..",
+     "........"
+    ]
+   }
+  },
+  "goggles": {
+   "name": "Gremlin Goggles",
+   "description": "Chunky goggles someone left on the MTR. Wear them and a gremlin's disguise flashes red, so you can never be tricked into a gremlin's path at a fork.",
+   "icon": "🥽",
+   "sprite": {
+    "palette": {
+     "g": "#ffd23f",
+     "R": "#ff3355",
+     "W": "#ffffff"
+    },
+    "rows": [
+     "........",
+     "........",
+     ".gggggg.",
+     "gRRggRRg",
+     "gRWggRWg",
+     "gRRggRRg",
+     ".gg..gg.",
+     "........"
+    ]
+   }
+  },
   "brass_key": {
    "name": "Brass Key",
    "description": "A tiny key shaped like a dragon's claw. The tag says VAULT.",
@@ -519,6 +686,24 @@
      "..wwww.."
     ]
    }
+  }
+ },
+ "statusEffects": {
+  "poison": {
+   "name": "Poisoned",
+   "badge": "POISONED",
+   "icon": "☠",
+   "color": "#7dff4a",
+   "moves": 5,
+   "description": "Something you ate was bad news: -1 Energy on every move until it wears off. 24-herb tea or the Man Mo Temple incense cures it. If your Energy hits 0, you're trapped in the game forever!",
+   "perMove": [
+    {
+     "stat": "energy",
+     "add": -1
+    }
+   ],
+   "endMessage": "The poison wore off. Phew!",
+   "cureMessage": "Poison cured! Your tummy stops gurgling."
   }
  },
  "characters": {
@@ -1587,12 +1772,12 @@
   "reference": {
    "byStartStat": "luck",
    "values": {
-    "7": 1550,
-    "8": 1560,
-    "9": 1570,
-    "10": 1580,
-    "11": 1590,
-    "12": 1600
+    "7": 1660,
+    "8": 1670,
+    "9": 1680,
+    "10": 1690,
+    "11": 1700,
+    "12": 1710
    }
   },
   "ranks": [
@@ -1627,7 +1812,7 @@
    "title": "Insert Coin",
    "text": [
     "Rain drums on the windows of the Golden Joystick, the tiniest arcade in Mong Kok. Neon signs buzz outside, painting the puddles pink and blue, and somewhere a minibus horn plays a tune that is definitely not a real tune.",
-    "You, {{name}}, have six arcade tokens jingling in your pocket, and there's one machine you have never seen before. It sits in the back corner, humming softly. On its screen, a dragon made of glowing lights is curled around the words NEON DRAGON. Underneath, letters flash: THE PEARL IS LOST. PLAYER ONE, PLEASE HELP.",
+    "You, {{name}}, have five arcade tokens jingling in your pocket, and there's one machine you have never seen before. It sits in the back corner, humming softly. On its screen, a dragon made of glowing lights is curled around the words NEON DRAGON. Underneath, letters flash: THE PEARL IS LOST. PLAYER ONE, PLEASE HELP.",
     "Funny. You're sure it wasn't there yesterday. You're also sure it just winked at you."
    ],
    "illustration": {
@@ -1723,6 +1908,7 @@
     "Paper lanterns sway above a street packed with stalls. A pixel fish-ball seller flips sizzling snacks, a robot grandma sells socks that change colour every few seconds, and a fortune-telling parrot shouts \"NEXT!\" at nobody in particular.",
     "Two lantern stalls glow side by side, each run by a white rabbit. One rabbit nibbles a carrot, her pink nose twitching non-stop. The other stands very still, and under its hood its eyes glow a spooky green.",
     "Under the stalls, two rats in tiny waistcoats are counting coins. One squeaks happily with every coin. The other one's long tail looks oddly like a black plastic cable, and the air around it smells of engine oil. And a claw machine stuffed with prizes has something small and brass glinting at the bottom.",
+    "At the end of the row, a cart with nobody minding it has a hand-painted sign: FREE SAMPLES! SUPER FISH BALLS! +5 ENERGY!!! The fish balls glow a spooky green and the cart smells of engine oil. Next door, a herbal tea shop with shiny bronze gourds on the counter sells bitter 24-herb tea. A sign says: FIXES ANY BAD TUMMY.",
     "In a dark alley, a grinning gremlin beckons. \"Psst! Shortcut to the Peak! Totally safe!\" Siu Mai's fur stands on end."
    ],
    "illustration": {
@@ -1734,6 +1920,10 @@
     {
      "label": "Visit the lantern stall of the rabbit with glowing green eyes",
      "target": "gremlin_rabbit",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -1761,6 +1951,10 @@
     {
      "label": "Say hello to the rat with the cable-like tail (it smells of engine oil)",
      "target": "gremlin_rat",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -1784,6 +1978,39 @@
      "lockedHint": "Needs 1 token",
      "hideIf": {
       "hasItem": "brass_key"
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
+    },
+    {
+     "label": "Grab a FREE glowing fish ball from the cart nobody is minding",
+     "target": "fishball_cart",
+     "hideIf": {
+      "visited": "fishball_cart"
+     }
+    },
+    {
+     "label": "Buy a cup of bitter 24-herb tea to take away (1 token)",
+     "target": "herbal_shop",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "herbal_shop"
+       },
+       {
+        "hasItem": "herbal_tea"
+       }
+      ]
      },
      "effects": [
       {
@@ -1822,6 +2049,60 @@
     {
      "label": "Walk to the Star Ferry pier",
      "target": "pier"
+    }
+   ]
+  },
+  "fishball_cart": {
+   "title": "Free Sample!",
+   "text": [
+    "You take a fish ball on a stick. It's warm, it glows, and it hums very quietly, like a fridge. A sticker on the stick says: SUPER FISH BALL! +5 ENERGY!!! Underneath, in tiny letters: MADE BY G. GREMLIN.",
+    "Siu Mai sniffs it, and every hair on its tail stands up. \"Glowing green,\" it says slowly. \"Now, where have I seen glowing green before? I'd keep that in your pocket if I were you. Way down at the bottom.\""
+   ],
+   "illustration": {
+    "src": "img/market.svg",
+    "alt": "A glowing green fish ball on a stick at an unattended street cart",
+    "pixelated": true,
+    "characters": [
+     {
+      "id": "gremlin",
+      "x": 66,
+      "y": 30,
+      "scale": 1
+     }
+    ]
+   },
+   "onEnter": [
+    {
+     "addItem": "glow_fishball"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Pocket it and head back into the market",
+     "target": "market"
+    }
+   ]
+  },
+  "herbal_shop": {
+   "title": "24-Herb Tea",
+   "text": [
+    "The herbalist taps a shiny bronze gourd and pours a stream of dark brown tea into a takeaway cup. It smells like a forest that's been boiled for a week.",
+    "\"Twenty-four herbs,\" she says. \"Bitter as anything. It fixes a bad tummy, a dodgy snack, even gremlin poison. And if you're feeling fine, it'll still perk you up.\" She snaps on a lid so you can drink it later."
+   ],
+   "illustration": {
+    "src": "img/market.svg",
+    "alt": "A herbal tea shop with shiny bronze gourds",
+    "pixelated": true
+   },
+   "onEnter": [
+    {
+     "addItem": "herbal_tea"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Thank her and head back into the market",
+     "target": "market"
     }
    ]
   },
@@ -2326,6 +2607,10 @@
     {
      "label": "Knock on the door marked OX IN HERE (\"Oink... I mean, MOO!\")",
      "target": "gremlin_ox",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -2510,12 +2795,15 @@
    "title": "Racing Game Mode",
    "text": [
     "\"FASTER? Finally, someone who understands!\" He drives like he's in a racing game: left, right, VROOM, screech, round a double-decker bus, past a very surprised gremlin.",
-    "He drops you at Causeway Bay in record time, looking happier than he has in years. You look green."
+    "He drops you at Causeway Bay in record time, looking happier than he has in years. You look green, and your legs are wobbly, but you're fine. Just a very bumpy ride. (-3 Energy.)"
    ],
    "onEnter": [
     {
      "stat": "energy",
      "add": -3
+    },
+    {
+     "message": "What a bumpy ride! -3 Energy"
     }
    ],
    "choices": [
@@ -2529,12 +2817,12 @@
    "title": "The Long Way Round",
    "text": [
     "The driver's eyebrows shoot up into his cap. \"GRUMPY? ME?\" He takes the long way. The very long way. Past the airport. Twice.",
-    "Finally he drops you in Causeway Bay and taps the meter. \"Extra charge. For the scenic route.\" Being rude, it turns out, is expensive."
+    "Finally he drops you in Causeway Bay and points at the clock. \"Scenic route. You're welcome.\" Being rude, it turns out, wastes a LOT of time. (-4 Pixel Power, -1 Energy, -1 Luck.)"
    ],
    "onEnter": [
     {
-     "stat": "tokens",
-     "add": -2
+     "stat": "power",
+     "add": -4
     },
     {
      "stat": "energy",
@@ -2545,12 +2833,12 @@
      "add": -1
     },
     {
-     "message": "Rudeness is bad luck. -1 Luck"
+     "message": "The very long way round! -4 Pixel Power. Rudeness is bad luck: -1 Luck"
     }
    ],
    "choices": [
     {
-     "label": "Climb out into Causeway Bay, a bit poorer",
+     "label": "Climb out into Causeway Bay, much later than planned",
      "target": "causeway_bay"
     }
    ]
@@ -2656,12 +2944,16 @@
    "title": "The Next Train",
    "text": [
     "Two minutes later, the next train glides in, almost empty. You get a seat! Siu Mai curls up on your lap and purrs.",
-    "Opposite you, an auntie with twelve shopping bags bonks a giggling bag with her umbrella. The giggling stops. \"Next station: Causeway Bay. Please mind the gap.\" The seat is very comfy. Very, very comfy..."
+    "Opposite you, an auntie with twelve shopping bags bonks a giggling bag with her umbrella. The giggling stops. \"Next station: Causeway Bay. Please mind the gap.\" The seat is very comfy. Very, very comfy...",
+    "On the seat beside you, somebody has left a pair of chunky goggles with a sticky label: GREMLIN GOGGLES. SEES THROUGH ANY DISGUISE. Finders keepers!"
    ],
    "onEnter": [
     {
      "stat": "energy",
      "add": 1
+    },
+    {
+     "addItem": "goggles"
     }
    ],
    "choices": [
@@ -2745,10 +3037,10 @@
      "then": [
       {
        "stat": "tokens",
-       "add": 3
+       "add": 4
       },
       {
-       "message": "Three arcade tokens glint in a crack in the pavement! +3 tokens"
+       "message": "Four arcade tokens glint in a crack in the pavement! +4 tokens"
       },
       {
        "setFlag": "coins_central"
@@ -2772,9 +3064,17 @@
      "label": "Find Pig's cha chaan teng: the café where a 'pig' waves from the door, its curly tail held on with a safety pin",
      "target": "gremlin_pig",
      "conditions": {
-      "flag": "met_auntie",
-      "equals": true
+      "all": [
+       {
+        "flag": "met_auntie",
+        "equals": true
+       },
+       {
+        "notHasItem": "goggles"
+       }
+      ]
      },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -2783,10 +3083,15 @@
        },
        {
         "visited": "gremlin_pig"
+       },
+       {
+        "not": {
+         "flag": "met_auntie",
+         "equals": true
+        }
        }
       ]
-     },
-     "hideIfLocked": true
+     }
     },
     {
      "label": "Find Pig's cha chaan teng: the green-tiled café that smells of sweet milk tea",
@@ -2817,8 +3122,16 @@
      "label": "Blow the Silver Whistle by the pier kiosk, where a 'dog' answers with a loud \"MEOW!\"",
      "target": "gremlin_dog",
      "conditions": {
-      "hasItem": "whistle"
+      "all": [
+       {
+        "hasItem": "whistle"
+       },
+       {
+        "notHasItem": "goggles"
+       }
+      ]
      },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -2827,10 +3140,14 @@
        },
        {
         "visited": "gremlin_dog"
+       },
+       {
+        "not": {
+         "hasItem": "whistle"
+        }
        }
       ]
-     },
-     "hideIfLocked": true
+     }
     },
     {
      "label": "Ride the Peak Tram up the mountain",
@@ -3121,7 +3438,7 @@
      "target": "dingding"
     },
     {
-     "label": "Follow the dog's nose to the Peak Tram",
+     "label": "Shortcut: follow the dog's nose straight to the Peak Tram (skips Causeway Bay)",
      "target": "tram_gate",
      "hideIf": {
       "flag": "monkey_passed",
@@ -3129,7 +3446,7 @@
      }
     },
     {
-     "label": "Follow the dog's nose to the Peak Tram",
+     "label": "Shortcut: follow the dog's nose straight to the Peak Tram (skips Causeway Bay)",
      "target": "tram",
      "conditions": {
       "flag": "monkey_passed",
@@ -3143,7 +3460,14 @@
    "title": "Man Mo Temple",
    "text": [
     "Man Mo Temple is quiet. After the noise of the city, the quiet feels like a warm blanket. Giant spirals of incense hang from the ceiling like upside-down cones, slowly turning, and soft smoke drifts through the red-and-gold light.",
-    "People come here to wish for good studies and for courage. An elderly keeper is sweeping the floor with slow, careful strokes. He looks up and nods to you."
+    "People come here to wish for good studies and for courage. An elderly keeper is sweeping the floor with slow, careful strokes. He looks up and nods to you.",
+    {
+     "if": {
+      "flag": "incense_cure",
+      "equals": true
+     },
+     "text": "The keeper takes one look at your green face and wafts a curl of incense smoke towards you. You breathe it in. Your tummy stops gurgling, your head clears, and the poison fizzles away. (Poison cured!)"
+    }
    ],
    "illustration": {
     "src": "img/manmo.svg",
@@ -3151,6 +3475,22 @@
     "pixelated": true
    },
    "onEnter": [
+    {
+     "clearFlag": "incense_cure"
+    },
+    {
+     "if": {
+      "status": "poison"
+     },
+     "then": [
+      {
+       "setFlag": "incense_cure"
+      },
+      {
+       "cureStatus": "poison"
+      }
+     ]
+    },
     {
      "if": {
       "not": {
@@ -3161,10 +3501,10 @@
      "then": [
       {
        "stat": "tokens",
-       "add": 3
+       "add": 4
       },
       {
-       "message": "The keeper presses three tokens into your hand: \"For courage.\" +3 tokens"
+       "message": "The keeper presses four tokens into your hand: \"For courage.\" +4 tokens"
       },
       {
        "setFlag": "coins_man_mo"
@@ -3499,10 +3839,10 @@
      "then": [
       {
        "stat": "tokens",
-       "add": 3
+       "add": 4
       },
       {
-       "message": "A shopkeeper sweeping up drops you three spare arcade tokens! +3 tokens"
+       "message": "A shopkeeper sweeping up drops you four spare arcade tokens! +4 tokens"
       },
       {
        "setFlag": "coins_causeway"
@@ -3552,6 +3892,10 @@
     {
      "label": "Call up to the 'fiery bird' whose cold flames buzz like a broken fridge",
      "target": "gremlin_liv",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -3674,10 +4018,10 @@
     "onCorrect": [
      {
       "stat": "energy",
-      "add": 2
+      "add": 3
      },
      {
-      "message": "Correct! +2 Energy"
+      "message": "Correct! +3 Energy"
      }
     ],
     "wrong": {
@@ -3876,7 +4220,7 @@
    "title": "Times Square",
    "text": [
     "Under the giant screen, a gremlin technician in a hard hat is fiddling with a tangle of cables. A brass key dangles from its tool belt, swinging back and forth like it's daring you.",
-    "From here you can catch a minibus to the Peak Tram, or a ding-ding tram west along the island."
+    "From here you can catch a minibus to the Peak Tram, or a ding-ding tram west along the island. A little street hatch is selling egg waffles, hot and bubbly from the iron."
    ],
    "illustration": {
     "src": "img/causeway.svg",
@@ -3897,6 +4241,32 @@
        }
       ]
      }
+    },
+    {
+     "label": "Buy a bubbly egg waffle from the street hatch (1 token)",
+     "target": "waffle_hatch",
+     "conditions": {
+      "stat": "tokens",
+      "op": "gte",
+      "value": 1
+     },
+     "lockedHint": "Needs 1 token",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "waffle_hatch"
+       },
+       {
+        "hasItem": "egg_waffle"
+       }
+      ]
+     },
+     "effects": [
+      {
+       "stat": "tokens",
+       "add": -1
+      }
+     ]
     },
     {
      "label": "Catch a red minibus to the Peak Tram (tap Octopus card)",
@@ -3929,6 +4299,24 @@
     {
      "label": "Hop on a ding-ding tram",
      "target": "dingding"
+    }
+   ]
+  },
+  "waffle_hatch": {
+   "title": "Egg Waffle!",
+   "text": [
+    "The waffle man pours batter into a bubbly iron, flips it over a flame, and a minute later hands you a golden egg waffle in a paper bag: crispy on the outside, fluffy on the inside, like a sheet of edible bubble wrap.",
+    "Siu Mai tries to look like it isn't interested. Its tummy rumbles loudly."
+   ],
+   "onEnter": [
+    {
+     "addItem": "egg_waffle"
+    }
+   ],
+   "choices": [
+    {
+     "label": "Save it for later and head back to the giant screen",
+     "target": "times_square"
     }
    ]
   },
@@ -4009,6 +4397,10 @@
     {
      "label": "Join the class by the fountain, led by the 'tiger' whose painted stripes are running",
      "target": "gremlin_tiger",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -4174,6 +4566,10 @@
     {
      "label": "Go and meet the horse that just said \"MOOOO\"",
      "target": "gremlin_horse",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -4217,6 +4613,7 @@
    "title": "The Real Horse",
    "text": [
     "Clip-clop, clip-clop. The real Horse trots over and tosses her mane.",
+    "She kicks something shiny across the grass to you: a little golden horseshoe. \"For luck! Take it into any fight.\"",
     "\"Fancy a race?\" the Horse neighs. \"One token to enter. Beat me and I'll pay you three! Lose, and your luck runs out of puff.\" Siu Mai whispers, \"Betting is a gamble. Most of the time, the horse wins, you know.\""
    ],
    "illustration": {
@@ -4252,6 +4649,9 @@
        "message": "Zodiac friend found: HORSE! +2 Pixel Power"
       }
      ]
+    },
+    {
+     "addItem": "horseshoe"
     }
    ],
    "choices": [
@@ -4356,10 +4756,10 @@
      "then": [
       {
        "stat": "tokens",
-       "add": 3
+       "add": 4
       },
       {
-       "message": "Three tokens roll out from under your seat! +3 tokens"
+       "message": "Four tokens roll out from under your seat! +4 tokens"
       },
       {
        "setFlag": "coins_dingding"
@@ -4371,6 +4771,10 @@
     {
      "label": "Sit downstairs with the conductor whose comb looks like a rubber glove",
      "target": "gremlin_rooster",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -4627,6 +5031,10 @@
     {
      "label": "Go to the barrier of the monkey with the drinking-straw tail",
      "target": "gremlin_monkey",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -4663,10 +5071,10 @@
     "onCorrect": [
      {
       "stat": "energy",
-      "add": 2
+      "add": 3
      },
      {
-      "message": "Correct! +2 Energy"
+      "message": "Correct! +3 Energy"
      }
     ],
     "wrong": {
@@ -4833,6 +5241,34 @@
       "any": [
        {
         "visited": "gremlin_snake"
+       },
+       {
+        "hasItem": "goggles"
+       }
+      ]
+     }
+    },
+    {
+     "label": "Unlock the door that hisses like a leaking bicycle pump",
+     "target": "gremlin_snake",
+     "conditions": {
+      "all": [
+       {
+        "hasItem": "brass_key"
+       },
+       {
+        "notHasItem": "goggles"
+       }
+      ]
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
+     "hideIf": {
+      "any": [
+       {
+        "visited": "gremlin_snake"
+       },
+       {
+        "notHasItem": "goggles"
        }
       ]
      }
@@ -4877,10 +5313,10 @@
     "onCorrect": [
      {
       "stat": "energy",
-      "add": 2
+      "add": 3
      },
      {
-      "message": "Correct! +2 Energy"
+      "message": "Correct! +3 Energy"
      }
     ],
     "wrong": {
@@ -5040,6 +5476,10 @@
     {
      "label": "Talk to the goat with its sneakers on the wrong feet",
      "target": "gremlin_goat",
+     "conditions": {
+      "notHasItem": "goggles"
+     },
+     "lockedHint": "Your Gremlin Goggles flash red: GREMLIN IN DISGUISE!",
      "hideIf": {
       "any": [
        {
@@ -5147,10 +5587,10 @@
     "onCorrect": [
      {
       "stat": "energy",
-      "add": 2
+      "add": 3
      },
      {
-      "message": "Correct! +2 Energy"
+      "message": "Correct! +3 Energy"
      }
     ],
     "wrong": {
@@ -5326,7 +5766,7 @@
     "\"BEEP BOOP. FINAL. BOSS. ACTIVATED. PREPARE. FOR. MEGA. BOPPING.\""
    ],
    "combat": {
-    "intro": "BOSS FIGHT! Turbo Bolt-Bot has ATTACK 8 and 10 HP, and its mega-bops knock off 3 Energy. Each round you both roll two dice and add your attack (your LUCK plus any boosts). Higher total lands a bop: you knock off 2 HP. Friends and gear help: 2+ zodiac friends +1 attack, 4+ another +1, the Phoenix Feather +1, Loulou's high ground +1, the Silver Whistle makes it start dizzy (4 less HP), a shared snack fills you up before the fight, and the duck Umbrella blocks 1 damage from every bop. This is the only way into the tower: RUN AWAY (back to the lookout, -3 Pixel Power) and you'll have to come back and fight. Careful: if your Energy hits 0, you're trapped in the game forever.",
+    "intro": "BOSS FIGHT! Turbo Bolt-Bot has ATTACK 8 and 10 HP, and its mega-bops knock off 3 Energy. Each round you both roll two dice and add your attack (your LUCK plus any boosts). Higher total lands a bop: you knock off 2 HP. Friends and gear help: 2+ zodiac friends +1 attack, 4+ another +1, the Phoenix Feather +1, the Lucky Horseshoe +1, Loulou's high ground +1, the Silver Whistle makes it start dizzy (4 less HP), a shared snack fills you up before the fight, and the duck Umbrella blocks 1 damage from every bop. This is the only way into the tower: RUN AWAY (back to the lookout, -3 Pixel Power) and you'll have to come back and fight. Careful: if your Energy hits 0, you're trapped in the game forever.",
     "enemies": [
      {
       "name": "Turbo Bolt-Bot",
@@ -5387,6 +5827,13 @@
        "hasItem": "umbrella"
       },
       "armor": 1
+     },
+     {
+      "label": "Lucky Horseshoe",
+      "conditions": {
+       "hasItem": "horseshoe"
+      },
+      "attack": 1
      },
      {
       "label": "High ground (Loulou's climb)",

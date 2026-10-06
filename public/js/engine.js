@@ -94,6 +94,7 @@ export function newGame(book, { rng = Math.random, playerName = '', riddleSeed =
     riddleSeed: (riddleSeed ?? Math.floor(Math.random() * 4294967296)) >>> 0,
     riddlesUsed: [], // pool riddle ids already asked this game (no repeats)
     bonusStars: 0, // cosmetic: +1 per won luck roll (rules.bonusStars); never part of the score
+    status: {}, // timed status effects (book.statusEffects), id -> moves left, e.g. { poison: 5 }
   };
   for (const [id, def] of Object.entries(book.stats || {})) {
     let v;
@@ -145,6 +146,7 @@ export function checkCondition(book, state, cond) {
   if ('all' in cond) return cond.all.every((c) => checkCondition(book, state, c));
   if ('any' in cond) return cond.any.some((c) => checkCondition(book, state, c));
   if ('not' in cond) return !checkCondition(book, state, cond.not);
+  if ('status' in cond) return (state.status?.[cond.status] || 0) > 0;
   return false;
 }
 
@@ -162,6 +164,7 @@ export function describeCondition(book, cond) {
   if ('all' in cond) return cond.all.map((c) => describeCondition(book, c)).join(' + ');
   if ('any' in cond) return cond.any.map((c) => describeCondition(book, c)).join(' or ');
   if ('not' in cond) return 'something else';
+  if ('status' in cond) return (book.statusEffects?.[cond.status]?.name || cond.status).toLowerCase();
   return '';
 }
 
@@ -207,6 +210,20 @@ export function applyEffects(book, state, effects, messages = []) {
     } else if ('bonusStar' in e) {
       // cosmetic bonus star(s) from the story (only when rules.bonusStars is on); never a stat or score
       for (let i = 0; i < (e.bonusStar || 0); i++) awardBonusStar(book, state, messages);
+    } else if ('addStatus' in e) {
+      // a timed status effect, e.g. {addStatus: "poison", moves: 5}: its perMove effects run on each of
+      // the next `moves` moves. Catching it again restarts the countdown (it never stacks).
+      const def = book.statusEffects?.[e.addStatus] || {};
+      const n = e.moves ?? def.moves ?? 1;
+      state.status = state.status || {};
+      state.status[e.addStatus] = Math.max(state.status[e.addStatus] || 0, n);
+      messages.push({ type: 'status', status: e.addStatus, left: state.status[e.addStatus], text: `${def.badge || def.name || e.addStatus} x${state.status[e.addStatus]}!` });
+    } else if ('cureStatus' in e) {
+      if (state.status?.[e.cureStatus]) {
+        delete state.status[e.cureStatus];
+        const def = book.statusEffects?.[e.cureStatus] || {};
+        messages.push({ type: 'status', status: e.cureStatus, left: 0, cured: true, text: def.cureMessage || `${def.name || e.cureStatus} cured!` });
+      }
     } else if ('setFlag' in e) {
       state.flags[e.setFlag] = e.value ?? true;
     } else if ('clearFlag' in e) {
@@ -297,7 +314,25 @@ function move(book, state, target, messages, rng) {
     applyEffects(book, state, per, []); // silent: the HUD shows the countdown
     if (checkDepleted(book, state, messages, rng)) return messages;
   }
+  tickStatus(book, state, messages);
+  if (checkDepleted(book, state, messages, rng)) return messages;
   return enterSection(book, state, target, messages, rng);
+}
+
+// Timed status effects (book.statusEffects, e.g. poison): on every move, each active one runs its
+// perMove effects (e.g. Energy -1) with a message, and counts down by one; at 0 it wears off. If the
+// tick empties a death stat, the normal depletion ending (e.g. trapped forever) replaces the move.
+export function tickStatus(book, state, messages = []) {
+  for (const id of Object.keys(state.status || {})) {
+    const def = book.statusEffects?.[id] || {};
+    const left = (state.status[id] || 0) - 1;
+    const hits = applyEffects(book, state, def.perMove, []);
+    const lost = hits.filter((m) => m.type === 'stat').map((m) => m.text).join(', ');
+    if (left > 0) state.status[id] = left; else delete state.status[id];
+    messages.push({ type: 'status', status: id, left: Math.max(left, 0), tick: true, text: `${def.badge || def.name || id}! ${lost}${left > 0 ? ` (${left} more move${left === 1 ? '' : 's'})` : ''}`.trim() });
+    if (left <= 0) messages.push({ type: 'status', status: id, left: 0, wornOff: true, text: def.endMessage || `${def.name || id} wore off` });
+  }
+  return messages;
 }
 
 // ---------- player actions ----------
@@ -306,7 +341,7 @@ export function availableChoices(book, state) {
   return (sec.choices || []).map((c, index) => {
     const ok = checkCondition(book, state, c.conditions);
     const hideIf = c.hideIf ? checkCondition(book, state, c.hideIf) : false;
-    return { ...c, index, available: ok, hidden: hideIf || (!ok && !!c.hideIfLocked), need: ok ? '' : c.lockedHint || describeCondition(book, c.conditions), warning: ok ? wouldDeplete(book, state, c.effects, c.target) : null };
+    return { ...c, index, available: ok, hidden: hideIf || (!ok && !!c.hideIfLocked), need: ok ? '' : c.lockedHint || describeCondition(book, c.conditions) };
   });
 }
 
@@ -596,7 +631,7 @@ export function riddlePenalties(book, state) {
   if (!r) return [];
   return (r.riddle.wrong?.options || []).map((o, index) => {
     const ok = checkCondition(book, state, o.conditions);
-    return { ...o, index, available: ok, need: ok ? '' : o.lockedHint || describeCondition(book, o.conditions), warning: ok ? wouldDeplete(book, state, o.effects) : null };
+    return { ...o, index, available: ok, need: ok ? '' : o.lockedHint || describeCondition(book, o.conditions) };
   });
 }
 
@@ -645,29 +680,6 @@ export function retreatRiddle(book, state, rng = Math.random) {
   applyEffects(book, state, r.riddle.retreat.effects, messages);
   if (checkDepleted(book, state, messages, rng)) return messages;
   return move(book, state, r.riddle.retreat.target, messages, rng);
-}
-
-// Would these effects trigger a depletion rule (e.g. spending your last token)? Returns the rule or null.
-// Would taking these effects (and then arriving at `target`, running its onEnter) use up a stat
-// that ends the game? Used to put a "⚠" warning on risky choices so danger is always signposted.
-// The per-move Pixel Power tick is not included (the countdown bar shows that).
-export function wouldDeplete(book, state, effects, target = null) {
-  const tsec = target ? book.sections[target] : null;
-  const arrive = tsec && !tsec.ending && (tsec.onEnter?.length || tsec.test?.costEffects?.length);
-  if (!effects?.length && !arrive) return null;
-  const sim = JSON.parse(JSON.stringify(state));
-  applyEffects(book, sim, effects, []);
-  if (arrive) {
-    sim.current = target;
-    sim.visited[target] = (sim.visited[target] || 0) + 1;
-    applyEffects(book, sim, tsec.onEnter, []);
-    applyEffects(book, sim, tsec.test?.costEffects, []); // a dice test's cost is paid whatever you roll
-  }
-  for (const r of depletionRules(book)) {
-    const limit = r.atOrBelow ?? statBounds(book, sim, r.stat).min;
-    if ((sim.stats[r.stat] ?? Infinity) <= limit) return { stat: r.stat, name: book.stats?.[r.stat]?.name || r.stat, target: r.target };
-  }
-  return null;
 }
 
 // Tracker progress, e.g. the Zodiac Collection: [{id, label, met:[ids], total, complete}]
@@ -768,6 +780,7 @@ export function lintBook(book) {
     if ('visited' in c && !S[c.visited]) errors.push(`${where}: unknown section ${c.visited}`);
     for (const k of ['all', 'any']) if (c[k]) c[k].forEach((x) => walkCond(where, x));
     if (c.not) walkCond(where, c.not);
+    if ('status' in c && !(book.statusEffects || {})[c.status]) errors.push(`${where}: unknown status effect ${c.status}`);
   };
   const walkEff = (where, list) => {
     for (const e of list || []) {
@@ -775,9 +788,11 @@ export function lintBook(book) {
       if ('addItem' in e && !items[e.addItem]) errors.push(`${where}: unknown item ${e.addItem}`);
       if ('removeItem' in e && !items[e.removeItem]) errors.push(`${where}: unknown item ${e.removeItem}`);
       if ('if' in e) { walkCond(where, e.if); walkEff(where, e.then); walkEff(where, e.else); }
+      for (const k of ['addStatus', 'cureStatus']) if (k in e && !(book.statusEffects || {})[e[k]]) errors.push(`${where}: unknown status effect ${e[k]}`);
     }
   };
   walkEff('rules.perMoveEffects', book.rules?.perMoveEffects);
+  for (const [id, def] of Object.entries(book.statusEffects || {})) walkEff(`status ${id}`, def.perMove);
   for (const [id, it] of Object.entries(items)) if (it.use) { walkEff(`item ${id}`, it.use.effects); walkCond(`item ${id}`, it.use.conditions); }
 
   for (const [id, sec] of Object.entries(S)) {

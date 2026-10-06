@@ -224,7 +224,11 @@ function renderStory() {
   lastRenderedSection = state.current + ':' + state.history.length;
 }
 
-const warnText = (w) => w ? `<span class="warn" data-testid="warning">⚠ ${esc(w.name.toUpperCase())} WOULD RUN OUT${w.target ? ` · ${esc((book.sections[w.target]?.ending?.title || 'GAME OVER').toUpperCase())}` : ''}</span>` : '';
+// Locked-choice hint. CSS adds "NEEDS: " in front, except when the hint already says "Needs ..."
+// or is a full sentence of its own (the Gremlin Goggles alarm, "If only someone had warned you...").
+const needSpan = (t) => `<span class="need${/^needs\b/i.test(t) || /[!.]$/.test(t) ? ' own' : ''}">${esc(t)}</span>`;
+// No "⚠ X WOULD RUN OUT" warnings on choices: running out of a stat is a surprise (the game-over
+// screen still explains what ran out).
 
 function renderActions() {
   const box = $('#actions');
@@ -234,8 +238,8 @@ function renderActions() {
   if (state.pending?.kind === 'riddle') return renderRiddle(box);
   const opts = E.availableChoices(book, state).filter((c) => !c.hidden);
   box.innerHTML = `<div class="choices" data-testid="choices">${opts.map((c) => c.available
-    ? `<button class="choice ${c.warning ? 'danger' : ''}" data-choice="${c.index}"><span class="cursor">${c.warning ? '⚠' : '▶'}</span><span class="choice-label">${esc(T(c.label))}${warnText(c.warning)}</span></button>`
-    : `<button class="choice locked" disabled aria-disabled="true"><span class="cursor">${LOCK}</span><span class="choice-label">${esc(T(c.label))}<span class="need">${esc(c.need)}</span></span></button>`).join('')}</div>`;
+    ? `<button class="choice" data-choice="${c.index}"><span class="cursor">▶</span><span class="choice-label">${esc(T(c.label))}</span></button>`
+    : `<button class="choice locked" disabled aria-disabled="true"><span class="cursor">${LOCK}</span><span class="choice-label">${esc(T(c.label))}${needSpan(c.need)}</span></button>`).join('')}</div>`;
   $$('.choice[data-choice]', box).forEach((b) => b.addEventListener('click', () => act(() => E.choose(book, state, +b.dataset.choice, rng))));
 }
 
@@ -265,8 +269,8 @@ function renderRiddle(box) {
     body = `<div class="result bad" data-testid="riddle-result" data-correct="false">WRONG!</div>
       <p class="outcome">${esc(T(r.question.wrongText || rd.wrong?.text || 'Wrong! Choose your penalty.'))}</p>${explainHTML(r.question, true)}
       <div class="riddle-penalty" data-testid="riddle-penalty">${pens.map((o) => o.available
-        ? `<button class="choice ${o.warning ? 'danger' : ''}" data-pen="${o.index}" data-testid="penalty-${o.index}"><span class="cursor">${o.warning ? '⚠' : '▶'}</span><span class="choice-label">${esc(T(o.label))}${warnText(o.warning)}</span></button>`
-        : `<button class="choice locked" disabled data-testid="penalty-${o.index}"><span class="cursor">${LOCK}</span><span class="choice-label">${esc(T(o.label))}<span class="need">${esc(o.need)}</span></span></button>`).join('')}</div>`;
+        ? `<button class="choice" data-pen="${o.index}" data-testid="penalty-${o.index}"><span class="cursor">▶</span><span class="choice-label">${esc(T(o.label))}</span></button>`
+        : `<button class="choice locked" disabled data-testid="penalty-${o.index}"><span class="cursor">${LOCK}</span><span class="choice-label">${esc(T(o.label))}${needSpan(o.need)}</span></button>`).join('')}</div>`;
   } else {
     body = `<div class="result bad" data-testid="riddle-result" data-correct="false">PENALTY PAID</div>${r.untilCorrect
       ? `<p class="outcome">${esc((npc?.name || 'They').toUpperCase())} HAS ANOTHER RIDDLE FOR YOU. YOU CAN STILL HEAD BACK BEFORE ANSWERING IT.</p><button class="btn btn-big" data-testid="continue">NEXT RIDDLE ▶</button>`
@@ -330,8 +334,7 @@ function renderTest(box) {
     </div>`;
   const btns = $('.dice-buttons', box);
   if (!p.roll) {
-    const costWarn = E.wouldDeplete(book, state, t.costEffects);
-    btns.innerHTML = `<button class="btn btn-big ${costWarn ? 'danger' : ''}" data-testid="roll">${costWarn ? '⚠ ' : ''}ROLL DICE${warnText(costWarn)}</button>`;
+    btns.innerHTML = '<button class="btn btn-big" data-testid="roll">ROLL DICE</button>';
     $('button', btns).addEventListener('click', async (ev) => {
       if (busy) return; busy = true; ev.currentTarget.disabled = true;
       const { roll, messages, diverted } = E.rollTest(book, state, rng);
@@ -351,11 +354,8 @@ function gambleLine(t) {
   const g = E.gambleRules(book, t);
   const o = E.gambleOdds(book, t);
   const nm = (book.stats[g.stat]?.name || g.stat).toUpperCase();
-  const v = state.stats[g.stat];
-  const deadly = E.depletionRules(book).some((r) => r.stat === g.stat) && !state.pending?.roll;
-  const risk = !deadly ? '' : v <= 1 ? `⚠ YOUR ${esc(nm)} IS ${v}: LOSING OR A ${g.halfOn} WOULD TRAP YOU` : v <= g.loseBy ? `⚠ YOUR ${esc(nm)} IS ${v}: LOSING WOULD TRAP YOU` : '';
   return `<div class="gamble-odds" data-testid="gamble-odds"><span class="g-win">WIN ${g.winAt}+ (${pct(o.win)})</span> · <span class="g-half">${g.halfOn} = HALF ${esc(nm)} (${pct(o.half)})</span> · <span class="g-lose">${g.halfOn - 1} OR LESS LOSE -${g.loseBy} ${esc(nm)} (${pct(o.lose)})</span></div>
-    <div class="gamble-note">YOU LOSE MORE OFTEN THAN YOU WIN: ${pct(o.half + o.lose)} OF ROLLS ARE BAD NEWS!</div>${risk ? `<div class="warn" data-testid="gamble-risk">${risk}</div>` : ''}`;
+    <div class="gamble-note">YOU LOSE MORE OFTEN THAN YOU WIN: ${pct(o.half + o.lose)} OF ROLLS ARE BAD NEWS!</div>`;
 }
 function showTestResult(box, t, p) {
   const gamble = t.type === 'gamble';
@@ -423,9 +423,8 @@ function renderCombat(box) {
   }
   // RUN AWAY is offered every round until the duel is decided, as a big button next to ATTACK
   // (it used to be a dim ghost button that was easy to miss, and below the fold on phones).
-  const fleeWarn = c.flee ? E.wouldDeplete(book, state, c.flee.effects, c.flee.target) : null;
   btns.innerHTML = `<button class="btn btn-big btn-attack" data-testid="attack">ATTACK! <small>(ROLL)</small></button>${c.flee
-    ? `<button class="btn btn-big btn-flee ${fleeWarn ? 'danger' : ''}" data-testid="flee">${fleeWarn ? '⚠ ' : '🏃 '}${esc(T(c.flee.label || 'RUN AWAY!'))}${warnText(fleeWarn)}</button>
+    ? `<button class="btn btn-big btn-flee" data-testid="flee">🏃 ${esc(T(c.flee.label || 'RUN AWAY!'))}</button>
        <div class="flee-hint" data-testid="flee-hint">${p.round ? `ROUND ${p.round + 1}: ` : ''}YOU CAN STILL RUN AWAY UNTIL THE DUEL IS DECIDED</div>` : ''}`;
   if (p.round) btns.scrollIntoView({ block: 'nearest' });
   $('[data-testid=attack]', btns).addEventListener('click', async () => {
@@ -674,6 +673,14 @@ function renderStats() {
     }
     mini.push(`<span class="mini-stat ${cls} ${def.display === 'timer' && v <= 10 ? 'low' : ''}" style="--c:${def.color || '#29e7ff'}">${esc(def.short || def.name)} <b>${v}</b></span>`);
   }
+  // timed status effects (e.g. POISONED x5): a badge with the moves left, ticking down each move
+  for (const [id, left] of Object.entries(state.status || {})) {
+    if (!(left > 0)) continue;
+    const def = book.statusEffects?.[id] || {};
+    const label = `${esc(def.icon || '!')} ${esc((def.badge || def.name || id).toUpperCase())} x${left}`;
+    rows.push(`<div class="status-badge" data-testid="status-${esc(id)}" data-left="${left}" style="--c:${def.color || '#7dff4a'}" title="${esc(def.description || '')}">${label}<small>${left} MOVE${left === 1 ? '' : 'S'} LEFT</small></div>`);
+    mini.push(`<span class="mini-stat mini-status" data-testid="mini-status-${esc(id)}" style="--c:${def.color || '#7dff4a'}">${esc(def.icon || '!')} <b>x${left}</b></span>`);
+  }
   const starsOn = E.bonusStarsEnabled(book);
   const nStars = state.bonusStars || 0;
   const newStar = starsOn && prevStars !== null && nStars > prevStars;
@@ -793,8 +800,10 @@ function showMessages(msgs, { silent = false } = {}) {
     if (m.halved) kind = 'halved';
     if (m.type === 'depleted') kind = 'bad';
     if (m.type === 'star') kind = 'star';
+    if (m.type === 'status') kind = m.cured || m.wornOff ? 'good' : 'poison';
     if ((kind === 'good' || kind === 'star') && sound === 'select') sound = 'coin';
     if ((kind === 'bad' || kind === 'halved') && m.type === 'stat') sound = 'hurt';
+    if (kind === 'poison') sound = 'hurt';
     setTimeout(() => toast(m.text.toUpperCase(), kind), i * 180);
   });
   if (!silent) sfx[sound]();

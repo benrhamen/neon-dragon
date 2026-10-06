@@ -105,6 +105,7 @@ button:disabled { cursor: not-allowed; }
 .lock { width: 14px; height: 14px; display: block; }
 .need { display: block; font-size: 9px; color: var(--orange); margin-top: 6px; letter-spacing: 1px; }
 .need::before { content: 'NEEDS: '; }
+.need.own::before { content: none; }
 
 /* Buttons */
 .btn { font-family: var(--pixel); font-size: 12px; padding: 12px 18px; background: var(--pink); color: #fff; border: 3px solid #000;
@@ -329,8 +330,6 @@ body.modal-open { overflow: hidden; }
 /* ---------- v2: riddles, warnings, timer, zodiac, score, trapped, best scores ---------- */
 .illus-box { position: relative; display: block; line-height: 0; max-width: 100%; }
 .illus .illus-box canvas.illus-chars { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; max-width: none; pointer-events: none; }
-.choice.danger { border-color: var(--orange); }
-.choice.danger .cursor { opacity: 1; color: var(--orange); }
 .warn { display: block; margin-top: 6px; font-size: 8px; color: var(--orange); letter-spacing: 1px; text-shadow: 0 0 6px rgba(255,154,60,.6); }
 .dice-box .warn { font-size: 9px; margin-top: 8px; }
 
@@ -431,8 +430,6 @@ body.halved .crt { background: rgba(255,46,136,.18); }
 /* Duel: RUN AWAY is a real, bright button (always shown until the duel is decided) */
 .combat-buttons { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .btn-flee { background: var(--cyan, #29e7ff); color: #000; text-shadow: none; font-size: 13px; max-width: 100%; white-space: normal; line-height: 1.6; }
-.btn-flee.danger { background: var(--orange); }
-.btn-flee .warn { display: block; font-size: 9px; margin-top: 6px; }
 .flee-hint { font-family: var(--pixel); font-size: 8px; color: var(--cyan, #29e7ff); letter-spacing: 1px; line-height: 1.6; }
 @media (max-width: 600px) { .combat-buttons .btn-big { width: 100%; } }
 
@@ -526,3 +523,12 @@ body.halved .crt { background: rgba(255,46,136,.18); }
 .boosts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0; }
 .boost { font-family: var(--pixel); font-size: 8px; padding: 5px 7px; border: 2px solid var(--line); color: var(--dim); background: #0b0820; }
 .boost.on { border-color: var(--green); color: var(--green); box-shadow: 0 0 8px rgba(61, 255, 110, 0.35); }
+
+/* timed status effects (POISONED x5) */
+.status-badge { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0 2px; padding: 8px 10px; font-family: var(--pixel); font-size: 11px; color: #0b0820; background: var(--c, #7dff4a); border: 3px solid #000; box-shadow: 3px 3px 0 #000; animation: poisonpulse 1.2s steps(2) infinite; }
+.status-badge small { font-size: 8px; opacity: .8; }
+.mini-stat.mini-status { color: #0b0820; background: var(--c, #7dff4a); border-color: #000; animation: poisonpulse 1.2s steps(2) infinite; }
+.mini-stat.mini-status b { color: #0b0820; }
+.toast.poison { border-color: #7dff4a; color: #7dff4a; background: #0f2a10; }
+@keyframes poisonpulse { 50% { filter: brightness(1.35); } }
+@media (prefers-reduced-motion: reduce) { .status-badge, .mini-stat.mini-status { animation: none; } }
