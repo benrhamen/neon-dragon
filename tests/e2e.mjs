@@ -352,7 +352,7 @@ try {
   await T(page, 'scores-modal').waitFor();
   await page.locator('[data-testid=scores-body] [data-testid=score-row]').first().waitFor();
   check(await page.locator('[data-testid=score-row]').count() === 2 && (await page.locator('[data-testid=score-row] .nm').first().textContent()) === 'PIXELPRO', 'World Top 50 tab shows the shared board');
-  check((await page.locator('.scores-table th.st').textContent()).includes('STARS') && (await page.locator('[data-testid=score-stars]').first().textContent()).includes('9'), 'Best Scores table has a cosmetic ✦ STARS column');
+  check((await page.locator('.scores-table th.st').textContent()).includes('EXTRA') && (await page.locator('[data-testid=score-stars]').first().textContent()).includes('9'), 'Best Scores table has a cosmetic ✦ STARS column');
   check(await capeAt(page.locator('[data-testid=score-row] canvas[data-av]').first()) && !(await capeAt(page.locator('[data-testid=score-row] canvas[data-av]').nth(1))), 'World Top 50: a new avatar draws its add-ons; an old avatar (no add-on fields) still loads, without them');
   await page.waitForTimeout(700);
   await shot(page, '15-best-scores-world.png');
