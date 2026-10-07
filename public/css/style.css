@@ -532,3 +532,6 @@ body.halved .crt { background: rgba(255,46,136,.18); }
 .toast.poison { border-color: #7dff4a; color: #7dff4a; background: #0f2a10; }
 @keyframes poisonpulse { 50% { filter: brightness(1.35); } }
 @media (prefers-reduced-motion: reduce) { .status-badge, .mini-stat.mini-status { animation: none; } }
+
+.scores-note { font-family: var(--body); font-size: 17px; color: var(--dim); line-height: 1.3; margin: 14px 4px 8px; }
+@media(max-width:560px) { .scores-table { font-size:8px; } .scores-table th, .scores-table td { padding:6px 3px; } }
