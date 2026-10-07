@@ -555,7 +555,7 @@ function finishScore(box, score) {
   const pos = state.scorePosition;
   status.innerHTML = `${state.newHigh ? '<div class="new-high blink" data-testid="new-high">NEW HIGH SCORE!</div>' : ''}
     <div class="dim">${pos ? `#${pos} ON THIS DEVICE` : 'NOT IN THIS DEVICE\'S TOP 10'}</div>
-    ${LB.globalConfigured() ? '<button class="btn btn-small" data-testid="post-global">POST TO WORLD TOP 50</button><div class="nick-tip">Posts your nickname, hero and score. No real names!</div>' : ''}`;
+    ${LB.globalConfigured() ? '<button class="btn btn-small" data-testid="post-global">POST TO WORLD TOP 50</button><div class="nick-tip">Posts your nickname, hero, score, animal count and extra stars. No real names!</div>' : ''}`;
   $('[data-testid=post-global]', status)?.addEventListener('click', async (ev) => {
     const b = ev.currentTarget;
     b.disabled = true; b.textContent = 'SENDING...';
@@ -952,7 +952,7 @@ function openCreator() {
 // ---------------- best scores ----------------
 function scoreRowsHTML(rows) {
   if (!rows.length) return '<div class="empty" data-testid="scores-empty">NO SCORES YET. BE THE FIRST!</div>';
-  return `<table class="scores-table" data-testid="scores-table"><thead><tr><th>#</th><th></th><th>NAME</th><th>SCORE</th><th>RANK</th><th>ZODIAC</th><th class="st" title="Bonus stars: just for fun, not part of the score"><i class="pstar"></i> STARS</th><th>DATE</th></tr></thead><tbody>${rows.map((r, i) => `
+  return `<table class="scores-table" data-testid="scores-table"><thead><tr><th>#</th><th></th><th>NAME</th><th>SCORE</th><th>RANK</th><th>ANIMALS</th><th class="st" title="Bonus stars: just for fun, not part of the score">EXTRA ★</th><th>DATE</th></tr></thead><tbody>${rows.map((r, i) => `
     <tr class="${i === 0 ? 'top' : ''}" data-testid="score-row"><td>${i + 1}</td><td><canvas class="pix score-av" data-av="${i}"></canvas></td><td class="nm">${esc(r.nickname)}</td><td class="pct">${r.score_pct}%</td><td class="rk">${esc(r.rank || '')}</td><td>${r.zodiac_count ?? 0}/${zodiacTotal()}</td><td class="st" data-testid="score-stars">${r.bonus_stars == null ? '-' : `<span class="star-pix"><i class="pstar"></i></span>${r.bonus_stars | 0}`}</td><td class="dt">${esc(String(r.created_at || '').slice(0, 10))}</td></tr>`).join('')}</tbody></table>`;
 }
 
@@ -968,7 +968,7 @@ function openScores({ back = null } = {}) {
     <div class="modal-buttons"><button class="btn" data-testid="scores-back">BACK</button></div>`,
   { cls: 'scores', testid: 'scores-modal', onClose: () => { if (back) back(); else if (!state) openCreator(); } });
   const body = $('.scores-body', m);
-  const draw = (rows) => { body.innerHTML = scoreRowsHTML(rows); $$('[data-av]', body).forEach((c) => drawAvatar(c, rows[+c.dataset.av].avatar || defaultAvatar())); };
+  const draw = (rows) => { body.innerHTML = scoreRowsHTML(rows) + '<p class="scores-note" data-testid="scores-note">ANIMALS: count saved with each run, separate from score %. EXTRA STARS: luck-roll wins, not part of your score. A dash means older scores did not record stars.</p>'; $$('[data-av]', body).forEach((c) => drawAvatar(c, rows[+c.dataset.av].avatar || defaultAvatar())); };
   const show = async (tab) => {
     $$('.tab', m).forEach((t) => t.classList.toggle('on', t.dataset.tab === tab));
     if (tab === 'local') { draw(LB.localScores(bookId())); return; }
