@@ -4,13 +4,13 @@ A static web app (HTML/CSS/vanilla JS, no build step, no server code) for playin
 gamebooks. A **JSON Schema** describes each book, and a small engine runs it: sections, choices,
 stats, inventory, flags, dice tests, light combat, riddles, collectables, a move timer, endings and a
 score. It comes with an **original** sample adventure, *The Neon Dragon of Pixel Harbour*
-(112 sections, 11 endings), set in a pixel-art Hong Kong and written for young readers (about 9 to 11).
+(131 sections, 11 endings), set in a pixel-art Hong Kong and written for young readers (about 9 to 11).
 
 Play it: **<https://benrhamen.github.io/neon-dragon/>**
 
 - **Every game is a fresh start.** There are no profiles: each run begins at the arcade-style
-  **Avatar & Name Creator** (6 preset heroes plus 9 skin colours including blue, green and grey, hair,
-  hair colour, outfit, a hat/gear accessory and three optional add-ons, **beard**, **beanie** and
+  **Avatar & Name Creator** (6 preset heroes plus 8 visible skin colours including blue and green, hair,
+  hair colour, outfit, a hat/gear accessory and four optional add-ons, **beard**, **cape**, **gloves** and
   **cape**, each switched on or off independently; drawn as 16×16 pixel sprites) and you must press **PRESS START**. A run in progress autosaves (reload-safe)
   and that save is wiped when the run ends.
 - **BEST SCORES** are the only thing kept between games: a top 10 on this device, plus an optional
@@ -41,7 +41,7 @@ Gremlin King along the way.
 | Stat | Start | How it works |
 |---|---|---|
 | ⚡ **Energy** | 36 (max 36) | Small hits −1/−2, medium −3/−4, big hits **halve** it; poison takes −1 a move. Bubble tea, egg tarts, pineapple buns and egg waffles give +3. At 0: **TRAPPED IN THE GAME FOREVER**. |
-| ★ **Pixel Power** | 160, no cap | A **move timer**: −1 on every move, shown as a countdown ("N MOVES LEFT"). Food doesn't refill it; zodiac animals (+2 each), Man Mo Temple incense and a few lucky finds do. At 0: trapped. |
+| ★ **Pixel Power** | 60, no cap | A **move timer**: −1 on every move, shown as a countdown ("N MOVES LEFT"). Food doesn't refill it; zodiac animals (+2 each), Man Mo Temple incense and a few lucky finds do. At 0: trapped. |
 | ♣ **Luck** | 1d6+6 | Every luck test **uses 1 Luck, pass or fail**, some bad choices cost Luck, and dice gambles risk it. Only two rare regains (Man Mo incense +1, the Rooster +1, both capped at the starting value). At 0: **YOUR LUCK RAN OUT**, trapped. |
 | 🪙 **Tokens** | 5 | Spent on rides and snacks and on wrong riddle answers. Riddles pay **no** tokens; you find them around the city instead (+4 once each in Central, Man Mo Temple, on the ding-ding tram and in Causeway Bay, plus a few story rewards). At 0: **OUT OF TOKENS** (game over). |
 
@@ -280,7 +280,7 @@ reference (the best possible score) so that a perfect game shows 100%.
 Nothing about a player is stored except their **best scores**. Each winning game is added to a
 **top 10 on this device** (`localStorage`: nickname, avatar thumbnail, score %, rank, date, zodiac
 count). Avatars are stored as a small JSON object (`skin`, `hairStyle`, `hairColor`, `outfit`,
-`accessory`, plus `beard` / `beanie` / `cape: true` only when switched on), about 120 characters at
+`accessory`, plus `beard` / `cape` / `gloves` / `magicBoots: true` only when switched on), about 120 characters at
 most, well inside the database's 512-byte limit; older avatars without the add-on fields still load
 and draw without them. The 🏆 button (title bar, creator and end screen) opens **BEST SCORES** with two tabs:
 **WORLD TOP 50** and **MY DEVICE**.
