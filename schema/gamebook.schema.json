@@ -198,7 +198,7 @@
     },
     "scoring": {
       "type": "object",
-      "description": "Final SCORE shown on winning endings. Each component is value × points; the total is shown as a percentage of `reference`, the best total any path can reach (compute it with scripts/score-reference.mjs), so the optimal path scores exactly 100%.",
+      "description": "Final SCORE shown on winning endings. Each component is value \u00d7 points; the total is shown as a percentage of `reference`, the best total any path can reach (compute it with scripts/score-reference.mjs), so the optimal path scores exactly 100%.",
       "required": [
         "components",
         "reference"
@@ -854,6 +854,23 @@
               "description": "True while this timed status effect (statusEffects) is active, e.g. poisoned."
             }
           }
+        },
+        {
+          "type": "object",
+          "required": [
+            "tracker",
+            "min"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "tracker": {
+              "type": "string"
+            },
+            "min": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         }
       ]
     },
@@ -888,7 +905,7 @@
             },
             "halve": {
               "const": true,
-              "description": "Shorthand for multiply 0.5 with round down: 9 → 4, 1 → 0."
+              "description": "Shorthand for multiply 0.5 with round down: 9 \u2192 4, 1 \u2192 0."
             },
             "round": {
               "enum": [
@@ -1549,7 +1566,7 @@
             },
             "characters": {
               "type": "array",
-              "description": "Character sprites drawn on top of the picture. x/y are in picture pixels on the grid below (default 96×54, the size of the bundled scenes).",
+              "description": "Character sprites drawn on top of the picture. x/y are in picture pixels on the grid below (default 96\u00d754, the size of the bundled scenes).",
               "items": {
                 "type": "object",
                 "required": [
@@ -1634,6 +1651,13 @@
         },
         "riddle": {
           "$ref": "#/$defs/riddle"
+        },
+        "pickRandom": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
         }
       },
       "anyOf": [
@@ -1666,6 +1690,11 @@
         {
           "required": [
             "riddle"
+          ]
+        },
+        {
+          "required": [
+            "pickRandom"
           ]
         }
       ]
@@ -1826,7 +1855,7 @@
         },
         "badge": {
           "type": "string",
-          "description": "Short label for the stats-panel badge, shown with the moves left, e.g. POISONED → \"POISONED x5\"."
+          "description": "Short label for the stats-panel badge, shown with the moves left, e.g. POISONED \u2192 \"POISONED x5\"."
         },
         "description": {
           "type": "string"
@@ -1855,4 +1884,4 @@
       }
     }
   }
-}
+    }
