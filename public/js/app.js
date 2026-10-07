@@ -67,7 +67,7 @@ async function boot() {
     player = saved.player;
     state = saved.state;
     // Keep existing runs and their original health ceiling / scoring scale.
-    if (!state.scoreReference && state.bookVersion !== book.metadata.version) state.scoreReference = 935 + 10 * (state.statMax?.luck || 7);
+    if (!state.scoreReference && state.bookVersion !== book.metadata.version) { state.scoreReference = 935 + 10 * (state.statMax?.luck || 7); persist(); }
     beginRender();
     toast(`WELCOME BACK, ${player.name}!`, 'info');
   } else {
