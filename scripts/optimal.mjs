@@ -85,7 +85,7 @@ export function checkAssumptions(book) {
   const problems = [];
   for (const [id, def] of Object.entries(book.items || {})) {
     if (!def.use || harmful(def)) continue;
-    const ok = (e) => 'message' in e || 'cureStatus' in e || (e.stat === health && e.add > 0) || ('if' in e && (e.then || []).every(ok) && (e.else || []).every(ok));
+    const ok = (e) => 'message' in e || 'cureStatus' in e || (e.stat === health && (e.add > 0 || e.maxAdd > 0)) || ('if' in e && (e.then || []).every(ok) && (e.else || []).every(ok));
     for (const e of def.use.effects || []) if (!ok(e)) problems.push(`item ${id}: use does more than restore ${health}`);
   }
   // harmful items must really be useless to the score: eaten = lost (not used), no other effects
@@ -182,9 +182,10 @@ export function explorer(book, { eatBelow = 4 } = {}) {
     }
     const finalScene = chs.some((c) => book.sections[c.target]?.ending?.type === 'win');
     const lowEnergy = (st.stats[healthStat] ?? Infinity) <= eatBelow;
-    if (finalScene || lowEnergy) {
+    if (finalScene || lowEnergy || Object.keys(st.inventory).some(id => book.items[id]?.use?.label === 'Drink')) {
       for (const id of Object.keys(st.inventory)) {
         const def = book.items?.[id];
+        if (!(finalScene || lowEnergy || def?.use?.label === 'Drink')) continue;
         if (!def?.use || harmful(def) || !(st.inventory[id] > 0) || !E.checkCondition(book, st, def.use.conditions)) continue;
         const s2 = clone(st); E.useItem(book, s2, id, calmRng); s2.history = []; s2.log = []; out.push([`${st.current}: use ${def.name || id}`, s2]);
       }
@@ -366,7 +367,8 @@ export function makeUpperBound(book, rel, B) {
   const statBound = (st, stat) => {
     const cur = st.current;
     const max = typeof st.statMax?.[stat] === 'number' ? st.statMax[stat] : Infinity;
-    if ((stat === health && hasFood) || B.unbounded.has(stat)) return max;
+    if (stat === health && hasFood) return Infinity; // Future drinks can increase the capacity.
+    if (B.unbounded.has(stat)) return max;
     let pool = 0;
     for (const g of B.flagGains) if (g.stat === stat && !st.flags[g.flag] && B.reach[cur].has(g.sec)) pool += g.add;
     for (const g of B.secGains) {
@@ -452,7 +454,7 @@ export function optimalSearch(book, { startStat = book.scoring?.reference?.bySta
   const hash = (s) => createHash('md5').update(s).digest('base64');
   const domKey = (st) => {
     const r = rel[st.current];
-    return hash(JSON.stringify([st.current, st.inventory, st.status || {}, r.flags.filter((f) => st.flags[f]), r.visits.filter((v) => st.visited[v]),
+    return hash(JSON.stringify([st.current, st.statMax, st.inventory, st.status || {}, r.flags.filter((f) => st.flags[f]), r.visits.filter((v) => st.visited[v]),
       r.found.filter((i) => st.found[i]), r.used.filter((i) => st.used[i])]));
   };
   // A dice test against a stat can only be failed while the stat is below the highest roll, so a
@@ -527,10 +529,10 @@ export function optimalSearch(book, { startStat = book.scoring?.reference?.bySta
           if (++n > maxStates) throw new Error('search too large');
           if (beam === Infinity) { states = n; if (onProgress && n % 100000 === 0) onProgress(n, pruned, cut); }
           parent.push(id); via.push(intern(label));
-          next.push([JSON.stringify(s2), parent.length - 1, ub2]);
+          next.push([JSON.stringify(s2), parent.length - 1, ub2, E.scoreRaw(book, s2).raw]);
         }
       }
-      if (next.length > beam) next = next.sort((x, y) => y[2] - x[2]).slice(0, beam);
+      if (next.length > beam) next = next.sort((x, y) => (y[3] - x[3])).slice(0, beam);
       layer = next;
     }
     const path = [];
@@ -552,6 +554,7 @@ export function followPath(book, path, { startStat = book.scoring?.reference?.by
   const { actions } = explorer(book, { eatBelow });
   let { state } = E.newGame(book, { rng: () => 0.99, playerName: 'MAX' });
   state.stats[startStat] = startValue; state.statMax[startStat] = startValue;
+  delete state.scoreReference; state.scoreReference = E.scoreReference(book, state);
   for (const label of path) {
     const next = actions(state).find(([l]) => l === label);
     if (!next) throw new Error(`step not possible: ${label} (at ${state.current})`);
