@@ -6,7 +6,7 @@
 export const SKINS = ['#ffdbb5', '#f5c28f', '#e0a370', '#c68650', '#9a5f34', '#6b3f22', '#5b8cff', '#5fd068', '#a3a7b5'];
 export const SKIN_NAMES = ['peach', 'sand', 'honey', 'caramel', 'chestnut', 'cocoa', 'blue', 'green', 'grey'];
 export const HAIR_COLORS = ['#1b1b2a', '#5a3215', '#a8642a', '#f2c94c', '#ff5d8f', '#29e7ff', '#9b5cff', '#eeeeee'];
-export const OUTFITS = ['#ff2e88', '#29e7ff', '#3dff6e', '#ffd23f', '#8a3ffc', '#ff7a1a', '#f5f5f5'];
+export const OUTFITS = ['#ff2e88', '#29e7ff', '#3dff6e', '#ffd23f', '#8a3ffc', '#ff7a1a', '#f5f5f5', '#5b8cff'];
 export const HAIR_STYLES = ['short', 'spiky', 'long', 'bun', 'pigtails'];
 export const ACCESSORIES = ['none', 'cap', 'glasses', 'headphones', 'crown'];
 // optional extras: each one is an independent on/off switch (stored as true, or left out)
@@ -145,7 +145,7 @@ export function randomAvatar() {
   const r = (n) => Math.floor(Math.random() * n);
   return {
     label: 'CUSTOM',
-    skin: r(SKINS.length), hairStyle: HAIR_STYLES[r(HAIR_STYLES.length)], hairColor: r(HAIR_COLORS.length),
+    skin: r(Math.min(8, SKINS.length)), hairStyle: HAIR_STYLES[r(HAIR_STYLES.length)], hairColor: r(HAIR_COLORS.length),
     outfit: r(OUTFITS.length), accessory: ACCESSORIES[r(ACCESSORIES.length)],
     ...Object.fromEntries(EXTRAS.filter(() => Math.random() < 0.3).map((k) => [k, true])),
   };
