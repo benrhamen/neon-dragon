@@ -46,7 +46,7 @@ const choose = async (page, label) => { await page.locator('.choice:not(.locked)
 
 // --- mocked Supabase REST: records requests, serves a fake World Top 50 or a missing table ---
 const globalRows = [
-  { nickname: 'PIXELPRO', avatar: { skin: 7, hairStyle: 'bun', hairColor: 3, outfit: 2, accessory: 'crown', beard: true, beanie: true, cape: true }, score_pct: 97, rank: 'NEON HERO', zodiac_count: 11, bonus_stars: 9, created_at: '2026-10-01T10:00:00Z' },
+  { nickname: 'PIXELPRO', avatar: { skin: 7, hairStyle: 'bun', hairColor: 3, outfit: 2, accessory: 'crown', beard: true, gloves: true, cape: true }, score_pct: 97, rank: 'NEON HERO', zodiac_count: 11, bonus_stars: 9, created_at: '2026-10-01T10:00:00Z' },
   { nickname: 'ZOE', avatar: { skin: 4, hairStyle: 'long', hairColor: 4, outfit: 0, accessory: 'none' }, score_pct: 64, rank: 'DING-DING DASHER', zodiac_count: 7, created_at: '2026-10-02T10:00:00Z' },
 ];
 async function mockSupabase(ctx) {
@@ -72,7 +72,7 @@ async function inject(page, setup, { name = 'MAX' } = {}) {
     E.attachRiddlePool(book, await (await fetch('data/riddles.json')).json());
     const st = E.newGame(book, { rng: () => 0.5, playerName: name, riddleSeed: 12345 }).state;
     new Function('E', 'book', 'st', setup)(E, book, st);
-    localStorage.setItem(RUN_KEY, JSON.stringify({ player: { name, avatar: { skin: 6, hairStyle: 'spiky', hairColor: 0, outfit: 4, accessory: 'headphones', beanie: true, cape: true } }, state: st }));
+    localStorage.setItem(RUN_KEY, JSON.stringify({ player: { name, avatar: { skin: 6, hairStyle: 'spiky', hairColor: 0, outfit: 4, accessory: 'headphones', gloves: true, cape: true } }, state: st }));
   }, { setup, name, RUN_KEY });
   await page.reload();
   await T(page, 'section-title').waitFor();
@@ -143,20 +143,20 @@ try {
   await page.waitForTimeout(300);
   await shot(page, '01-creator.png');
   console.log('creator: new skins and add-ons');
-  check(await page.locator('.swatch[data-key=skin]').count() === 9 && await page.locator('.swatch[aria-label="skin blue"]').count() === 1 && await page.locator('.swatch[aria-label="skin green"]').count() === 1 && await page.locator('.swatch[aria-label="skin grey"]').count() === 1, '9 skin colours, including blue, green and grey');
-  for (const k of ['beard', 'beanie', 'cape']) check((await T(page, `extra-${k}`).getAttribute('aria-pressed')) === 'false', `${k}: an independent toggle, off by default`);
+  check(await page.locator('.swatch[data-key=skin]').count() === 8 && await page.locator('.swatch[aria-label="skin blue"]').count() === 1 && await page.locator('.swatch[aria-label="skin green"]').count() === 1, '8 visible skin colours, including blue and green');
+  for (const k of ['beard', 'cape', 'gloves', 'magicBoots']) check((await T(page, `extra-${k}`).getAttribute('aria-pressed')) === 'false', `${k}: an independent toggle, off by default`);
   const plain = await T(page, 'avatar-preview').evaluate((c) => c.toDataURL());
   const looks = new Set([plain]);
   await page.locator('.swatch[aria-label="skin green"]').click();
-  for (const k of ['beard', 'beanie', 'cape']) { await T(page, `extra-${k}`).click(); looks.add(await T(page, 'avatar-preview').evaluate((c) => c.toDataURL())); }
-  check(looks.size === 4 && await capeAt(T(page, 'avatar-preview')), 'each add-on changes the preview (beard, beanie, cape all on together)');
-  check((await T(page, 'extra-beanie').getAttribute('aria-pressed')) === 'true' && (await text(page, 'extra-cape')).includes('CAPE'), 'toggles show their on state');
+  for (const k of ['beard', 'cape', 'gloves', 'magicBoots']) { await T(page, `extra-${k}`).click(); looks.add(await T(page, 'avatar-preview').evaluate((c) => c.toDataURL())); }
+  check(looks.size === 5 && await capeAt(T(page, 'avatar-preview')), 'each add-on changes the preview (beard, gloves, cape all on together)');
+  check((await T(page, 'extra-gloves').getAttribute('aria-pressed')) === 'true' && (await text(page, 'extra-cape')).includes('CAPE'), 'toggles show their on state');
   await T(page, 'extra-beard').click();
-  check((await T(page, 'extra-beard').getAttribute('aria-pressed')) === 'false' && (await T(page, 'extra-beanie').getAttribute('aria-pressed')) === 'true', 'toggling one add-on off leaves the others on');
+  check((await T(page, 'extra-beard').getAttribute('aria-pressed')) === 'false' && (await T(page, 'extra-gloves').getAttribute('aria-pressed')) === 'true', 'toggling one add-on off leaves the others on');
   await T(page, 'extra-beard').click();
-  // beanie with a hat (cap / crown) and with long hair
+  // gloves with a hat (cap / crown) and with long hair
   for (let i = 0; i < 4; i++) { await page.locator('.cycler[data-key=accessory] .arrow[data-dir="1"]').click(); looks.add(await T(page, 'avatar-preview').evaluate((c) => c.toDataURL())); }
-  check(looks.size >= 7, 'beanie combines with every hat / gear option');
+  check(looks.size >= 7, 'gloves combines with every hat / gear option');
   for (let i = 0; i < 5 && !(await page.locator('[data-val-for=accessory]').textContent()).includes('PHONES'); i++) await page.locator('.cycler[data-key=accessory] .arrow[data-dir="1"]').click();
   await page.locator('.swatch[data-key=hairColor][data-val="2"]').click();
   await page.waitForTimeout(200);
@@ -164,13 +164,13 @@ try {
   await T(page, 'press-start').click();
   await modal.waitFor({ state: 'detached' });
   const savedAv = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)).player.avatar, RUN_KEY);
-  check(savedAv.skin === 7 && savedAv.beard === true && savedAv.beanie === true && savedAv.cape === true && JSON.stringify(savedAv).length <= 512, `the saved hero keeps skin + add-ons, well under the 512-character limit (${JSON.stringify(savedAv).length} chars)`);
+  check(savedAv.skin === 7 && savedAv.beard === true && savedAv.gloves === true && savedAv.cape === true && JSON.stringify(savedAv).length <= 512, `the saved hero keeps skin + add-ons, well under the 512-character limit (${JSON.stringify(savedAv).length} chars)`);
   check(await capeAt(page.locator('#heroAvatar')), 'in-game hero panel draws the cape');
 
   console.log('first moves');
   check((await text(page, 'hero-name')) === 'MAX', 'hero panel shows the nickname');
   check((await text(page, 'section-title')) === 'Insert Coin', 'adventure starts at the first section');
-  check(await stat(page, 'power') === 160 && await stat(page, 'energy') === 36 && await stat(page, 'tokens') === 5, 'starts with 160 Pixel Power, 36 Energy, 5 tokens');
+  check(await stat(page, 'power') === 60 && await stat(page, 'energy') === 36 && await stat(page, 'tokens') === 5, 'starts with 60 Pixel Power, 36 Energy, 5 tokens');
   check((await text(page, 'section-text')).includes('five arcade tokens'), 'the intro says FIVE tokens (matches the start)');
   check(await T(page, 'stars-panel').isVisible() && (await text(page, 'stars')) === '0' && (await text(page, 'stars-panel')).includes('NOT IN YOUR SCORE'), 'stats panel shows a BONUS STARS counter at 0 (marked: not in your score)');
   check((await text(page, 'tracker-count')) === '0/12', 'Zodiac Collection panel shows 0/12');
@@ -178,7 +178,7 @@ try {
   const keys = await page.evaluate(() => Object.keys(localStorage));
   check(keys.includes(RUN_KEY) && !keys.some((k) => k.startsWith('gb.profiles')), 'only the current run is autosaved (no player profiles)');
   await choose(page, 'Ask Auntie Lam');
-  check(await stat(page, 'power') === 159, 'each move uses 1 Pixel Power');
+  check(await stat(page, 'power') === 59, 'each move uses 1 Pixel Power');
   check((await text(page, 'move-count')) === 'MOVE 1', 'move counter shows MOVE 1');
   const where = await text(page, 'section-title');
   await page.reload();
@@ -319,7 +319,7 @@ try {
   await T(page, 'name-input').fill('kai');
   await T(page, 'press-start').click();
   await T(page, 'avatar-modal').waitFor({ state: 'detached' });
-  check((await text(page, 'hero-name')) === 'KAI' && await stat(page, 'power') === 160 && (await text(page, 'section-title')) === 'Insert Coin', 'START begins a fresh game with the new hero');
+  check((await text(page, 'hero-name')) === 'KAI' && await stat(page, 'power') === 60 && (await text(page, 'section-title')) === 'Insert Coin', 'START begins a fresh game with the new hero');
 
   console.log('win + score');
   net.mode = 'ok';
@@ -344,7 +344,7 @@ try {
   const post = net.requests.find((r) => r.method === 'POST');
   check((await text(page, 'post-result')).includes('SENT'), 'POST TO WORLD TOP 50 sends the score (mocked)');
   check(post && post.headers.apikey?.startsWith('sb_publishable_') && !post.headers.authorization, 'REST call uses the apikey header only (publishable key, no Bearer)');
-  check(post && JSON.parse(post.body).avatar.cape === true && JSON.parse(post.body).avatar.beanie === true && JSON.stringify(JSON.parse(post.body).avatar).length <= 512, 'posted avatar carries the add-ons (under 512 characters)');
+  check(post && JSON.parse(post.body).avatar.cape === true && JSON.parse(post.body).avatar.gloves === true && JSON.stringify(JSON.parse(post.body).avatar).length <= 512, 'posted avatar carries the add-ons (under 512 characters)');
   check(post && JSON.parse(post.body).nickname === 'MAX' && JSON.parse(post.body).score_pct === pct && JSON.parse(post.body).bonus_stars === 5, 'posted row has nickname + score (+ cosmetic bonus_stars)');
 
   console.log('best scores');
@@ -437,7 +437,7 @@ try {
 
   console.log('run away from Bolt-Bot');
   // round 0: before any attack
-  await inject(page, go('bot_battle') + 'st.stats.energy = 9; st.stats.power = 50;');
+  await inject(page, go('bot_battle') + 'for (const e of book.trackers[0].entries.slice(0, 7)) st.flags[e.flag] = true; st.stats.energy = 9; st.stats.power = 50;');
   check(await capeAt(page.locator('[data-you]')), 'the fight screen draws the hero with the cape');
   const flee = T(page, 'flee');
   check(await flee.isVisible() && (await flee.textContent()).includes('RUN AWAY! (back to the lookout, -3 Pixel Power)'), 'RUN AWAY button is visible and labelled before the first round');
@@ -463,7 +463,7 @@ try {
   await inject(page, go('bot_battle') + 'st.stats.power = 3;');
   check(!(await T(page, 'flee').textContent()).includes('⚠') && await page.getByTestId('warning').count() === 0, 'RUN AWAY with 3 Pixel Power left: no ⚠ warning in advance');
   // the old bypasses are now in-fight advantages, picked up at the Peak before the duel
-  await inject(page, go('peak_top') + "st.inventory.whistle = 1; st.inventory.egg_tart = 1; st.flags.goat_tips = true; st.stats.energy = 10;");
+  await inject(page, go('peak_top') + "for (const e of book.trackers[0].entries.slice(0, 7)) st.flags[e.flag] = true; st.inventory.whistle = 1; st.inventory.egg_tart = 1; st.flags.goat_tips = true; st.stats.energy = 10;");
   check(await page.locator('.choice', { hasText: 'Sky Tower' }).count() === 0 && await page.locator('.choice:not(.locked)', { hasText: 'BOSS duel' }).count() === 1, 'the Peak: the duel is the only way into the tower');
   await choose(page, 'Blow the Silver Whistle');
   check((await text(page, 'section-title')).length > 0 && await page.locator('.choice', { hasText: 'Challenge the dizzy robot' }).count() === 1, 'whistle: the robot goes dizzy, and the duel still has to be fought');
@@ -474,7 +474,7 @@ try {
   await choose(page, 'Climb to the high ledge');
   await choose(page, 'Leap down on Bolt-Bot');
   check((await text(page, 'enemy-hp')) === 'HP 6/10', 'the dizzy robot starts the duel with 6/10 HP');
-  check(await page.locator('[data-testid=boost].on').count() === 3, 'whistle, snack and high ground light up in the boost list');
+  check(await page.locator('[data-testid=boost].on').count() === 5, 'whistle, snack and high ground light up in the boost list');
   // the boss: tougher numbers on screen, and boosts for a well-prepared hero
   await inject(page, go('bot_battle') + 'st.stats.luck = 8;');
   check((await text(page, 'enemy-hp')) === 'HP 10/10' && (await text(page, 'combat')).includes('BOP -3') && (await text(page, 'your-attack')) === 'ATTACK 8', 'boss: Turbo Bolt-Bot HP 10, bops for 3; no boosts = your plain Luck');
@@ -489,6 +489,7 @@ try {
 
   console.log('right path / wrong path (gremlins in disguise)');
   await inject(page, go('happy_valley') + 'st.stats.power = 40; st.stats.energy = 12;');
+  await choose(page, 'Go see the Horse');
   const clip = page.locator('.choice:not(.locked)', { hasText: 'clip-clop' });
   const moo = page.locator('.choice:not(.locked)', { hasText: 'MOOOO' });
   check(await clip.count() === 1 && await moo.count() === 1, 'Happy Valley: two paths, the clip-clop horse and the horse that said MOOOO');
@@ -496,12 +497,13 @@ try {
   await page.evaluate(() => document.querySelectorAll('#toasts .toast').forEach((t) => t.remove()));
   await shot(page, '31-fork-happy-valley.png');
   await choose(page, 'MOOOO');
-  check((await text(page, 'section-title')) === 'Neigh-ver Mind!' && (await text(page, 'section-text')).includes('horse costume') && await stat(page, 'power') === 37 && (await text(page, 'tracker-count')) === '0/12', 'wrong path: a gremlin in a horse costume, -2 Pixel Power (plus the move), no zodiac animal');
+  check((await text(page, 'section-title')) === 'Neigh-ver Mind!' && (await text(page, 'section-text')).includes('horse costume') && await stat(page, 'power') === 36 && (await text(page, 'tracker-count')) === '0/12', 'wrong path: a gremlin in a horse costume, -2 Pixel Power (plus the move), no zodiac animal');
   check(await T(page, 'riddle').count() === 0 && await page.locator('.choice').count() === 1, 'no riddle there, just the way back');
   await page.waitForTimeout(400);
   await shot(page, '32-gremlin-reveal.png');
   await choose(page, 'Go back to the rail');
-  check((await text(page, 'section-title')) === 'Happy Valley' && await stat(page, 'power') === 36 && await moo.count() === 0, 'retreat: back at the fork (one more move), the unmasked gremlin is gone');
+  check((await text(page, 'section-title')) === 'Happy Valley' && await stat(page, 'power') === 35 && await moo.count() === 0, 'retreat: back at the fork (one more move), the unmasked gremlin is gone');
+  await choose(page, 'Go see the Horse');
   await choose(page, 'clip-clop');
   check((await text(page, 'section-title')) === 'The Real Horse' && (await text(page, 'tracker-count')) === '1/12', 'right path: the real Horse joins the Zodiac Collection');
 
@@ -589,6 +591,7 @@ try {
   await T(page, 'ending').waitFor();
   check((await text(page, 'trapped-title')) === 'TRAPPED IN THE GAME FOREVER' && (await text(page, 'trapped-cause')).includes('ENERGY'), 'a poison tick that takes your last Energy = trapped forever');
   await inject(page, go('happy_valley') + 'st.inventory.goggles = 1;');
+  await choose(page, 'Go see the Horse');
   const gog = page.locator('.choice', { hasText: 'MOOOO' });
   check(await gog.count() === 1 && (await gog.getAttribute('class')).includes('locked') && (await gog.textContent()).includes('GREMLIN IN DISGUISE') && await page.locator('.choice:not(.locked)', { hasText: 'clip-clop' }).count() === 1, 'Gremlin Goggles: the gremlin path is locked and flagged; the real horse is open');
   check(await gog.locator('.need.own').count() === 1 && await page.locator('.need:not(.own)').count() === 0, 'locked hints that already speak for themselves get no extra "NEEDS:" prefix');
