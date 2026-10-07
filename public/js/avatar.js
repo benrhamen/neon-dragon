@@ -10,11 +10,11 @@ export const OUTFITS = ['#ff2e88', '#29e7ff', '#3dff6e', '#ffd23f', '#8a3ffc', '
 export const HAIR_STYLES = ['short', 'spiky', 'long', 'bun', 'pigtails'];
 export const ACCESSORIES = ['none', 'cap', 'glasses', 'headphones', 'crown'];
 // optional extras: each one is an independent on/off switch (stored as true, or left out)
-export const EXTRAS = ['beard', 'beanie', 'cape'];
+export const EXTRAS = ['beard', 'cape', 'gloves', 'magicBoots'];
 export const LABELS = {
   short: 'SHORT', spiky: 'SPIKY', long: 'LONG', bun: 'BUN', pigtails: 'PIGTAILS',
   none: 'NONE', cap: 'CAP', glasses: 'GLASSES', headphones: 'PHONES', crown: 'CROWN',
-  beard: 'BEARD', beanie: 'BEANIE', cape: 'CAPE',
+  beard: 'BEARD', cape: 'CAPE', gloves: 'GLOVES', magicBoots: 'MAGIC BOOTS',
 };
 
 export const PRESETS = [
@@ -62,9 +62,10 @@ const ACC = {
 
 // beard: sideburns, a bushy jaw around the mouth and a little point on the collar
 const BEARD = { 7: '....D......D....', 8: '....DDD..DDD....', 9: '.....DDDDDD.....', 10: '.......DD.......' };
-// beanie: pulled down to the eyebrows, with a pom-pom and a folded cuff. Hair under it is
-// hidden down to the cuff; hair that hangs lower (long, pigtails) still shows.
-const BEANIE = { 1: '.......ww.......', 2: '.....NNNNNN.....', 3: '....NNNNNNNN....', 4: '...NNNNNNNNNN...', 5: '...KKKKKKKKKK...' };
+// gloves: cartoon gloves over the hero's two hands
+const GLOVES = { 11: '...w........w...', 12: '...w........w...' };
+// magic boots: glowing boots, same footprint as the normal pair
+const MAGIC_BOOTS = { 15: '...ZZZZ..ZZZZ...' };
 // cape: drawn BEHIND the hero (only on empty pixels), flaring out to the floor
 const CAPE = { 10: '...V........V...', 11: '..V..........V..', 12: '..V..........V..', 13: '..VV........VV..', 14: '..VVV..VV..VVV..', 15: '.VVV...VV...VVV.' };
 
@@ -102,10 +103,8 @@ export function avatarGrid(raw) {
   if (a.cape) overlay(CAPE, true);
   overlay(HAIR[a.hairStyle] || HAIR.short);
   if (a.beard) overlay(BEARD);
-  if (a.beanie) {
-    for (let y = 0; y <= 4; y++) grid[y] = grid[y].map((ch, x) => (ch === 'H' ? BASE[y][x] : ch));
-    overlay(BEANIE);
-  }
+  if (a.gloves) overlay(GLOVES);
+  if (a.magicBoots) overlay(MAGIC_BOOTS);
   overlay(ACC[a.accessory] || {});
   return grid;
 }
@@ -131,9 +130,8 @@ export function drawAvatar(canvas, raw) {
     Y: '#ffd23f',
     R: '#ff3355',
     D: shade(HAIR_COLORS[a.hairColor] ?? HAIR_COLORS[0], -0.15),
-    N: a.outfit === 6 ? '#c4183c' : outfit, // a white outfit gets a red beanie (white would vanish)
-    K: a.outfit === 6 ? '#f5f5f5' : shade(outfit, 0.45),
-    w: '#f5f5f5',
+    w: '#f5f5f5', // gloves
+    Z: '#9b5cff', // magic boots glow
     V: a.outfit === 6 ? '#c4183c' : shade(outfit, -0.45),
   };
   avatarGrid(a).forEach((row, y) => row.forEach((ch, x) => {
