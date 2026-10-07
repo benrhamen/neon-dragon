@@ -68,7 +68,7 @@ export function interpolate(text, ctx = {}) {
 }
 
 // ---------- new game ----------
-export function newGame(book, { rng = Math.random, playerName = '', riddleSeed = null, bonusEffects = null, bonusLabel = '' } = {}) {
+export function newGame(book, { rng = Math.random, playerName = '', riddleSeed = null } = {}) {
   const state = {
     saveVersion: SAVE_VERSION,
     bookId: book.metadata.id || book.metadata.title,
@@ -113,9 +113,8 @@ export function newGame(book, { rng = Math.random, playerName = '', riddleSeed =
     const qty = typeof entry === 'string' ? 1 : entry.quantity ?? 1;
     state.inventory[id] = (state.inventory[id] || 0) + qty;
   }
+  state.scoreReference = scoreReference(book, state);
   const messages = [];
-  // a one-time start bonus (e.g. a redeemed PLAY AGAIN voucher: +2 tokens)
-  if (bonusEffects?.length) { applyEffects(book, state, bonusEffects, messages); state.bonus = bonusLabel || 'bonus'; }
   enterSection(book, state, book.start, messages, rng);
   return { state, messages };
 }
@@ -183,6 +182,13 @@ export function applyEffects(book, state, effects, messages = []) {
       const before = state.stats[e.stat] ?? 0;
       let after = before;
       const factor = e.halve ? 0.5 : e.multiply;
+      if ('maxAdd' in e) {
+        state.statMax ||= {};
+        const oldMax = state.statMax[e.stat] ?? book.stats[e.stat].initial;
+        state.statMax[e.stat] = oldMax + e.maxAdd;
+        messages.push({ type: 'stat', stat: e.stat, delta: 0, text: `${book.stats[e.stat].name} capacity +${e.maxAdd}: ${state.statMax[e.stat]} hearts` });
+        continue;
+      }
       if ('add' in e) after = before + e.add;
       else if ('set' in e) after = e.set;
       else if (e.restore) after = statBounds(book, state, e.stat).max;
@@ -722,6 +728,7 @@ export function useItem(book, state, itemId, rng = Math.random) {
 // optimal path scores exactly 100%. The reference can depend on a rolled starting stat (Luck)
 // so that every starting roll can still reach 100%.
 export function scoreReference(book, state) {
+  if (state.scoreReference) return state.scoreReference;
   const ref = book.scoring?.reference;
   if (typeof ref === 'number') return ref;
   if (!ref) return null;
@@ -862,4 +869,4 @@ export function lintBook(book) {
   const endings = Object.entries(S).filter(([, s]) => s.ending);
   if (!endings.some(([, s]) => s.ending.type === 'win')) warnings.push('book has no winning ending');
   return { errors, warnings, reachable: seen.size, total: Object.keys(S).length, endings: endings.map(([id, s]) => ({ id, type: s.ending.type })) };
-}
+                              }
