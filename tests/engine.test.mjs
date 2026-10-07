@@ -27,11 +27,11 @@ const seven = (s) => { for (const z of book.trackers[0].entries.slice(0, 7)) s.f
 const low = () => 0; // dice always roll 1s
 const high = () => 0.99; // dice always roll 6s
 
-test('book is valid and lint-clean, with 131 sections and 11 endings', () => {
+test('book is valid and lint-clean, with 143 sections and 11 endings', () => {
   const lint = E.lintBook(book);
   assert.deepEqual(lint.errors, []);
   assert.deepEqual(lint.warnings, []);
-  assert.equal(Object.keys(book.sections).length, 131);
+  assert.equal(Object.keys(book.sections).length, 143);
   assert.equal(lint.endings.length, 11);
 });
 
@@ -891,7 +891,7 @@ const forkState = (forkSec, gid) => { const match = gid || Object.entries(FORKS)
 const visibleTo = (s, target) => E.availableChoices(book, s).filter((c) => !c.hidden && c.target === target);
 
 test('forks: every zodiac animal and riddle character (11 animals + Liv) has a right path and a gremlin path', () => {
-  const gremlins = Object.keys(book.sections).filter((id) => id.startsWith('gremlin_') && id !== 'gremlin_alley' && id !== 'gremlin_prince');
+  const gremlins = Object.keys(book.sections).filter((id) => id.startsWith('gremlin_') && !id.endsWith('_2') && id !== 'gremlin_alley' && id !== 'gremlin_prince');
   assert.deepEqual(gremlins.sort(), Object.keys(FORKS).sort(), '12 gremlins in disguise');
   // every section where an animal is met (zodiac flag set on arrival or after its riddle) or a riddle
   // is asked is reached only through a fork's right path (or a "visit again" once already met)
@@ -920,7 +920,7 @@ test('forks are fair: each has a visible clue (true animal detail vs. a gremlin 
     assert.doesNotMatch(right.label + wrong.label, /gremlin|real|fake|trap/i, `${gid}: the labels don't just say which is which`);
     // the story text describes both, so the clue is in the scene too
     const text = E.sectionParagraphs(book, s, book.sections[meetId(gid)]).join(' ');
-    assert.match(text, /two|one.*other/i, `${forkSec}: the scene describes both options`);
+    assert.match(text, /three|one.*other/i, `${forkSec}: the scene describes both options`);
     sides.push(ch.indexOf(right) < ch.indexOf(wrong) ? 'right-first' : 'wrong-first');
   }
   const first = sides.filter((x) => x === 'right-first').length;
@@ -1265,4 +1265,35 @@ test('final riddle varies between runs and stays stable within a saved run', () 
     const id = s.current; const loaded = JSON.parse(JSON.stringify(s)); assert.equal(loaded.current, id);
   }
   assert.deepEqual([...seen].sort(), [...book.sections.riddle.pickRandom].sort());
+});
+
+test('v2.5.1: 12 scene-based entries, exactly one real option and two separate disguised gremlins', () => {
+  for (const [gid, [parent, real]] of Object.entries(FORKS)) {
+    const mid = meetId(gid), gid2 = gid + '_2';
+    const entry = book.sections[parent].choices.find(c => c.target === mid);
+    assert.ok(entry && !/go see|go and see/i.test(entry.label), `${mid}: location entry`);
+    const s = forkState(parent, gid);
+    const options = E.availableChoices(book, s).filter(c => !c.hidden && c.label !== 'Head back');
+    assert.equal(options.length, 3, `${mid}: three options`);
+    assert.equal(options.filter(c => c.target === real).length, 1);
+    assert.equal(options.filter(c => c.target.startsWith('gremlin_')).length, 2);
+    for (const bad of [gid, gid2]) {
+      const run = forkState(parent, gid), before = {...run.stats};
+      E.choose(book, run, visibleTo(run, bad)[0].index, () => 0.5);
+      assert.equal(run.current, bad);
+      assert.equal(E.trackerProgress(book, run)[0].met.length, 0);
+      assert.ok(!run.pending);
+      assert.ok(run.stats.energy === before.energy-2 || run.stats.power === before.power-3);
+      const target = book.sections[bad].choices[0].target;
+      E.choose(book, run, E.availableChoices(book, run).find(c => !c.hidden && c.target === target).index, () => 0.5);
+      at(run, mid);
+      assert.equal(visibleTo(run, bad).length, 0, `${bad}: only visited decoy disappears`);
+      assert.equal(visibleTo(run, bad === gid ? gid2 : gid).length, 1, `${bad}: other decoy remains`);
+    }
+    s.inventory.goggles = 1;
+    for (const bad of [gid, gid2]) {
+      const c = visibleTo(s, bad)[0]; assert.ok(c && !c.available && /GREMLIN/.test(c.need));
+    }
+    assert.ok(visibleTo(s, real)[0].available, `${mid}: real route open with goggles`);
+  }
 });
