@@ -2,14 +2,9 @@ import * as E from './engine.js';
 import { drawAvatar, drawSprite, avatarGrid, SKINS, SKIN_NAMES, HAIR_COLORS, OUTFITS, HAIR_STYLES, ACCESSORIES, EXTRAS, LABELS, defaultAvatar, randomAvatar, normalizeAvatar } from './avatar.js';
 import { sfx, setSound, soundOn } from './sound.js';
 import * as LB from './leaderboard.js';
-import { makeVoucherCode, normalizeVoucher, VOUCHER_BONUS, VOUCHER_BONUS_TEXT } from './voucher.js';
 
 const BOOK_URL = 'data/neon-dragon.json';
 const SETTINGS_KEY = 'gb.settings.v1';
-const VOUCHERS_USED_KEY = 'gb.vouchers.used.v1'; // PLAY AGAIN voucher codes already redeemed on this device
-const usedVouchers = () => { try { return JSON.parse(localStorage.getItem(VOUCHERS_USED_KEY)) || []; } catch { return []; } };
-const VOUCHERS_ISSUED_KEY = 'gb.vouchers.issued.v1'; // tickets won on this device (so a reload can't lose one)
-const issuedVouchers = () => { try { return JSON.parse(localStorage.getItem(VOUCHERS_ISSUED_KEY)) || []; } catch { return []; } };
 const params = new URLSearchParams(location.search);
 const rng = E.makeRng(params.get('seed'));
 const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || params.has('nomotion');
@@ -71,6 +66,8 @@ async function boot() {
       && book.sections[saved.state.current] && !saved.state.ended) {
     player = saved.player;
     state = saved.state;
+    // Keep existing runs and their original health ceiling / scoring scale.
+    if (!state.scoreReference && state.bookVersion !== book.metadata.version) state.scoreReference = 935 + 10 * (state.statMax?.luck || 7);
     beginRender();
     toast(`WELCOME BACK, ${player.name}!`, 'info');
   } else {
@@ -487,19 +484,11 @@ function renderEnding(box) {
     </div>`;
   wireEndingButtons(box);
   if (score) finishScore(box, score);
-  if (kind === 'win' && z?.complete) { $('[data-testid=print-voucher]', box)?.addEventListener('click', () => window.print()); sfx.win(); }
+  if (kind === 'win' && z?.complete) sfx.win();
 }
 
-// The hidden all-12-zodiac route: LEGEND! with fireworks, and a PLAY AGAIN VOUCHER ticket. The code
-// is made once and kept with the finished run, so reloading shows the same ticket.
+// Celebrate all twelve animals, with ordinary replay and no voucher.
 function legendHTML(z) {
-  if (!state.voucher) {
-    const d = new Date();
-    state.voucher = { code: makeVoucherCode(), name: player.name, date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` };
-    persist();
-    try { localStorage.setItem(VOUCHERS_ISSUED_KEY, JSON.stringify([...issuedVouchers(), state.voucher].slice(-20))); } catch { /* storage full: the ticket is still on screen */ }
-  }
-  const v = state.voucher;
   const fw = Array.from({ length: 7 }, (_, i) => `<i class="fw fw${i}"></i>`).join('');
   return `
     <div class="legend" data-testid="legend">
@@ -507,17 +496,7 @@ function legendHTML(z) {
       <div class="legend-word" data-text="LEGEND!">LEGEND!</div>
       <div class="legend-sub">ALL ${z.total} ZODIAC ANIMALS · ${z.met.length}/${z.total}</div>
     </div>
-    <div class="voucher" data-testid="voucher">
-      <div class="v-holes" aria-hidden="true"></div>
-      <div class="v-head">★ PLAY AGAIN VOUCHER ★</div>
-      <div class="v-game">NEON DRAGON OF PIXEL HARBOUR</div>
-      <div class="v-row"><span>HERO</span><b data-testid="voucher-name">${esc(v.name)}</b></div>
-      <div class="v-row"><span>DATE</span><b data-testid="voucher-date">${esc(v.date)}</b></div>
-      <div class="v-row"><span>FOR</span><b>ALL ${z.total} ZODIAC · LEGEND!</b></div>
-      <div class="v-code" data-testid="voucher-code">${esc(v.code)}</div>
-      <div class="v-small">TYPE THIS CODE IN THE HERO CREATOR BEFORE YOUR NEXT GAME FOR ${VOUCHER_BONUS_TEXT}. ONE USE ONLY.</div>
-    </div>
-    <div class="voucher-actions"><button class="btn btn-small" data-testid="print-voucher">🖨 PRINT VOUCHER</button><span class="dim">OR TAKE A SCREENSHOT!</span></div>`;
+    `;
 }
 
 function endStarsHTML() {
@@ -671,7 +650,7 @@ function renderStats() {
           ${def.display === 'number' ? '' : `<div class="bar"><i style="width:${pct}%"></i></div>`}${note}
         </div>`);
     }
-    mini.push(`<span class="mini-stat ${cls} ${def.display === 'timer' && v <= 10 ? 'low' : ''}" style="--c:${def.color || '#29e7ff'}">${esc(def.short || def.name)} <b>${v}</b></span>`);
+    mini.push(`<span class="mini-stat ${cls} ${def.display === 'timer' && v <= 10 ? 'low' : ''}" style="--c:${def.color || '#29e7ff'}">${esc(def.short || def.name)} <b>${v}${id === 'energy' ? '/' + max : ''}</b></span>`);
   }
   // timed status effects (e.g. POISONED x5): a badge with the moves left, ticking down each move
   for (const [id, left] of Object.entries(state.status || {})) {
@@ -878,10 +857,7 @@ function openCreator() {
         <input id="cName" class="name-input" maxlength="${LB.NICK_MAX}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NICKNAME" data-testid="name-input" value="">
         <div class="nick-tip" data-testid="nick-tip">Use a nickname, not your real name. Max ${LB.NICK_MAX} letters.</div>
         <div class="nick-problem" id="cProblem" data-testid="nick-problem"></div>
-        <label class="ctl-label" for="cVoucher">GOT A PLAY AGAIN VOUCHER? <small>(OPTIONAL)</small></label>
-        <div class="voucher-row"><input id="cVoucher" class="name-input voucher-input" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ND-XXXX-XXXX" data-testid="voucher-input"><button class="btn btn-small" id="cRedeem" data-testid="voucher-redeem">REDEEM</button></div>
-        <div class="voucher-msg" id="cVMsg" data-testid="voucher-msg"></div>
-        ${(() => { const v = issuedVouchers().reverse().find((x) => !usedVouchers().includes(x.code)); return v ? `<button class="link-btn" id="cSavedV" data-code="${esc(v.code)}" data-testid="voucher-saved">USE YOUR SAVED VOUCHER ${esc(v.code)} (${esc(v.name)})</button>` : ''; })()}
+
       </div>
     </div>
     <div class="creator-foot">
@@ -915,35 +891,16 @@ function openCreator() {
   nameIn.addEventListener('input', () => { const c = nameIn.value.toUpperCase(); if (c !== nameIn.value) nameIn.value = c; refresh(); });
   nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !startBtn.disabled) startBtn.click(); });
   $('#cScores', m).addEventListener('click', () => openScores({ back: openCreator }));
-  // PLAY AGAIN voucher (earned on the LEGEND! finale): checked here, used up when the game starts
-  let voucher = null;
-  const vIn = $('#cVoucher', m), vMsg = $('#cVMsg', m);
-  const redeem = () => {
-    const code = normalizeVoucher(vIn.value);
-    voucher = null;
-    vMsg.className = 'voucher-msg bad';
-    if (!vIn.value.trim()) vMsg.textContent = '';
-    else if (!code) vMsg.textContent = 'THAT CODE ISN\'T VALID. CHECK THE TICKET!';
-    else if (usedVouchers().includes(code)) vMsg.textContent = 'THAT VOUCHER HAS ALREADY BEEN USED.';
-    else { voucher = code; vIn.value = code; vMsg.className = 'voucher-msg ok'; vMsg.textContent = `✓ VOUCHER OK! ${VOUCHER_BONUS_TEXT} WHEN YOU PRESS START`; sfx.coin(); }
-  };
-  $('#cRedeem', m).addEventListener('click', redeem);
-  $('#cSavedV', m)?.addEventListener('click', (ev) => { vIn.value = ev.currentTarget.dataset.code; redeem(); });
-  vIn.addEventListener('input', () => { voucher = null; vMsg.textContent = ''; });
-  vIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') redeem(); });
   startBtn.addEventListener('click', () => {
     const name = LB.cleanNickname(nameIn.value);
     if (!name || LB.nicknameProblem(name)) return;
     player = { name, avatar: normalizeAvatar(av) };
-    const useVoucher = voucher && !usedVouchers().includes(voucher);
-    state = E.newGame(book, { rng, playerName: name, riddleSeed: params.get('riddleSeed') ? +params.get('riddleSeed') : null, ...(useVoucher ? { bonusEffects: VOUCHER_BONUS, bonusLabel: `voucher ${voucher}` } : {}) }).state;
-    if (useVoucher) localStorage.setItem(VOUCHERS_USED_KEY, JSON.stringify([...usedVouchers(), voucher]));
+    state = E.newGame(book, { rng, playerName: name, riddleSeed: params.get('riddleSeed') ? +params.get('riddleSeed') : null }).state;
     closeModal();
     persist();
     beginRender();
     sfx.start();
     toast(`GET READY, ${name}!`, 'good');
-    if (useVoucher) toast(`VOUCHER REDEEMED: ${VOUCHER_BONUS_TEXT}!`, 'good');
   });
   refresh();
   setTimeout(() => nameIn.focus({ preventScroll: true }), 50);
