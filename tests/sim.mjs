@@ -120,7 +120,7 @@ function optimistic(c, acc) {
   return true; // notHasItem, stat checks, not(...): could be true
 }
 function edges(sec) {
-  const out = [];
+  const out = (sec.pickRandom || []).map(target => ({ target, eff: [] }));
   for (const ch of sec.choices || []) out.push({ target: ch.target, cond: ch.conditions, eff: [ch.effects] });
   if (sec.test) for (const o of [sec.test.success, sec.test.failure, ...(sec.test.type === 'gamble' ? [E.sevenOutcome(sec.test)] : [])]) out.push({ target: o.target, eff: [o.effects] });
   if (sec.combat) { out.push({ target: sec.combat.win.target, eff: [sec.combat.win.effects] }); out.push({ target: sec.combat.lose.target, eff: [sec.combat.lose.effects] }); if (sec.combat.flee) out.push({ target: sec.combat.flee.target, eff: [sec.combat.flee.effects] }); }
