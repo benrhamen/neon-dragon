@@ -99,20 +99,9 @@ export async function submitGlobal(entry) {
     rank: String(entry.rank || '').slice(0, 24),
     zodiac_count: Math.max(0, Math.min(12, entry.zodiac_count | 0)),
   };
-  if (starsColumn) body.bonus_stars = Math.max(0, Math.min(999, entry.bonus_stars | 0));
-  const post = (b) => call('scores', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(b) });
-  try {
-    await post(body);
-  } catch (e) {
-    if (e.status !== 400) throw e;
-    // Older tables: no bonus_stars column yet, and/or zodiac_count only allows 0-11 (made before the
-    // Dragon became the 12th animal). Retry with what such a table accepts rather than fail.
-    const { bonus_stars: _s, ...plain } = body;
-    if ('bonus_stars' in body) starsColumn = false;
-    try { await post(plain); } catch (e2) {
-      if (e2.status !== 400 || plain.zodiac_count !== 12) throw e2;
-      await post({ ...plain, zodiac_count: 11 });
-    }
-  }
+  // Never "repair" a server rejection by dropping stars or changing 12 animals to 11.
+  // Reading legacy rows is safe; writing a lossy score is not.
+  body.bonus_stars = Math.max(0, Math.min(999, entry.bonus_stars | 0));
+  await call('scores', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(body) });
   return true;
 }
