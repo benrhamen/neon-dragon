@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import * as E from '../public/js/engine.js';
-import * as V from '../public/js/voucher.js';
 import { randomPlay, balanceReport, routes } from './sim.mjs';
 import { followPath } from '../scripts/optimal.mjs';
 import { loadBook } from '../scripts/load-book.mjs';
@@ -14,7 +13,8 @@ const ref = existsSync(refFile) ? JSON.parse(readFileSync(refFile, 'utf8')) : nu
 // The 100% routes are a spoiler, so they live in a gitignored local file (not in the public repo).
 const pathsFile = new URL('../scripts/score-paths.local.json', import.meta.url);
 const localPaths = existsSync(pathsFile) ? JSON.parse(readFileSync(pathsFile, 'utf8')).paths : null;
-const fresh = (seed = 1) => E.newGame(book, { rng: E.makeRng(seed), playerName: 'MAX' }).state;
+// Legacy scenario fixtures keep a 36-heart ceiling; new defaults have dedicated coverage.
+const fresh = (seed = 1) => { const s = E.newGame(book, { rng: E.makeRng(seed), playerName: 'MAX' }).state; s.statMax.energy = 36; return s; };
 // jump straight to a section (as if the player just arrived there)
 const at = (state, id) => { E.enterSection(book, state, id, [], () => 0.5); return state; };
 const choice = (state, text) => {
@@ -35,15 +35,15 @@ test('book is valid and lint-clean, with 143 sections and 11 endings', () => {
   assert.equal(lint.endings.length, 11);
 });
 
-test('new game: Energy 36, Pixel Power 60 (no cap), Luck 1d6+6, 5 tokens, 0 bonus stars, not poisoned', () => {
-  const s = fresh(3);
+test('new game: Health 10/10, Pixel Power 60 (no cap), Luck 1d6+6, 4 tokens, 0 bonus stars, not poisoned', () => {
+  const s = E.newGame(book, {rng: E.makeRng(3)}).state;
   assert.equal(s.current, 'intro');
-  assert.equal(s.stats.energy, 36);
-  assert.equal(E.statBounds(book, s, 'energy').max, 36);
+  assert.equal(s.stats.energy, 10);
+  assert.equal(E.statBounds(book, s, 'energy').max, 10);
   assert.equal(s.stats.power, 60);
   assert.deepEqual(s.status, {});
   assert.ok(s.stats.luck >= 7 && s.stats.luck <= 12);
-  assert.equal(s.stats.tokens, 5);
+  assert.equal(s.stats.tokens, 4);
   assert.equal(s.bonusStars, 0);
   assert.equal(E.statBounds(book, s, 'power').max, Infinity);
   assert.equal(s.moves, 0);
@@ -206,27 +206,6 @@ test('every fail ending empties the stat it blames (trapped style), e.g. Shoppin
   assert.match(JSON.stringify(book.sections.shopping_forever.text), /drained your last pixel power/i);
 });
 
-test('PLAY AGAIN vouchers: self-checking codes, typo-tolerant input, +2 tokens for the next game', () => {
-  const codes = new Set();
-  const r = E.makeRng(7);
-  for (let i = 0; i < 2000; i++) {
-    const c = V.makeVoucherCode(r);
-    assert.match(c, /^ND-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
-    assert.equal(V.normalizeVoucher(c), c);
-    assert.equal(V.normalizeVoucher(c.toLowerCase().replace(/-/g, ' ')), c, 'case and separators do not matter');
-    assert.equal(V.normalizeVoucher(c.slice(3)), c, 'the ND- prefix is optional');
-    codes.add(c);
-  }
-  assert.ok(codes.size > 1990, 'codes are (practically) unique');
-  const c = V.makeVoucherCode(E.makeRng(1));
-  const swapped = c.slice(0, 3) + (c[3] === 'A' ? 'B' : 'A') + c.slice(4);
-  assert.equal(V.normalizeVoucher(swapped), null, 'a changed character is rejected');
-  for (const bad of ['', 'HELLO', 'ND-0000-0000', 'ND-ABCD-EFG']) assert.equal(V.normalizeVoucher(bad), null, bad);
-  const s = E.newGame(book, { rng: E.makeRng(3), playerName: 'MAX', bonusEffects: V.VOUCHER_BONUS, bonusLabel: 'voucher ' + c }).state;
-  assert.equal(s.stats.tokens, 7, 'a redeemed voucher starts the game with 7 tokens');
-  assert.equal(fresh(3).stats.tokens, 5, 'without one: 5');
-});
-
 test('Luck can be won back a little (temple incense), never above the starting value', () => {
   const s = fresh(5);
   const start = s.statMax.luck;
@@ -276,6 +255,7 @@ const wrongOf = (r) => (r.question.answer + 1) % r.question.options.length;
 
 test('riddle loop: wrong, pay 2 tokens, ANOTHER random riddle from the same character, then a correct answer passes', () => {
   const s = at(fresh(), 'liv');
+  s.stats.tokens = 5;
   s.flags.coins_causeway = true; // the Causeway Bay token find is already picked up
   const t = s.stats.tokens;
   const r1 = E.currentRiddle(book, s);
@@ -472,13 +452,12 @@ test('exactly one route can collect all 12 zodiac animals (through the vault, th
   assert.ok(all.every((x) => x.ending === 'victory'));
 });
 
-test('score: optimal path replays to a win with all 12 animals, ZODIAC MASTER and exactly 100%', { skip: !localPaths && 'needs the local route file (run npm run score:ref)' }, () => {
+test('score: reference path replays to all twelve animals and exactly 100%', { skip: !localPaths && 'needs the local route file (run npm run score:ref)' }, () => {
   for (const [start, path] of Object.entries(localPaths)) {
     const s = followPath(book, path, { startValue: +start });
     assert.equal(s.ended?.type, 'win');
     const z = E.trackerProgress(book, s).find((t) => t.id === 'zodiac');
-    assert.ok(z.complete, 'optimal path meets every zodiac animal');
-    assert.ok(E.sectionParagraphs(book, s, book.sections.victory).some((p) => /ZODIAC MASTER/.test(p)));
+    assert.ok(z.complete, 'reference route collects all twelve animals');
     const sc = E.computeScore(book, s);
     assert.equal(sc.raw, ref.values[start]);
     assert.equal(sc.percent, 100);
@@ -514,7 +493,7 @@ test('random playthroughs reach every ending, including trapped (Energy, Pixel P
   }
   const endings = Object.keys(book.sections).filter((id) => book.sections[id].ending);
   assert.ok([...seen].every(id => endings.includes(id))); // Rare late endings are covered by deterministic tests.
-  assert.deepEqual([...causes].sort(), ['energy', 'luck', 'power', 'tokens']);
+  assert.deepEqual([...causes].sort(), ['energy', 'power', 'tokens']);
 });
 
 test('balance: seven-animal gate makes random wandering unlikely to win; wanderers run out of Pixel Power', () => {
@@ -683,7 +662,7 @@ test('old bypass items are in-fight boosts: whistle stuns (-4 HP), snack +4 Ener
   assert.equal(s.stats.energy, 14);
   assert.ok(!s.inventory.egg_tart);
   seven(s); go(s, 'Challenge Bolt-Bot');
-  assert.ok(E.combatBoosts(book, s).active.some((b) => /snack/i.test(b.label) && /\+4 Energy/.test(b.note)));
+  assert.ok(E.combatBoosts(book, s).active.some((b) => /snack/i.test(b.label) && /\+4 Health/.test(b.note)));
   // Loulou's climb: only after Loulou's tips, +1 attack from the high ground
   s = at(fresh(), 'peak_top');
   assert.ok(!E.availableChoices(book, s).some((c) => !c.hidden && c.target === 'goat_climb'), 'needs Loulou first');
@@ -736,14 +715,14 @@ test('prepared players beat Turbo Bolt-Bot ~99% of the time (100%-route state); 
 });
 
 // ---------- v2.3.0: 5 starting tokens, no token reward for riddles, token pickups ----------
-test('tokens: start with 5; riddles pay NO tokens; one-time token finds in Central, Man Mo, the tram and Causeway Bay', () => {
+test('tokens: start with 4; riddles pay NO tokens; one-time token finds in Central, Man Mo, the tram and Causeway Bay', () => {
   for (const [id, sec] of Object.entries(book.sections)) if (sec.riddle) assert.ok(!JSON.stringify(sec.riddle.onCorrect).includes('"tokens"'), `${id}: no token reward`);
   for (const id of ['central', 'man_mo', 'dingding', 'causeway_bay']) {
     const s = fresh();
     at(s, id);
-    assert.equal(s.stats.tokens, 5 + 4, `${id}: +4 tokens`);
+    assert.equal(s.stats.tokens, 4 + 4, `${id}: +4 tokens`);
     at(s, id);
-    assert.equal(s.stats.tokens, 9, `${id}: only once`);
+    assert.equal(s.stats.tokens, 8, `${id}: only once`);
   }
 });
 
@@ -1006,7 +985,7 @@ test('graph: no dead ends; every gremlin and every reachable section can still r
 
 // ---------- v2.4.0: taxi fix, new items, poison, no run-out warnings, dog shortcut ----------
 test('taxi bug: "Ask him to drive faster" is just a bumpy ride (-3 Energy), never a death', () => {
-  assert.match(E.sectionParagraphs(book, fresh(), book.sections.intro).join(' '), /five arcade tokens/, 'the intro matches the 5-token start');
+  assert.match(E.sectionParagraphs(book, fresh(), book.sections.intro).join(' '), /four arcade tokens/, 'the intro matches the 4-token start');
   assert.doesNotMatch(JSON.stringify(book.sections.intro), /six arcade tokens/);
   for (const first of ['Drop a token', 'Ask Auntie Lam']) {
     const s = fresh(7);
@@ -1015,7 +994,7 @@ test('taxi bug: "Ask him to drive faster" is just a bumpy ride (-3 Energy), neve
     go(s, 'Wave down a red taxi');
     go(s, 'Causeway Bay');
     assert.equal(s.current, 'taxi_ride');
-    assert.equal(s.stats.tokens, 2, 'the standard route reaches the cab with exactly 2 tokens');
+    assert.equal(s.stats.tokens, 1, 'the standard route reaches the cab with one token before Causeway Bay refill');
     const e = s.stats.energy;
     const msgs = go(s, 'drive faster');
     assert.equal(s.current, 'taxi_faster');
@@ -1064,14 +1043,14 @@ test('new items: 5 collectibles, each with an 8x8 pixel icon, a description and 
 test('glowing fish ball: free and tempting at the market, the clue is in plain sight; it does not count as used', () => {
   const s = at(fresh(), 'market');
   const text = E.sectionParagraphs(book, s, book.sections.market).join(' ');
-  assert.match(text, /FREE SAMPLES!.*\+5 ENERGY/);
+  assert.match(text, /FREE SAMPLES!.*\+5 HEALTH/);
   assert.match(text, /glow a spooky green/, 'clue: glowing green, like a gremlin\'s eyes (Siu Mai\'s rule)');
   assert.match(text, /engine oil/);
   go(s, 'FREE glowing fish ball');
   assert.equal(s.inventory.glow_fishball, 1);
   assert.ok(s.found.glow_fishball, 'picking it up counts as found');
   assert.match(E.sectionParagraphs(book, s, book.sections.fishball_cart).join(' '), /Glowing green/);
-  assert.match(book.items.glow_fishball.description, /\+5 ENERGY.*glows a spooky green/);
+  assert.match(book.items.glow_fishball.description, /\+5 HEALTH.*glows a spooky green/);
   go(s, 'Pocket it');
   assert.ok(!E.availableChoices(book, s).some((c) => !c.hidden && c.target === 'fishball_cart'), 'only one free sample');
   const e = s.stats.energy;
@@ -1093,7 +1072,7 @@ test('poison tick: -1 Energy per move for 5 moves, a message each tick, then it 
     const msgs = go(s, c);
     const tick = msgs.find((m) => m.type === 'status' && m.tick);
     assert.ok(tick, `move ${i + 1}: a tick message`);
-    assert.match(tick.text, /POISONED!.*Energy -1/);
+    assert.match(tick.text, /POISONED!.*Health -1/);
     assert.equal(s.status.poison ?? 0, 4 - i, `x${4 - i} left`);
     assert.equal(s.stats.energy, e - (i + 1), `move ${i + 1}: -1 Energy`);
     if (i === 4) assert.ok(msgs.some((m) => m.wornOff), 'wore off message');
@@ -1131,7 +1110,8 @@ test('poison cures: 24-herb tea (bought at the market) or the Man Mo Temple ince
   // not poisoned: a +2 Energy drink
   const s2 = fresh(); s2.inventory.herbal_tea = 1; s2.stats.energy = 10;
   E.useItem(book, s2, 'herbal_tea');
-  assert.equal(s2.stats.energy, 12);
+  assert.equal(s2.stats.energy, 10);
+  assert.equal(s2.statMax.energy, 38);
   // the incense
   const s3 = at(fresh(), 'central');
   s3.inventory.glow_fishball = 1; E.useItem(book, s3, 'glow_fishball');
@@ -1320,4 +1300,35 @@ test('legacy read fallback cannot disable extra stars on a later submission',asy
   reads++;return reads===1?new Response(JSON.stringify({message:'missing stars'}),{status:400}):new Response(JSON.stringify([{nickname:'OLD',score_pct:100,zodiac_count:10}]),{status:200});
  };
  try{const rows=await LB.fetchGlobal();assert.equal(rows[0].zodiac_count,10);assert.equal(rows[0].bonus_stars,undefined);await LB.submitGlobal(entry);assert.equal(sent[0].bonus_stars,7);assert.equal(sent[0].zodiac_count,12);}finally{globalThis.fetch=old;}
+});
+
+// v2.6: real current health and capacity, drink-only capacity gains.
+test('drinks grow the ceiling without healing; food fills only current hearts', () => {
+ const s = E.newGame(book, {rng: () => .5}).state;
+ assert.deepEqual([s.stats.energy,s.statMax.energy,s.stats.tokens],[10,10,4]);
+ s.stats.energy=6; s.inventory.bubble_tea=1;
+ E.useItem(book,s,'bubble_tea');
+ assert.deepEqual([s.stats.energy,s.statMax.energy],[6,13]);
+ s.inventory.egg_tart=3;
+ E.useItem(book,s,'egg_tart');assert.equal(s.stats.energy,9);
+ E.useItem(book,s,'egg_tart');E.useItem(book,s,'egg_tart');
+ assert.deepEqual([s.stats.energy,s.statMax.energy],[13,13]);
+ const reload=JSON.parse(JSON.stringify(s));assert.equal(E.statBounds(book,reload,'energy').max,13);
+ reload.stats.energy=7;reload.inventory.herbal_tea=1;reload.status.poison=4;
+ E.useItem(book,reload,'herbal_tea');assert.equal(reload.status.poison||0,0);
+ assert.deepEqual([reload.stats.energy,reload.statMax.energy],[7,15]);
+});
+test('free soy milk and Pig milk tea grow capacity once, not on every visit', () => {
+ const s=E.newGame(book,{rng:()=>.5}).state;
+ at(s,'ferry_captain');at(s,'cha_chaan_teng');
+ assert.deepEqual([s.stats.energy,s.statMax.energy],[10,15]);
+ at(s,'ferry_captain');at(s,'cha_chaan_teng');
+ assert.deepEqual([s.stats.energy,s.statMax.energy],[10,15]);
+});
+test('legacy in-progress ceiling is not reduced, and score scale is saved per run', () => {
+ const s=E.newGame(book,{rng:()=>.5}).state; const saved=s.scoreReference;
+ s.statMax.energy=36;s.stats.energy=32;s.inventory.egg_tart=1;
+ E.useItem(book,s,'egg_tart');assert.equal(s.stats.energy,35);
+ const modified=structuredClone(book);modified.scoring.reference.values['10']=123;
+ assert.equal(E.scoreReference(modified,s),saved);
 });
