@@ -489,7 +489,7 @@ try {
 
   console.log('right path / wrong path (gremlins in disguise)');
   await inject(page, go('happy_valley') + 'st.stats.power = 40; st.stats.energy = 12;');
-  await choose(page, 'Go see the Horse');
+  await choose(page, 'Walk up to the racecourse rail');
   const clip = page.locator('.choice:not(.locked)', { hasText: 'clip-clop' });
   const moo = page.locator('.choice:not(.locked)', { hasText: 'MOOOO' });
   check(await clip.count() === 1 && await moo.count() === 1, 'Happy Valley: two paths, the clip-clop horse and the horse that said MOOOO');
@@ -503,7 +503,7 @@ try {
   await shot(page, '32-gremlin-reveal.png');
   await choose(page, 'Go back to the rail');
   check((await text(page, 'section-title')) === 'Happy Valley' && await stat(page, 'power') === 35 && await moo.count() === 0, 'retreat: back at the fork (one more move), the unmasked gremlin is gone');
-  await choose(page, 'Go see the Horse');
+  await choose(page, 'Walk up to the racecourse rail');
   await choose(page, 'clip-clop');
   check((await text(page, 'section-title')) === 'The Real Horse' && (await text(page, 'tracker-count')) === '1/12', 'right path: the real Horse joins the Zodiac Collection');
 
@@ -591,7 +591,7 @@ try {
   await T(page, 'ending').waitFor();
   check((await text(page, 'trapped-title')) === 'TRAPPED IN THE GAME FOREVER' && (await text(page, 'trapped-cause')).includes('ENERGY'), 'a poison tick that takes your last Energy = trapped forever');
   await inject(page, go('happy_valley') + 'st.inventory.goggles = 1;');
-  await choose(page, 'Go see the Horse');
+  await choose(page, 'Walk up to the racecourse rail');
   const gog = page.locator('.choice', { hasText: 'MOOOO' });
   check(await gog.count() === 1 && (await gog.getAttribute('class')).includes('locked') && (await gog.textContent()).includes('GREMLIN IN DISGUISE') && await page.locator('.choice:not(.locked)', { hasText: 'clip-clop' }).count() === 1, 'Gremlin Goggles: the gremlin path is locked and flagged; the real horse is open');
   check(await gog.locator('.need.own').count() === 1 && await page.locator('.need:not(.own)').count() === 0, 'locked hints that already speak for themselves get no extra "NEEDS:" prefix');
