@@ -1297,3 +1297,27 @@ test('v2.5.1: 12 scene-based entries, exactly one real option and two separate d
     assert.ok(visibleTo(s, real)[0].available, `${mid}: real route open with goggles`);
   }
 });
+
+// Exact leaderboard counts must not be downgraded by legacy server compatibility.
+
+
+import * as LB from "../public/js/leaderboard.js";
+const entry = {nickname:'HERO',avatar:{},score_pct:100,rank:'PIXEL LEGEND',zodiac_count:12,bonus_stars:7};
+test('world score keeps all 12 animals and exact extra stars', async () => {
+ const old=globalThis.fetch;const sent=[];
+ globalThis.fetch=async(url,opts)=>{sent.push(JSON.parse(opts.body));return new Response(null,{status:201});};
+ try {await LB.submitGlobal(entry);assert.equal(sent.length,1);assert.equal(sent[0].zodiac_count,12);assert.equal(sent[0].bonus_stars,7);} finally {globalThis.fetch=old;}
+});
+test('old database rejection never retries with fabricated 11 animals or missing stars',async()=>{
+ const old=globalThis.fetch;const sent=[];
+ globalThis.fetch=async(url,opts)=>{sent.push(JSON.parse(opts.body));return new Response(JSON.stringify({message:'constraint or column missing'}),{status:400});};
+ try{await assert.rejects(LB.submitGlobal(entry),/HTTP 400/);assert.equal(sent.length,1);assert.equal(sent[0].zodiac_count,12);assert.equal(sent[0].bonus_stars,7);}finally{globalThis.fetch=old;}
+});
+test('legacy read fallback cannot disable extra stars on a later submission',async()=>{
+ const old=globalThis.fetch;const sent=[];let reads=0;
+ globalThis.fetch=async(url,opts)=>{
+  if(opts.method==='POST'){sent.push(JSON.parse(opts.body));return new Response(null,{status:201});}
+  reads++;return reads===1?new Response(JSON.stringify({message:'missing stars'}),{status:400}):new Response(JSON.stringify([{nickname:'OLD',score_pct:100,zodiac_count:10}]),{status:200});
+ };
+ try{const rows=await LB.fetchGlobal();assert.equal(rows[0].zodiac_count,10);assert.equal(rows[0].bonus_stars,undefined);await LB.submitGlobal(entry);assert.equal(sent[0].bonus_stars,7);assert.equal(sent[0].zodiac_count,12);}finally{globalThis.fetch=old;}
+});
