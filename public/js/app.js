@@ -851,7 +851,7 @@ function confirmModal(title, text, yes = 'YES') {
 function openCreator() {
   const av = defaultAvatar();
   delete av.label;
-  const swatches = (key, colors, names) => `<div class="swatches" role="radiogroup" aria-label="${key}">${colors.map((c, i) => `<button class="swatch" role="radio" data-key="${key}" data-val="${i}" style="--s:${c}" aria-label="${key} ${names ? names[i] : i + 1}"></button>`).join('')}</div>`;
+  const swatches = (key, colors, names) => `<div class="swatches" role="radiogroup" aria-label="${key}">${colors.slice(0, 8).map((c, i) => `<button class="swatch" role="radio" data-key="${key}" data-val="${i}" style="--s:${c}" aria-label="${key} ${names ? names[i] : i + 1}"></button>`).join('')}</div>`;
   const toggles = EXTRAS.map((k) => `<button class="btn btn-small toggle" data-extra="${k}" aria-pressed="false" data-testid="extra-${k}">${LABELS[k]}</button>`).join('');
   const cycler = (key) => `<div class="cycler" data-key="${key}"><button class="arrow" data-dir="-1" aria-label="previous ${key}">◀</button><span class="cycle-val" data-val-for="${key}"></span><button class="arrow" data-dir="1" aria-label="next ${key}">▶</button></div>`;
   const m = openModal(`
