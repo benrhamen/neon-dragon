@@ -143,6 +143,11 @@ export function checkCondition(book, state, cond) {
     return have === want;
   }
   if ('visited' in cond) return !!state.visited[cond.visited];
+  if ('tracker' in cond) {
+    const t = (book.trackers || []).find((x) => x.id === cond.tracker);
+    if (!t) return false;
+    return t.entries.filter((e) => state.flags[e.flag]).length >= (cond.min ?? 1);
+  }
   if ('all' in cond) return cond.all.every((c) => checkCondition(book, state, c));
   if ('any' in cond) return cond.any.some((c) => checkCondition(book, state, c));
   if ('not' in cond) return !checkCondition(book, state, cond.not);
@@ -161,6 +166,7 @@ export function describeCondition(book, cond) {
   if ('stat' in cond) return `${statName(cond.stat)} ${ops[cond.op]} ${cond.value}`;
   if ('flag' in cond) return `a secret`;
   if ('visited' in cond) return `somewhere you haven't been`;
+  if ('tracker' in cond) return `${cond.min ?? 1} ${cond.tracker} animals`;
   if ('all' in cond) return cond.all.map((c) => describeCondition(book, c)).join(' + ');
   if ('any' in cond) return cond.any.map((c) => describeCondition(book, c)).join(' or ');
   if ('not' in cond) return 'something else';
@@ -264,6 +270,10 @@ function checkDepleted(book, state, messages, rng) {
 export function enterSection(book, state, id, messages = [], rng = Math.random) {
   const sec = book.sections[id];
   if (!sec) throw new Error(`Unknown section: ${id}`);
+  // a section with pickRandom is a gate, not a page: it forwards straight to one of its variants,
+  // drawn with the game's saved riddle generator, so each game can get a different one and a reload
+  // never rerolls it (state.current is always the variant, never the gate).
+  if (sec.pickRandom?.length) return enterSection(book, state, sec.pickRandom[Math.floor(riddleRandom(state) * sec.pickRandom.length) % sec.pickRandom.length], messages, rng);
   state.current = id;
   state.history.push(id);
   state.visited[id] = (state.visited[id] || 0) + 1;
@@ -744,6 +754,7 @@ export function computeScore(book, state) {
 // ---------- static analysis (used by tests and dev warnings) ----------
 export function sectionTargets(sec) {
   const t = [];
+  if (sec.pickRandom) t.push(...sec.pickRandom);
   for (const c of sec.choices || []) t.push(c.target);
   if (sec.test) t.push(sec.test.success.target, sec.test.failure.target, ...(sec.test.seven?.target ? [sec.test.seven.target] : []));
   if (sec.combat) { t.push(sec.combat.win.target, sec.combat.lose.target); if (sec.combat.flee) t.push(sec.combat.flee.target); }
@@ -778,6 +789,7 @@ export function lintBook(book) {
     if ('notHasItem' in c && !items[c.notHasItem]) errors.push(`${where}: unknown item ${c.notHasItem}`);
     if ('stat' in c && !stats[c.stat]) errors.push(`${where}: unknown stat ${c.stat}`);
     if ('visited' in c && !S[c.visited]) errors.push(`${where}: unknown section ${c.visited}`);
+    if ('tracker' in c && !(book.trackers || []).some((t) => t.id === c.tracker)) errors.push(`${where}: unknown tracker ${c.tracker}`);
     for (const k of ['all', 'any']) if (c[k]) c[k].forEach((x) => walkCond(where, x));
     if (c.not) walkCond(where, c.not);
     if ('status' in c && !(book.statusEffects || {})[c.status]) errors.push(`${where}: unknown status effect ${c.status}`);
