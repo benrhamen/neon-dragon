@@ -863,8 +863,6 @@ function openCreator() {
         <div class="stage-name" id="cEcho">${esc(name)}</div>
       </div>
       <div class="controls">
-        <div class="ctl-label">${hasName ? 'YOUR ARCADE HERO' : 'NO HERO YET'}</div>
-        <div class="nick-tip" data-testid="nick-tip">${hasName ? 'Your hero and adventure name come from Pixel Arcade.' : 'Make your avatar and adventure name once in Pixel Arcade and it shows up here and in every game. Or just start as HERO.'}</div>
         <a class="btn btn-small" style="text-decoration:none;display:inline-block;text-align:center" id="cEdit" data-testid="change-avatar" href="${editUrl}">${hasName ? 'CHANGE NAME &amp; AVATAR' : 'CREATE YOUR AVATAR &amp; ADVENTURE NAME'}</a>
       </div>
     </div>
