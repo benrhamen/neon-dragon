@@ -85,6 +85,8 @@ export function normalizeAvatar(a) {
     accessory: ACCESSORIES.includes(src.accessory) ? src.accessory : 'none',
   };
   for (const k of EXTRAS) if (src[k] === true) out[k] = true;
+  // exact colours from the shared Pixel Arcade character (optional)
+  for (const k of ['skinHex', 'hairHex', 'outfitHex', 'accentHex', 'eyeHex']) if (typeof src[k] === 'string' && /^#[0-9a-fA-F]{6}$/.test(src[k])) out[k] = src[k].toLowerCase();
   return out;
 }
 
@@ -114,22 +116,24 @@ export function drawAvatar(canvas, raw) {
   const ctx = canvas.getContext('2d');
   canvas.width = 16; canvas.height = 16;
   ctx.clearRect(0, 0, 16, 16);
-  const outfit = OUTFITS[a.outfit] ?? OUTFITS[0];
+  const outfit = a.outfitHex || (OUTFITS[a.outfit] ?? OUTFITS[0]);
+  const skinC = a.skinHex || (SKINS[a.skin] ?? SKINS[0]);
+  const hairC = a.hairHex || (HAIR_COLORS[a.hairColor] ?? HAIR_COLORS[0]);
   const pal = {
-    S: SKINS[a.skin] ?? SKINS[0],
-    E: '#1b1b2a',
-    M: shade(SKINS[a.skin] ?? SKINS[0], -0.35),
+    S: skinC,
+    E: a.eyeHex || '#1b1b2a',
+    M: shade(skinC, -0.35),
     O: outfit,
     X: shade(outfit, 0.45),
     P: '#2c2f5a',
     B: '#14142a',
-    H: HAIR_COLORS[a.hairColor] ?? HAIR_COLORS[0],
+    H: hairC,
     C: shade(outfit, -0.25),
     G: '#29e7ff',
-    A: '#ff2e88',
+    A: a.accentHex || '#ff2e88',
     Y: '#ffd23f',
     R: '#ff3355',
-    D: shade(HAIR_COLORS[a.hairColor] ?? HAIR_COLORS[0], -0.15),
+    D: shade(hairC, -0.15),
     w: '#f5f5f5', // gloves
     Z: '#9b5cff', // magic boots glow
     V: a.outfit === 6 ? '#c4183c' : shade(outfit, -0.45),
