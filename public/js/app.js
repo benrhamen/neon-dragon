@@ -825,75 +825,56 @@ function confirmModal(title, text, yes = 'YES') {
   });
 }
 
-// The hero creator. Every new game starts here with a blank name and the default hero; it can't
-// be dismissed: the only way on is PRESS START.
+// Start screen. The hero and adventure name are made once in Pixel Arcade (shared profile
+// "pa.profile.v1", device-only). This screen only reads it: PRESS START begins a run. No profile
+// yet: a default hero named HERO plays, with a link to make a real one.
+const ARCADE_URL = 'https://benrhamen.github.io/pixel-arcade/';
+function arcadeProfile() {
+  try {
+    const o = JSON.parse(localStorage.getItem('pa.profile.v1'));
+    if (!o || typeof o !== 'object') return null;
+    const base = { curly: 'short', afro: 'short', buzz: 'short', sidepart: 'short', undercut: 'short', bob: 'long', braids: 'long', wavy: 'long', mullet: 'long', topknot: 'bun', twinbuns: 'bun', messy: 'spiky', ponytail: 'long', mohawk: 'spiky', bald: 'short' };
+    const acc = { glasses: 'glasses', sunglasses: 'glasses', goggles: 'glasses', cap: 'cap', beanie: 'cap', headband: 'cap', wizardHat: 'cap', headphones: 'headphones', crown: 'crown', halo: 'crown' };
+    const st = base[o.hairStyle] || o.hairStyle;
+    const av = normalizeAvatar({
+      skin: o.skin, hairStyle: st, hairColor: o.hairColor, outfit: o.outfit, accessory: acc[o.accessory] || 'none',
+      beard: !!(o.extras && o.extras.beard), cape: !!(o.extras && o.extras.cape), gloves: !!(o.extras && o.extras.gloves), magicBoots: !!(o.extras && o.extras.magicBoots),
+    });
+    const name = LB.cleanNickname(o.name || '');
+    return { name: name && !LB.nicknameProblem(name) ? name : '', avatar: av };
+  } catch { return null; }
+}
 function openCreator() {
-  const av = defaultAvatar();
-  delete av.label;
-  const swatches = (key, colors, names) => `<div class="swatches" role="radiogroup" aria-label="${key}">${colors.slice(0, 8).map((c, i) => `<button class="swatch" role="radio" data-key="${key}" data-val="${i}" style="--s:${c}" aria-label="${key} ${names ? names[i] : i + 1}"></button>`).join('')}</div>`;
-  const toggles = EXTRAS.map((k) => `<button class="btn btn-small toggle" data-extra="${k}" aria-pressed="false" data-testid="extra-${k}">${LABELS[k]}</button>`).join('');
-  const cycler = (key) => `<div class="cycler" data-key="${key}"><button class="arrow" data-dir="-1" aria-label="previous ${key}">◀</button><span class="cycle-val" data-val-for="${key}"></span><button class="arrow" data-dir="1" aria-label="next ${key}">▶</button></div>`;
+  const prof = arcadeProfile();
+  const hasName = !!(prof && prof.name);
+  const av = prof ? prof.avatar : (() => { const d = defaultAvatar(); delete d.label; return d; })();
+  const name = hasName ? prof.name : 'HERO';
+  const editUrl = `${ARCADE_URL}?back=${encodeURIComponent(location.href)}#character`;
   const m = openModal(`
     <div class="creator-head">
       <div class="insert-coin blink">PLAYER 1 · INSERT COIN</div>
-      <h2 class="creator-title">CREATE YOUR HERO</h2>
+      <h2 class="creator-title">${hasName ? 'READY, ' + esc(name) + '?' : 'PICK YOUR HERO'}</h2>
     </div>
     <div class="creator-grid">
       <div class="stage">
         <div class="stage-spot"></div>
         <canvas class="pix big-avatar" id="cAvatar" data-testid="avatar-preview"></canvas>
         <div class="stage-floor"></div>
-        <div class="stage-name" id="cEcho">???</div>
+        <div class="stage-name" id="cEcho">${esc(name)}</div>
       </div>
       <div class="controls">
-        <div class="ctl-label">BUILD YOUR HERO <button class="btn btn-small btn-ghost" id="cRandom" data-testid="randomize">? RANDOM</button></div>
-        <div class="ctl-row"><span>SKIN</span>${swatches('skin', SKINS, SKIN_NAMES)}</div>
-        <div class="ctl-row"><span>HAIR</span>${cycler('hairStyle')}</div>
-        <div class="ctl-row"><span>COLOR</span>${swatches('hairColor', HAIR_COLORS)}</div>
-        <div class="ctl-row"><span>OUTFIT</span>${swatches('outfit', OUTFITS)}</div>
-        <div class="ctl-row"><span>EXTRA</span>${cycler('accessory')}</div>
-        <div class="ctl-row"><span>ADD-ONS</span><div class="toggles" role="group" aria-label="add-ons">${toggles}</div></div>
-        <label class="ctl-label" for="cName">ENTER A NICKNAME</label>
-        <input id="cName" class="name-input" maxlength="${LB.NICK_MAX}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NICKNAME" data-testid="name-input" value="">
-        <div class="nick-tip" data-testid="nick-tip">Use a nickname, not your real name. Max ${LB.NICK_MAX} letters.</div>
-        <div class="nick-problem" id="cProblem" data-testid="nick-problem"></div>
-
+        <div class="ctl-label">${hasName ? 'YOUR ARCADE HERO' : 'NO HERO YET'}</div>
+        <div class="nick-tip" data-testid="nick-tip">${hasName ? 'Your hero and adventure name come from Pixel Arcade.' : 'Make your avatar and adventure name once in Pixel Arcade and it shows up here and in every game. Or just start as HERO.'}</div>
+        <a class="btn btn-small" style="text-decoration:none;display:inline-block;text-align:center" id="cEdit" data-testid="change-avatar" href="${editUrl}">${hasName ? 'CHANGE NAME &amp; AVATAR' : 'CREATE YOUR AVATAR &amp; ADVENTURE NAME'}</a>
       </div>
     </div>
     <div class="creator-foot">
       <button class="btn btn-ghost" id="cScores" data-testid="creator-scores">🏆 BEST SCORES</button>
       <button class="btn btn-start" id="cStart" data-testid="press-start">PRESS START</button>
     </div>`, { dismissible: false, cls: 'creator', testid: 'avatar-modal' });
-
-  const preview = $('#cAvatar', m);
-  const nameIn = $('#cName', m);
-  const startBtn = $('#cStart', m);
-  const lists = { hairStyle: HAIR_STYLES, accessory: ACCESSORIES };
-  const refresh = () => {
-    drawAvatar(preview, av);
-    $$('.swatch', m).forEach((s) => { const on = av[s.dataset.key] === +s.dataset.val; s.classList.toggle('on', on); s.setAttribute('aria-checked', String(on)); });
-    for (const k of Object.keys(lists)) $(`[data-val-for=${k}]`, m).textContent = LABELS[av[k]] || av[k];
-    $$('[data-extra]', m).forEach((b) => { const on = !!av[b.dataset.extra]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); b.textContent = `${on ? '✔ ' : ''}${LABELS[b.dataset.extra]}`; });
-    const nm = LB.cleanNickname(nameIn.value);
-    const problem = nm ? LB.nicknameProblem(nm) : null;
-    $('#cEcho', m).textContent = nm || '???';
-    $('#cProblem', m).textContent = problem || '';
-    startBtn.disabled = !nm || !!problem;
-  };
-  $$('.swatch', m).forEach((s) => s.addEventListener('click', () => { av[s.dataset.key] = +s.dataset.val; sfx.select(); refresh(); }));
-  $$('.cycler', m).forEach((c) => $$('.arrow', c).forEach((a) => a.addEventListener('click', () => {
-    const list = lists[c.dataset.key];
-    av[c.dataset.key] = list[(list.indexOf(av[c.dataset.key]) + +a.dataset.dir + list.length) % list.length];
-    sfx.select(); refresh();
-  })));
-  $$('[data-extra]', m).forEach((b) => b.addEventListener('click', () => { const k = b.dataset.extra; if (av[k]) delete av[k]; else av[k] = true; sfx.select(); refresh(); }));
-  $('#cRandom', m).addEventListener('click', () => { const r = randomAvatar(); delete r.label; for (const k of EXTRAS) delete av[k]; Object.assign(av, r); sfx.select(); refresh(); });
-  nameIn.addEventListener('input', () => { const c = nameIn.value.toUpperCase(); if (c !== nameIn.value) nameIn.value = c; refresh(); });
-  nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !startBtn.disabled) startBtn.click(); });
+  drawAvatar($('#cAvatar', m), av);
   $('#cScores', m).addEventListener('click', () => openScores({ back: openCreator }));
-  startBtn.addEventListener('click', () => {
-    const name = LB.cleanNickname(nameIn.value);
-    if (!name || LB.nicknameProblem(name)) return;
+  $('#cStart', m).addEventListener('click', () => {
     player = { name, avatar: normalizeAvatar(av) };
     state = E.newGame(book, { rng, playerName: name, riddleSeed: params.get('riddleSeed') ? +params.get('riddleSeed') : null }).state;
     closeModal();
@@ -902,8 +883,7 @@ function openCreator() {
     sfx.start();
     toast(`GET READY, ${name}!`, 'good');
   });
-  refresh();
-  setTimeout(() => nameIn.focus({ preventScroll: true }), 50);
+  setTimeout(() => $('#cStart', m).focus({ preventScroll: true }), 50);
 }
 
 // ---------------- best scores ----------------
