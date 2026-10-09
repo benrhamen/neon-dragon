@@ -838,6 +838,7 @@ function arcadeProfile() {
     const st = base[o.hairStyle] || o.hairStyle;
     const av = normalizeAvatar({
       skin: o.skin, hairStyle: st, hairColor: o.hairColor, outfit: o.outfit, accessory: acc[o.accessory] || 'none',
+      skinHex: o.skinHex, hairHex: o.hairHex, outfitHex: o.outfitHex, accentHex: o.accentHex, eyeHex: o.eyeHex,
       beard: !!(o.extras && o.extras.beard), cape: !!(o.extras && o.extras.cape), gloves: !!(o.extras && o.extras.gloves), magicBoots: !!(o.extras && o.extras.magicBoots),
     });
     const name = LB.cleanNickname(o.name || '');
@@ -883,6 +884,9 @@ function openCreator() {
   });
   setTimeout(() => $('#cStart', m).focus({ preventScroll: true }), 50);
 }
+
+// Leaving mid-adventure: the run is saved, but ask before leaving by accident.
+document.getElementById('arcadeBtn')?.addEventListener('click', (e) => { if (state && !state.ended && !confirm('Back to Pixel Arcade? Your adventure is saved on this device.')) e.preventDefault(); });
 
 // ---------------- best scores ----------------
 function scoreRowsHTML(rows) {
