@@ -6,6 +6,7 @@ export function setSound(on) { enabled = on; }
 export function soundOn() { return enabled; }
 
 function ac() {
+  try{if('audioSession'in navigator)navigator.audioSession.type='playback'}catch(e){}
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
